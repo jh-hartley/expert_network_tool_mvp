@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
-import TopNav from "./top-nav"
+import NavClient from "./nav-client"
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" })
 
@@ -26,7 +26,7 @@ export default function RootLayout({
     <html lang="en" className={inter.variable}>
       <body className="font-sans antialiased">
         <div className="flex min-h-screen flex-col bg-background text-foreground">
-          <TopNav />
+          <NavClient />
           <main className="flex-1">{children}</main>
           <footer className="border-t border-border bg-card">
             <div className="mx-auto flex h-12 max-w-7xl items-center justify-center px-6">

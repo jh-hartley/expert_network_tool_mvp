@@ -23,7 +23,7 @@ const navItems = [
   { label: "Settings", href: "/settings", icon: Settings },
 ]
 
-export default function TopNav() {
+export default function NavClient() {
   const pathname = usePathname()
 
   return (
@@ -36,7 +36,10 @@ export default function TopNav() {
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-0.5 md:flex" aria-label="Main navigation">
+        <nav
+          className="hidden items-center gap-0.5 md:flex"
+          aria-label="Main navigation"
+        >
           {navItems.map(({ label, href, icon: Icon }) => {
             const isActive = pathname === href
             return (
