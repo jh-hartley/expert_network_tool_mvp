@@ -14,7 +14,7 @@ import {
 } from "lucide-react"
 
 const links = [
-  { href: "/", label: "Overview", icon: LayoutDashboard },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/upload", label: "Upload", icon: Upload },
   { href: "/experts", label: "Experts", icon: Users },
   { href: "/calls", label: "Calls", icon: Phone },
@@ -42,7 +42,7 @@ export default function TopNav() {
         {/* Navigation */}
         <nav className="flex items-center gap-1 overflow-x-auto" aria-label="Main navigation">
           {links.map(({ href, label, icon: Icon }) => {
-            const isActive = href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(href + "/")
+            const isActive = pathname === href || pathname.startsWith(href + "/")
             return (
               <Link
                 key={href}
