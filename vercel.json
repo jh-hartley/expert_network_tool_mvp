@@ -1,0 +1,3 @@
+{
+  "installCommand": "test -f node_modules && rm node_modules; pnpm install --no-frozen-lockfile"
+}
