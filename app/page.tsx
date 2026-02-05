@@ -86,6 +86,31 @@ export default function LandingPage() {
         </p>
       </div>
 
+      {/* Roadmap checklist */}
+      <div className="mb-12 rounded-lg border border-border bg-card p-5">
+        <h2 className="text-sm font-semibold text-foreground">
+          What this prototype will demonstrate next
+        </h2>
+        <ul className="mt-3 flex flex-col gap-2">
+          {[
+            "Upload / paste expert data",
+            "Standardise + dedupe profiles",
+            "Track calls and spend",
+            "Clearance / conflict workflow (status-only)",
+            "AI survey KPI extraction (mock)",
+            "Search experts / transcripts (filters + NL query, mock)",
+          ].map((item) => (
+            <li
+              key={item}
+              className="flex items-center gap-2 text-sm text-muted-foreground"
+            >
+              <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded border border-border" />
+              {item}
+            </li>
+          ))}
+        </ul>
+      </div>
+
       {/* Feature grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {features.map(({ label, href, icon: Icon, description }) => (
