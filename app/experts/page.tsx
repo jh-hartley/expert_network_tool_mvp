@@ -1,8 +1,13 @@
+"use client"
+
+import { useState } from "react"
 import { Plus } from "lucide-react"
 import Link from "next/link"
 import PageHeader from "../components/page-header"
 import FilterPanel from "../components/filter-panel"
 import DataTable from "../components/data-table"
+import { useStore } from "@/lib/use-store"
+import type { Expert } from "@/lib/types"
 
 const filters = [
   { label: "Status", options: ["Cleared", "Pending", "Blocked"] },
@@ -32,15 +37,39 @@ function Badge({ label, variant }: { label: string; variant: "green" | "red" | "
   )
 }
 
-const mockExperts = [
-  { name: "Dr. Sarah Chen", title: "VP of R&D, BioGen Corp", industry: "Healthcare", network: "GLG", status: <Badge label="Cleared" variant="green" />, calls: 4 },
-  { name: "James Rivera", title: "Former CTO, DataStream Inc", industry: "Technology", network: "AlphaSights", status: <Badge label="Cleared" variant="green" />, calls: 2 },
-  { name: "Mark Thompson", title: "Director of Strategy, EnergyX", industry: "Energy", network: "Third Bridge", status: <Badge label="Blocked" variant="red" />, calls: 0 },
-  { name: "Priya Sharma", title: "Head of Product, FinTech Solutions", industry: "Finance", network: "GLG", status: <Badge label="Pending" variant="amber" />, calls: 1 },
-  { name: "Alex Nguyen", title: "SVP Operations, ConsumerCo", industry: "Consumer", network: "Guidepoint", status: <Badge label="Cleared" variant="green" />, calls: 3 },
-]
+const PAGE_SIZE = 10
+
+function complianceBadge(status: string) {
+  const map: Record<string, { label: string; variant: "green" | "red" | "amber" }> = {
+    cleared: { label: "Cleared", variant: "green" },
+    blocked: { label: "Blocked", variant: "red" },
+    pending: { label: "Pending", variant: "amber" },
+  }
+  const m = map[status] ?? map.pending
+  return <Badge label={m.label} variant={m.variant} />
+}
 
 export default function ExpertsPage() {
+  const { items: experts } = useStore("experts")
+  const [page, setPage] = useState(0)
+
+  // Sort newest first
+  const sorted = [...experts].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  )
+
+  const totalPages = Math.ceil(sorted.length / PAGE_SIZE)
+  const pageExperts = sorted.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
+
+  const rows = pageExperts.map((e: Expert) => ({
+    name: e.name,
+    title: `${e.title}, ${e.company}`,
+    industry: e.industry,
+    network: e.network,
+    status: complianceBadge(e.compliance),
+    calls: e.callCount,
+  }))
+
   return (
     <div className="mx-auto max-w-5xl px-6 py-10">
       <PageHeader
@@ -62,14 +91,30 @@ export default function ExpertsPage() {
       </div>
 
       <div className="mt-3">
-        <DataTable columns={columns} rows={mockExperts} />
+        <DataTable columns={columns} rows={rows} />
       </div>
 
       <div className="mt-2 flex items-center justify-between">
-        <p className="text-[11px] text-muted-foreground">Showing 5 of 247 experts</p>
+        <p className="text-[11px] text-muted-foreground">
+          Showing {page * PAGE_SIZE + 1}--{Math.min((page + 1) * PAGE_SIZE, sorted.length)} of {sorted.length} experts
+        </p>
         <div className="flex items-center gap-1">
-          <button type="button" className="h-7 rounded-md border border-border bg-card px-2.5 text-[11px] text-muted-foreground" disabled>Previous</button>
-          <button type="button" className="h-7 rounded-md border border-border bg-card px-2.5 text-[11px] text-foreground hover:bg-accent">Next</button>
+          <button
+            type="button"
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
+            disabled={page === 0}
+            className="h-7 rounded-md border border-border bg-card px-2.5 text-[11px] text-muted-foreground disabled:opacity-50"
+          >
+            Previous
+          </button>
+          <button
+            type="button"
+            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+            disabled={page >= totalPages - 1}
+            className="h-7 rounded-md border border-border bg-card px-2.5 text-[11px] text-foreground hover:bg-accent disabled:opacity-50"
+          >
+            Next
+          </button>
         </div>
       </div>
     </div>
