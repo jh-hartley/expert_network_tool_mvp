@@ -13,30 +13,33 @@ interface DataTableProps {
 export default function DataTable({
   columns,
   rows,
-  emptyMessage = "No data available",
+  emptyMessage = "No data available.",
 }: DataTableProps) {
   return (
-    <div className="overflow-hidden rounded-lg border border-border">
+    <div className="overflow-hidden rounded-lg border border-border bg-card">
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-border bg-muted/50">
+            <tr className="border-b border-border bg-muted/40">
               {columns.map((col) => (
                 <th
                   key={col.key}
-                  className={`px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground ${col.className ?? ""}`}
+                  className={[
+                    "px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground",
+                    col.className ?? "",
+                  ].join(" ")}
                 >
                   {col.label}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-border bg-card">
+          <tbody className="divide-y divide-border">
             {rows.length === 0 ? (
               <tr>
                 <td
                   colSpan={columns.length}
-                  className="px-4 py-8 text-center text-muted-foreground"
+                  className="px-4 py-10 text-center text-sm text-muted-foreground"
                 >
                   {emptyMessage}
                 </td>
@@ -50,7 +53,10 @@ export default function DataTable({
                   {columns.map((col) => (
                     <td
                       key={col.key}
-                      className={`px-4 py-3 text-foreground ${col.className ?? ""}`}
+                      className={[
+                        "px-4 py-2.5 text-sm text-foreground",
+                        col.className ?? "",
+                      ].join(" ")}
                     >
                       {row[col.key]}
                     </td>

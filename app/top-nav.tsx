@@ -2,12 +2,6 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { clsx } from "clsx"
-import { twMerge } from "tailwind-merge"
-
-function cn(...inputs: Parameters<typeof clsx>) {
-  return twMerge(clsx(inputs))
-}
 import {
   LayoutDashboard,
   Upload,
@@ -33,36 +27,32 @@ export default function TopNav() {
   const pathname = usePathname()
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="mx-auto flex h-14 max-w-7xl items-center gap-6 px-4 sm:px-6 lg:px-8">
-        <Link
-          href="/"
-          className="flex items-center gap-2 text-foreground transition-colors hover:text-primary"
-        >
+    <header className="sticky top-0 z-50 border-b border-border bg-card">
+      <div className="mx-auto flex h-14 max-w-7xl items-center px-6">
+        {/* Brand */}
+        <Link href="/" className="flex items-center gap-2 mr-8">
           <Compass className="h-5 w-5 text-primary" />
-          <span className="text-base font-semibold tracking-tight">
+          <span className="text-sm font-semibold tracking-tight text-foreground">
             Helmsman
           </span>
         </Link>
 
-        <nav
-          className="hidden items-center gap-1 md:flex"
-          aria-label="Main navigation"
-        >
+        {/* Nav links */}
+        <nav className="hidden items-center gap-0.5 md:flex" aria-label="Main navigation">
           {navItems.map(({ label, href, icon: Icon }) => {
             const isActive = pathname === href
             return (
               <Link
                 key={href}
                 href={href}
-                className={cn(
-                  "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+                className={[
+                  "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors",
                   isActive
                     ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-accent hover:text-foreground"
-                )}
+                    : "text-muted-foreground hover:bg-accent hover:text-foreground",
+                ].join(" ")}
               >
-                <Icon className="h-4 w-4" />
+                <Icon className="h-3.5 w-3.5" />
                 {label}
               </Link>
             )

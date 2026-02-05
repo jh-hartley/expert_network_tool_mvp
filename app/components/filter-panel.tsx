@@ -15,8 +15,8 @@ export default function FilterPanel({
   searchPlaceholder = "Search...",
 }: FilterPanelProps) {
   return (
-    <div className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4 sm:flex-row sm:items-center sm:flex-wrap">
-      <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+    <div className="flex flex-col gap-3 rounded-lg border border-border bg-card px-4 py-3 sm:flex-row sm:items-center sm:flex-wrap">
+      <div className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
         <SlidersHorizontal className="h-3.5 w-3.5" />
         <span>Filters</span>
       </div>
@@ -24,7 +24,7 @@ export default function FilterPanel({
         {filters.map((group) => (
           <select
             key={group.label}
-            className="h-8 rounded-md border border-border bg-background px-3 text-xs text-foreground outline-none focus:ring-1 focus:ring-ring"
+            className="h-8 rounded-md border border-border bg-background px-2.5 text-xs text-foreground outline-none focus:ring-1 focus:ring-ring"
             defaultValue=""
             aria-label={group.label}
           >
@@ -42,7 +42,7 @@ export default function FilterPanel({
       <input
         type="search"
         placeholder={searchPlaceholder}
-        className="h-8 w-full rounded-md border border-border bg-background px-3 text-xs text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-ring sm:w-56"
+        className="h-8 w-full rounded-md border border-border bg-background px-3 text-xs text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-ring sm:w-52"
         aria-label="Search"
       />
     </div>

@@ -12,16 +12,16 @@ export default function PageHeader({
   actions,
 }: PageHeaderProps) {
   return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-4 pb-6 border-b border-border sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground text-balance">
+        <h1 className="text-xl font-semibold tracking-tight text-foreground">
           {title}
         </h1>
-        <p className="mt-1 text-sm text-muted-foreground text-pretty">
+        <p className="mt-1 text-sm leading-relaxed text-muted-foreground max-w-2xl">
           {description}
         </p>
       </div>
-      {actions && <div className="flex items-center gap-2">{actions}</div>}
+      {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
     </div>
   )
 }

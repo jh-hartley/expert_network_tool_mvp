@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: "#b5243a",
+  themeColor: "#9e2336",
   width: "device-width",
   initialScale: 1,
 }
@@ -23,15 +23,15 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body className={`${inter.variable} font-sans antialiased`}>
-        <div className="flex min-h-screen flex-col">
+    <html lang="en" className={inter.variable}>
+      <body className="font-sans antialiased">
+        <div className="flex min-h-screen flex-col bg-background text-foreground">
           <TopNav />
           <main className="flex-1">{children}</main>
-          <footer className="border-t border-border bg-muted/40">
-            <div className="mx-auto flex h-12 max-w-7xl items-center justify-center px-4 sm:px-6 lg:px-8">
+          <footer className="border-t border-border bg-card">
+            <div className="mx-auto flex h-12 max-w-7xl items-center justify-center px-6">
               <p className="text-xs text-muted-foreground">
-                {"Helmsman v0.1 \u2014 scaffold"}
+                {"Helmsman v0.1 \u2014 Expert Network Workflow Manager \u2014 prototype"}
               </p>
             </div>
           </footer>
