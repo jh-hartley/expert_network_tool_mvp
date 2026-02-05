@@ -29,15 +29,13 @@ export default function TopNav() {
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-card">
       <div className="mx-auto flex h-14 max-w-7xl items-center px-6">
-        {/* Brand */}
-        <Link href="/" className="flex items-center gap-2 mr-8">
+        <Link href="/" className="mr-8 flex items-center gap-2">
           <Compass className="h-5 w-5 text-primary" />
           <span className="text-sm font-semibold tracking-tight text-foreground">
             Helmsman
           </span>
         </Link>
 
-        {/* Nav links */}
         <nav className="hidden items-center gap-0.5 md:flex" aria-label="Main navigation">
           {navItems.map(({ label, href, icon: Icon }) => {
             const isActive = pathname === href
