@@ -24,7 +24,7 @@ const navItems = [
   { label: "Settings", href: "/settings", icon: Settings },
 ]
 
-export function TopNav() {
+export default function TopNav() {
   const pathname = usePathname()
 
   return (

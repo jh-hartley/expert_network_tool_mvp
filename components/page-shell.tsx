@@ -5,7 +5,7 @@ interface PageShellProps {
   description: string
 }
 
-export function PageShell({ title, description }: PageShellProps) {
+export default function PageShell({ title, description }: PageShellProps) {
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
       <div className="mb-8">
