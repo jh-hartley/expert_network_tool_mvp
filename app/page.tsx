@@ -1,97 +1,129 @@
 import Link from "next/link"
 import {
   Compass,
-  LayoutDashboard,
   Upload,
-  Users,
-  Phone,
-  ClipboardList,
+  Layers,
+  PhoneCall,
   Search,
-  Settings,
   AlertTriangle,
+  ArrowRight,
 } from "lucide-react"
 
-const features = [
+const workflowSteps = [
   {
-    label: "Overview",
-    href: "/dashboard",
-    icon: LayoutDashboard,
-    description: "High-level metrics and project status at a glance.",
-  },
-  {
-    label: "Upload",
-    href: "/upload",
+    step: 1,
     icon: Upload,
-    description: "Ingest call transcripts, expert bios, and project briefs.",
+    title: "Ingest",
+    description:
+      "Upload or paste expert data from networks, emails, spreadsheets, and transcripts.",
   },
   {
-    label: "Experts",
-    href: "/experts",
-    icon: Users,
-    description: "Browse and manage expert profiles and compliance data.",
+    step: 2,
+    icon: Layers,
+    title: "Standardise",
+    description:
+      "Deduplicate, clean, anonymise, and normalise profiles into a consistent schema.",
   },
   {
-    label: "Calls",
-    href: "/calls",
-    icon: Phone,
-    description: "Track scheduled and completed expert calls.",
+    step: 3,
+    icon: PhoneCall,
+    title: "Operate",
+    description:
+      "Shortlist experts, schedule calls, track spend, and manage compliance clearance.",
   },
   {
-    label: "AI Surveys",
-    href: "/ai-surveys",
-    icon: ClipboardList,
-    description: "AI-powered survey creation and response analysis.",
-  },
-  {
-    label: "Search",
-    href: "/search",
+    step: 4,
     icon: Search,
-    description: "Semantic search across transcripts and expert data.",
-  },
-  {
-    label: "Settings",
-    href: "/settings",
-    icon: Settings,
-    description: "Configure project parameters and integrations.",
+    title: "Retrieve",
+    description:
+      "Search experts and transcripts, extract KPIs and quotes with AI-powered tools.",
   },
 ]
 
 export default function LandingPage() {
   return (
-    <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-      {/* Hackathon banner */}
-      <div className="mb-10 flex items-start gap-3 rounded-lg border border-primary/20 bg-primary/5 p-4">
+    <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      {/* Hero */}
+      <div className="mb-16">
+        <div className="flex items-center gap-3 mb-4">
+          <Compass className="h-8 w-8 text-primary" />
+          <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            Expert Network Workflow Manager
+          </span>
+        </div>
+        <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl text-balance">
+          Helmsman
+        </h1>
+        <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted-foreground text-pretty">
+          Standardise expert data, track calls and spend, and reduce admin
+          overhead. One hub to replace manual Excel and email workflows.
+        </p>
+        <div className="mt-8 flex flex-wrap items-center gap-3">
+          <Link
+            href="/dashboard"
+            className="inline-flex h-10 items-center gap-2 rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            Go to Dashboard
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+          <Link
+            href="/upload"
+            className="inline-flex h-10 items-center gap-2 rounded-md border border-border bg-card px-5 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+          >
+            Upload New Data
+          </Link>
+        </div>
+      </div>
+
+      {/* 4-step workflow */}
+      <div className="mb-16">
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-6">
+          How it works
+        </h2>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {workflowSteps.map(({ step, icon: Icon, title, description }) => (
+            <div
+              key={step}
+              className="relative flex flex-col gap-3 rounded-lg border border-border bg-card p-5"
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+                  {step}
+                </div>
+                <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted">
+                  <Icon className="h-4 w-4 text-muted-foreground" />
+                </div>
+              </div>
+              <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                {description}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Prototype constraints callout */}
+      <div className="mb-16 flex items-start gap-3 rounded-lg border border-primary/20 bg-primary/5 p-5">
         <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
         <div>
           <p className="text-sm font-semibold text-foreground">
-            Hackathon prototype scaffold
+            Prototype constraints
           </p>
-          <p className="mt-0.5 text-sm text-muted-foreground">
-            No production data &mdash; no persistence &mdash; demo only
+          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+            This is a demonstration prototype. No real database -- placeholder
+            content only. No production data is required. The focus is on UX
+            workflow and information architecture.
           </p>
         </div>
-      </div>
-
-      {/* Hero */}
-      <div className="mb-12">
-        <div className="flex items-center gap-3">
-          <Compass className="h-8 w-8 text-primary" />
-          <h1 className="text-3xl font-bold tracking-tight text-foreground text-balance">
-            Helmsman
-          </h1>
-        </div>
-        <p className="mt-2 max-w-2xl text-lg text-muted-foreground text-pretty">
-          Expert Network Ops Hub &mdash; streamline expert calls, transcripts,
-          surveys, and compliance in one unified workspace.
-        </p>
       </div>
 
       {/* Roadmap checklist */}
-      <div className="mb-12 rounded-lg border border-border bg-card p-5">
+      <div className="rounded-lg border border-border bg-card p-5">
         <h2 className="text-sm font-semibold text-foreground">
-          What this prototype will demonstrate next
+          What this prototype demonstrates
         </h2>
-        <ul className="mt-3 flex flex-col gap-2">
+        <ul className="mt-3 grid gap-2 sm:grid-cols-2">
           {[
             "Upload / paste expert data",
             "Standardise + dedupe profiles",
@@ -104,34 +136,11 @@ export default function LandingPage() {
               key={item}
               className="flex items-center gap-2 text-sm text-muted-foreground"
             >
-              <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded border border-border" />
+              <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded border border-border bg-muted/50" />
               {item}
             </li>
           ))}
         </ul>
-      </div>
-
-      {/* Feature grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {features.map(({ label, href, icon: Icon, description }) => (
-          <Link
-            key={href}
-            href={href}
-            className="group flex flex-col gap-3 rounded-lg border border-border bg-card p-5 transition-colors hover:border-primary/30 hover:bg-accent"
-          >
-            <div className="flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-primary transition-colors group-hover:bg-primary/15">
-                <Icon className="h-4.5 w-4.5" />
-              </div>
-              <h2 className="text-sm font-semibold text-foreground">
-                {label}
-              </h2>
-            </div>
-            <p className="text-sm leading-relaxed text-muted-foreground">
-              {description}
-            </p>
-          </Link>
-        ))}
       </div>
     </div>
   )

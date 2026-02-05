@@ -6,9 +6,9 @@ import TopNav from "./top-nav"
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" })
 
 export const metadata: Metadata = {
-  title: "Helmsman -- Expert Network Ops Hub",
+  title: "Helmsman -- Expert Network Workflow Manager",
   description:
-    "Hackathon prototype scaffold for expert network operations management.",
+    "Standardise expert data, track calls and spend, and reduce admin overhead.",
 }
 
 export const viewport: Viewport = {
