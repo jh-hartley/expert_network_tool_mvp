@@ -14,7 +14,7 @@ import {
 } from "lucide-react"
 
 const links = [
-  { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
+  { href: "/", label: "Overview", icon: LayoutDashboard },
   { href: "/upload", label: "Upload", icon: Upload },
   { href: "/experts", label: "Experts", icon: Users },
   { href: "/calls", label: "Calls", icon: Phone },
@@ -30,7 +30,7 @@ export default function TopNav() {
     <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
       <div className="mx-auto flex h-14 max-w-5xl items-center gap-6 px-6">
         {/* Logo / Brand */}
-        <Link href="/dashboard" className="flex items-center gap-2 shrink-0">
+        <Link href="/" className="flex items-center gap-2 shrink-0">
           <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary">
             <Compass className="h-4 w-4 text-primary-foreground" />
           </div>
@@ -42,7 +42,7 @@ export default function TopNav() {
         {/* Navigation */}
         <nav className="flex items-center gap-1 overflow-x-auto" aria-label="Main navigation">
           {links.map(({ href, label, icon: Icon }) => {
-            const isActive = pathname === href || pathname.startsWith(href + "/")
+            const isActive = href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(href + "/")
             return (
               <Link
                 key={href}
