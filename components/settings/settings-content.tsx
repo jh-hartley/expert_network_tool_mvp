@@ -27,31 +27,31 @@ const sections = [
     icon: HardDrive,
     title: "Data Retention",
     description:
-      "All data is stored in localStorage only. Clearing browser data will remove all records.",
+      "Retention policy configuration. Production: server-side; prototype: browser-only.",
   },
   {
     icon: Trash2,
-    title: "Reset All Data",
+    title: "Reset Workspace",
     description:
-      "Clear all localStorage data and re-seed with default mock records.",
+      "Clear all workspace data and reset to default state.",
   },
   {
     icon: Download,
-    title: "Export JSON",
+    title: "Export Data",
     description:
-      "Download all workspace data as a JSON file for backup or transfer.",
+      "Download all workspace data as a structured JSON file for backup or transfer.",
   },
   {
     icon: Upload,
-    title: "Import JSON",
+    title: "Import Data",
     description:
-      "Import a previously exported JSON file to restore workspace data.",
+      "Import a previously exported file to restore workspace data.",
   },
 ]
 
 export function SettingsContent() {
   return (
-    <div className="grid gap-4 md:grid-cols-2">
+    <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {sections.map((section) => (
         <PlaceholderSection
           key={section.title}

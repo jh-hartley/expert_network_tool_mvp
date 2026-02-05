@@ -5,7 +5,7 @@ export default function DashboardPage() {
   return (
     <>
       <PageHeader
-        title="Overview"
+        title="Dashboard"
         description="Expert network operations at a glance."
       />
       <DashboardContent />

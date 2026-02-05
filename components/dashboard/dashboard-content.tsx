@@ -7,52 +7,40 @@ import {
   ShieldCheck,
   ClipboardList,
   Activity,
+  TrendingUp,
 } from "lucide-react"
+import { StatCard } from "@/components/stat-card"
 import { PlaceholderSection } from "@/components/placeholder-section"
 
-const statCards = [
-  { label: "Total Experts", value: "7", sub: "+2 this week", icon: Users },
-  { label: "Calls Scheduled", value: "2", sub: "This week", icon: Phone },
-  { label: "Total Spend", value: "$2,712", sub: "Forecast: $3,350", icon: DollarSign },
-  { label: "Compliance", value: "1 pending", sub: "5 cleared, 1 declined", icon: ShieldCheck },
-  { label: "AI Surveys", value: "2 done", sub: "1 pending", icon: ClipboardList },
+const stats = [
+  { label: "Total Experts", value: "--", sub: "Across all networks", icon: Users },
+  { label: "Calls This Week", value: "--", sub: "Scheduled + completed", icon: Phone },
+  { label: "Total Spend", value: "--", sub: "Forecast pending", icon: DollarSign },
+  { label: "Compliance", value: "--", sub: "Cleared / pending / flagged", icon: ShieldCheck },
+  { label: "AI Surveys", value: "--", sub: "Complete / in progress", icon: ClipboardList },
 ]
 
 export function DashboardContent() {
   return (
-    <div className="space-y-6">
+    <div className="mt-6 space-y-6">
       {/* Stat cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        {statCards.map((card) => (
-          <div
-            key={card.label}
-            className="rounded-lg border border-border bg-card p-4"
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                {card.label}
-              </span>
-              <card.icon className="h-4 w-4 text-muted-foreground" />
-            </div>
-            <p className="mt-2 text-2xl font-semibold text-foreground">
-              {card.value}
-            </p>
-            <p className="mt-0.5 text-xs text-muted-foreground">{card.sub}</p>
-          </div>
+        {stats.map((s) => (
+          <StatCard key={s.label} {...s} />
         ))}
       </div>
 
-      {/* Charts placeholder */}
+      {/* Chart and activity placeholders */}
       <div className="grid gap-4 lg:grid-cols-2">
         <PlaceholderSection
-          icon={DollarSign}
+          icon={TrendingUp}
           title="Spend Breakdown"
-          description="Spend charts and forecasts will be rendered here."
+          description="Weekly/monthly spend charts by network and case code will render here."
         />
         <PlaceholderSection
           icon={Activity}
           title="Recent Activity"
-          description="Activity feed showing uploads, status changes, and call logs will appear here."
+          description="Activity feed showing uploads, status changes, call logs, and compliance updates."
         />
       </div>
     </div>
