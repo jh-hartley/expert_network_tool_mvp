@@ -3,14 +3,13 @@
 import { useState, useMemo } from "react"
 import { Search, FileText, Users, MessageSquare } from "lucide-react"
 import PageHeader from "../components/page-header"
-import FilterPanel from "../components/filter-panel"
+import FilterPanel, { type FilterGroup } from "../components/filter-panel"
 import EmptyState from "../components/empty-state"
 import { useStore } from "@/lib/use-store"
 
-const filters = [
-  { label: "Type", options: ["Experts", "Transcripts", "Survey Responses", "All"] },
-  { label: "Industry", options: ["Technology", "Healthcare", "Energy", "Finance", "Consumer"] },
-  { label: "Date Range", options: ["Last 7 days", "Last 30 days", "Last 90 days", "All time"] },
+const filterDefs: FilterGroup[] = [
+  { key: "type", label: "Type", options: ["Experts", "Transcripts", "Surveys"] },
+  { key: "industry", label: "Industry", options: ["Technology", "Healthcare", "Energy", "Finance", "Consumer"] },
 ]
 
 interface SearchResult {
@@ -26,57 +25,71 @@ export default function SearchPage() {
   const { items: transcripts } = useStore("transcripts")
   const { items: surveys } = useStore("surveys")
   const [query, setQuery] = useState("")
+  const [activeFilters, setActiveFilters] = useState<Record<string, string>>({
+    type: "",
+    industry: "",
+  })
 
   const results = useMemo<SearchResult[]>(() => {
     const q = query.toLowerCase().trim()
     if (!q) return []
 
     const hits: SearchResult[] = []
+    const typeFilter = activeFilters.type?.toLowerCase() || ""
+    const industryFilter = activeFilters.industry || ""
 
     // Search experts
-    experts.forEach((e) => {
-      const haystack = `${e.name} ${e.title} ${e.company} ${e.industry} ${e.tags.join(" ")}`.toLowerCase()
-      if (haystack.includes(q)) {
-        hits.push({
-          type: "Expert",
-          icon: Users,
-          title: e.name,
-          snippet: `${e.title} at ${e.company}. ${e.industry}. ${e.callCount} calls completed. Tags: ${e.tags.join(", ")}.`,
-          score: 90,
+    if (!typeFilter || typeFilter === "experts") {
+      experts
+        .filter((e) => !industryFilter || e.industry === industryFilter)
+        .forEach((e) => {
+          const haystack = `${e.name} ${e.title} ${e.company} ${e.industry} ${e.tags.join(" ")}`.toLowerCase()
+          if (haystack.includes(q)) {
+            hits.push({
+              type: "Expert",
+              icon: Users,
+              title: e.name,
+              snippet: `${e.title} at ${e.company}. ${e.industry}. ${e.callCount} calls completed. Tags: ${e.tags.join(", ")}.`,
+              score: 90,
+            })
+          }
         })
-      }
-    })
+    }
 
     // Search transcripts
-    transcripts.forEach((t) => {
-      const haystack = `${t.expertName} ${t.summary} ${t.keyTopics.join(" ")}`.toLowerCase()
-      if (haystack.includes(q)) {
-        hits.push({
-          type: "Transcript",
-          icon: FileText,
-          title: `Call: ${t.expertName}`,
-          snippet: t.summary,
-          score: 85,
-        })
-      }
-    })
+    if (!typeFilter || typeFilter === "transcripts") {
+      transcripts.forEach((t) => {
+        const haystack = `${t.expertName} ${t.summary} ${t.keyTopics.join(" ")}`.toLowerCase()
+        if (haystack.includes(q)) {
+          hits.push({
+            type: "Transcript",
+            icon: FileText,
+            title: `Call: ${t.expertName}`,
+            snippet: t.summary,
+            score: 85,
+          })
+        }
+      })
+    }
 
     // Search surveys
-    surveys.forEach((s) => {
-      const haystack = `${s.name} ${s.topic}`.toLowerCase()
-      if (haystack.includes(q)) {
-        hits.push({
-          type: "Survey",
-          icon: MessageSquare,
-          title: s.name,
-          snippet: `Topic: ${s.topic}. ${s.responses}/${s.sentTo} responses.${s.avgNps !== null ? ` Avg NPS: ${s.avgNps}.` : ""}`,
-          score: 80,
-        })
-      }
-    })
+    if (!typeFilter || typeFilter === "surveys") {
+      surveys.forEach((s) => {
+        const haystack = `${s.name} ${s.topic}`.toLowerCase()
+        if (haystack.includes(q)) {
+          hits.push({
+            type: "Survey",
+            icon: MessageSquare,
+            title: s.name,
+            snippet: `Topic: ${s.topic}. ${s.responses}/${s.sentTo} responses.${s.avgNps !== null ? ` Avg NPS: ${s.avgNps}.` : ""}`,
+            score: 80,
+          })
+        }
+      })
+    }
 
     return hits.sort((a, b) => b.score - a.score)
-  }, [query, experts, transcripts, surveys])
+  }, [query, experts, transcripts, surveys, activeFilters])
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-10">
@@ -101,12 +114,19 @@ export default function SearchPage() {
         <p className="mt-1.5 text-[11px] text-muted-foreground">
           {query
             ? `${results.length} result${results.length === 1 ? "" : "s"} found`
-            : "Type to search across all data. Filters available below."}
+            : "Type to search across all data. Use filters to narrow results."}
         </p>
       </div>
 
       <div className="mt-3">
-        <FilterPanel filters={filters} searchPlaceholder="Refine with keywords..." />
+        <FilterPanel
+          filters={filterDefs}
+          activeFilters={activeFilters}
+          onFilterChange={(key, value) =>
+            setActiveFilters((prev) => ({ ...prev, [key]: value }))
+          }
+          onClearAll={() => setActiveFilters({ type: "", industry: "" })}
+        />
       </div>
 
       {/* Results */}

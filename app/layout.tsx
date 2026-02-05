@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import TopNav from "./components/top-nav"
+import Footer from "./components/footer"
 import ToastProvider from "./components/toast-provider"
 
 const inter = Inter({
@@ -28,9 +29,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={inter.variable}>
-      <body className="min-h-screen font-sans">
+      <body className="flex min-h-screen flex-col font-sans">
         <TopNav />
-        <main>{children}</main>
+        <main className="flex-1">{children}</main>
+        <Footer />
         <ToastProvider />
       </body>
     </html>

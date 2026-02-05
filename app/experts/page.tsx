@@ -1,73 +1,105 @@
 "use client"
 
-import { useState } from "react"
-import { Plus } from "lucide-react"
+import { useState, useMemo } from "react"
+import { Plus, Users } from "lucide-react"
 import Link from "next/link"
 import PageHeader from "../components/page-header"
-import FilterPanel from "../components/filter-panel"
-import DataTable from "../components/data-table"
+import FilterPanel, { type FilterGroup } from "../components/filter-panel"
+import DataTable, { type Column } from "../components/data-table"
+import EmptyState from "../components/empty-state"
 import { useStore } from "@/lib/use-store"
 import type { Expert } from "@/lib/types"
 
-const filters = [
-  { label: "Status", options: ["Cleared", "Pending", "Blocked"] },
-  { label: "Network", options: ["GLG", "AlphaSights", "Third Bridge", "Guidepoint", "Direct"] },
-  { label: "Industry", options: ["Technology", "Healthcare", "Energy", "Finance", "Consumer"] },
+/* ------------------------------------------------------------------ */
+/*  Filters                                                           */
+/* ------------------------------------------------------------------ */
+const filterDefs: FilterGroup[] = [
+  { key: "compliance", label: "Status", options: ["Cleared", "Pending", "Blocked"] },
+  { key: "network", label: "Network", options: ["GLG", "AlphaSights", "Third Bridge", "Guidepoint", "Direct"] },
+  { key: "industry", label: "Industry", options: ["Technology", "Healthcare", "Energy", "Finance", "Consumer"] },
 ]
 
-const columns = [
+/* ------------------------------------------------------------------ */
+/*  Columns                                                           */
+/* ------------------------------------------------------------------ */
+const columns: Column<Record<string, unknown>>[] = [
   { key: "name", label: "Name" },
   { key: "title", label: "Title / Role" },
   { key: "industry", label: "Industry" },
   { key: "network", label: "Network" },
-  { key: "status", label: "Status" },
+  { key: "status", label: "Status", sortValue: (row) => String(row._compliance ?? "") },
   { key: "calls", label: "Calls", className: "text-right" },
+  { key: "tags", label: "Tags", defaultHidden: true },
 ]
 
-function Badge({ label, variant }: { label: string; variant: "green" | "red" | "amber" }) {
-  const styles = {
-    green: "bg-emerald-50 text-emerald-700",
-    red: "bg-red-50 text-red-700",
-    amber: "bg-amber-50 text-amber-700",
+/* ------------------------------------------------------------------ */
+/*  Badge                                                             */
+/* ------------------------------------------------------------------ */
+function ComplianceBadge({ status }: { status: string }) {
+  const styles: Record<string, string> = {
+    cleared: "bg-emerald-50 text-emerald-700",
+    pending: "bg-amber-50 text-amber-700",
+    blocked: "bg-red-50 text-red-700",
   }
   return (
-    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${styles[variant]}`}>
-      {label}
+    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${styles[status] || styles.pending}`}>
+      {status.charAt(0).toUpperCase() + status.slice(1)}
     </span>
   )
 }
 
-const PAGE_SIZE = 10
-
-function complianceBadge(status: string) {
-  const map: Record<string, { label: string; variant: "green" | "red" | "amber" }> = {
-    cleared: { label: "Cleared", variant: "green" },
-    blocked: { label: "Blocked", variant: "red" },
-    pending: { label: "Pending", variant: "amber" },
-  }
-  const m = map[status] ?? map.pending
-  return <Badge label={m.label} variant={m.variant} />
-}
-
+/* ------------------------------------------------------------------ */
+/*  Page                                                              */
+/* ------------------------------------------------------------------ */
 export default function ExpertsPage() {
   const { items: experts } = useStore("experts")
-  const [page, setPage] = useState(0)
 
-  // Sort newest first
-  const sorted = [...experts].sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-  )
+  // Filter state
+  const [activeFilters, setActiveFilters] = useState<Record<string, string>>({
+    compliance: "",
+    network: "",
+    industry: "",
+  })
+  const [search, setSearch] = useState("")
 
-  const totalPages = Math.ceil(sorted.length / PAGE_SIZE)
-  const pageExperts = sorted.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
+  const filtered = useMemo(() => {
+    let list = [...experts]
 
-  const rows = pageExperts.map((e: Expert) => ({
+    // Sort newest first by default
+    list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+
+    if (activeFilters.compliance) {
+      list = list.filter((e) => e.compliance === activeFilters.compliance.toLowerCase())
+    }
+    if (activeFilters.network) {
+      list = list.filter((e) => e.network === activeFilters.network)
+    }
+    if (activeFilters.industry) {
+      list = list.filter((e) => e.industry === activeFilters.industry)
+    }
+    if (search) {
+      const q = search.toLowerCase()
+      list = list.filter(
+        (e) =>
+          e.name.toLowerCase().includes(q) ||
+          e.title.toLowerCase().includes(q) ||
+          e.company.toLowerCase().includes(q) ||
+          e.tags.some((t) => t.toLowerCase().includes(q)),
+      )
+    }
+
+    return list
+  }, [experts, activeFilters, search])
+
+  const rows = filtered.map((e: Expert) => ({
     name: e.name,
     title: `${e.title}, ${e.company}`,
     industry: e.industry,
     network: e.network,
-    status: complianceBadge(e.compliance),
+    status: <ComplianceBadge status={e.compliance} />,
+    _compliance: e.compliance, // hidden sort value
     calls: e.callCount,
+    tags: e.tags.join(", "),
   }))
 
   return (
@@ -87,36 +119,46 @@ export default function ExpertsPage() {
       />
 
       <div className="mt-4">
-        <FilterPanel filters={filters} searchPlaceholder="Search by name, role, or industry..." />
+        <FilterPanel
+          filters={filterDefs}
+          activeFilters={activeFilters}
+          onFilterChange={(key, value) =>
+            setActiveFilters((prev) => ({ ...prev, [key]: value }))
+          }
+          onClearAll={() => {
+            setActiveFilters({ compliance: "", network: "", industry: "" })
+            setSearch("")
+          }}
+          searchValue={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search by name, role, or tag..."
+        />
       </div>
 
       <div className="mt-3">
-        <DataTable columns={columns} rows={rows} />
+        {experts.length === 0 ? (
+          <EmptyState
+            icon={Users}
+            title="No experts yet"
+            description="Upload a CSV file to get started with your expert network."
+            actionLabel="Upload Experts"
+            actionHref="/upload"
+          />
+        ) : (
+          <DataTable
+            columns={columns}
+            rows={rows}
+            pageSize={10}
+            emptyMessage="No experts match the current filters."
+          />
+        )}
       </div>
 
-      <div className="mt-2 flex items-center justify-between">
-        <p className="text-[11px] text-muted-foreground">
-          Showing {page * PAGE_SIZE + 1}--{Math.min((page + 1) * PAGE_SIZE, sorted.length)} of {sorted.length} experts
+      {filtered.length > 0 && filtered.length !== experts.length && (
+        <p className="mt-2 text-[11px] text-muted-foreground">
+          Showing {filtered.length} of {experts.length} experts
         </p>
-        <div className="flex items-center gap-1">
-          <button
-            type="button"
-            onClick={() => setPage((p) => Math.max(0, p - 1))}
-            disabled={page === 0}
-            className="h-7 rounded-md border border-border bg-card px-2.5 text-[11px] text-muted-foreground disabled:opacity-50"
-          >
-            Previous
-          </button>
-          <button
-            type="button"
-            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-            disabled={page >= totalPages - 1}
-            className="h-7 rounded-md border border-border bg-card px-2.5 text-[11px] text-foreground hover:bg-accent disabled:opacity-50"
-          >
-            Next
-          </button>
-        </div>
-      </div>
+      )}
     </div>
   )
 }
