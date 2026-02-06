@@ -3,7 +3,6 @@ import {
   SYSTEM_PROMPT,
   extractionResultSchema,
   type InputFormat,
-  type ExtractionResult,
 } from "@/lib/llm"
 
 export async function POST(req: Request) {
@@ -27,21 +26,20 @@ export async function POST(req: Request) {
       messages: [{ role: "user", content: userPreamble + content }],
     })
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const anyResult = result as any
+
     /* ----- Try to get the structured object ----- */
-    let parsed: ExtractionResult | null =
-      (result.object as ExtractionResult | undefined) ?? null
+    let parsed = anyResult.object ?? null
 
     /* Fallback: if Output.object didn't populate result.object but the
        model DID return valid JSON as text, parse & validate it manually. */
-    if (!parsed && result.text) {
+    if (!parsed && anyResult.text) {
       try {
-        const raw = JSON.parse(result.text)
+        const raw = JSON.parse(anyResult.text)
         parsed = extractionResultSchema.parse(raw)
-      } catch (parseErr) {
-        console.error(
-          "[v0] Fallback JSON parse failed:",
-          parseErr instanceof Error ? parseErr.message : parseErr,
-        )
+      } catch {
+        // fallback parse failed -- will be caught by the null check below
       }
     }
 
@@ -50,8 +48,11 @@ export async function POST(req: Request) {
         {
           error: "LLM did not return a valid structured response.",
           debug: {
-            textPreview: result.text?.slice(0, 1000) ?? null,
-            finishReason: result.finishReason ?? null,
+            textPreview:
+              typeof anyResult.text === "string"
+                ? anyResult.text.slice(0, 1000)
+                : null,
+            finishReason: anyResult.finishReason ?? null,
           },
         },
         { status: 502 },
@@ -61,12 +62,12 @@ export async function POST(req: Request) {
     return Response.json(parsed)
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err)
-    const stack = err instanceof Error ? err.stack : undefined
-    console.error("[v0] Extract API error:", message, stack)
     return Response.json(
       {
         error: message,
-        debug: { stack: stack?.slice(0, 1000) ?? null },
+        debug: {
+          stack: err instanceof Error ? err.stack?.slice(0, 1000) : null,
+        },
       },
       { status: 500 },
     )
