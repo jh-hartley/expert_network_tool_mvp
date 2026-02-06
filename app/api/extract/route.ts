@@ -19,7 +19,7 @@ export async function POST(req: Request) {
       : "The following is unstructured text containing expert recommendations. Extract all expert profiles:\n\n"
 
   const result = await generateText({
-    model: "openai/gpt-4o",
+    model: "openai/gpt-4.1",
     output: Output.object({ schema: extractionResultSchema }),
     system: SYSTEM_PROMPT,
     messages: [{ role: "user", content: userPreamble + content }],
