@@ -368,7 +368,7 @@ export default function EngagementTable({
 
   function handleDraftSelectExpert(draft: DraftRow, expert: ExpertProfile) {
     // Pick the first available network for this expert
-    const availableNets = Object.entries(expert.network_prices)
+    const availableNets = Object.entries(expert.network_prices ?? {})
       .filter(([, v]) => v != null)
       .map(([k]) => k)
     updateDraft(draft.id, {
@@ -400,12 +400,12 @@ export default function EngagementTable({
       is_follow_up: draft.isFollowUp,
       network_prices: engagementType === "survey"
         ? Object.fromEntries(
-            Object.keys(draft.expert.network_prices).map((n) => [
+            Object.keys(draft.expert.network_prices ?? {}).map((n) => [
               n,
-              draft.expert!.network_prices[n] != null ? 300 : null,
+              (draft.expert!.network_prices ?? {})[n] != null ? 300 : null,
             ]),
           )
-        : { ...draft.expert.network_prices },
+        : { ...(draft.expert.network_prices ?? {}) },
     })
     onAddRecord(record)
     removeDraft(draft.id)
@@ -460,7 +460,7 @@ export default function EngagementTable({
 
   function draftCostPreview(draft: DraftRow): string {
     if (!draft.expert || !draft.network) return "--"
-    const rate = draft.expert.network_prices[draft.network]
+    const rate = draft.expert.network_prices?.[draft.network]
     if (rate == null || rate <= 0) return "--"
     if (engagementType === "survey") return `\u20AC${rate}`
     const cost = computeCallPrice(rate, draft.durationMinutes, draft.isFollowUp)
@@ -469,7 +469,7 @@ export default function EngagementTable({
 
   function draftRatePreview(draft: DraftRow): string {
     if (!draft.expert || !draft.network) return "--"
-    const rate = draft.expert.network_prices[draft.network]
+    const rate = draft.expert.network_prices?.[draft.network]
     if (rate == null) return "--"
     return engagementType === "survey" ? `\u20AC${rate}` : `$${rate}`
   }
@@ -572,7 +572,7 @@ export default function EngagementTable({
               const showAc = acOpenId === draft.id && acResults.length > 0
               const showNoResults = acOpenId === draft.id && draft.nameQuery.length >= 2 && acResults.length === 0
               const availableNets = expert
-                ? Object.entries(expert.network_prices).filter(([, v]) => v != null).map(([k]) => k)
+                ? Object.entries(expert.network_prices ?? {}).filter(([, v]) => v != null).map(([k]) => k)
                 : []
               return (
                 <tr key={draft.id} className="border-b border-primary/20 bg-primary/5">

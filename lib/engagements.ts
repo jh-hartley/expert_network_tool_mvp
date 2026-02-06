@@ -160,7 +160,7 @@ export function createEngagementFromExpert(
   const networks = getNetworks()
   const np: Record<string, number | null> = {}
   for (const n of networks) {
-    np[n] = expert.network_prices[n] ?? null
+    np[n] = expert.network_prices?.[n] ?? null
   }
   return {
     id: generateId(),

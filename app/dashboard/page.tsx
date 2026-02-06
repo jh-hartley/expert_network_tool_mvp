@@ -182,7 +182,7 @@ export default function DashboardPage() {
   const callSpendByStatus = useMemo(() => {
     const out: Record<EngagementStatus, number> = { completed: 0, scheduled: 0, invited: 0, cancelled: 0 }
     for (const c of calls) {
-      const rate = c.network_prices[c.network] ?? 0
+      const rate = c.network_prices?.[c.network] ?? 0
       const cost = computeCallPrice(rate, c.duration_minutes, c.is_follow_up ?? false)
       out[c.status] += cost
     }
@@ -192,7 +192,7 @@ export default function DashboardPage() {
   const surveySpendByStatus = useMemo(() => {
     const out: Record<EngagementStatus, number> = { completed: 0, scheduled: 0, invited: 0, cancelled: 0 }
     for (const s of surveys) {
-      const price = s.network_prices[s.network] ?? 0
+      const price = s.network_prices?.[s.network] ?? 0
       out[s.status] += price
     }
     return out
