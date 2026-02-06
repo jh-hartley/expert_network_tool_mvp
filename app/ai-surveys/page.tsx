@@ -1,176 +1,215 @@
 "use client"
 
-import { useState, useMemo } from "react"
-import { Plus, BarChart3, Clock, CheckCircle2, ClipboardList } from "lucide-react"
+import { useState, useCallback, useEffect } from "react"
+import dynamic from "next/dynamic"
+import {
+  ClipboardList,
+  CalendarCheck,
+  SendHorizonal,
+  XCircle,
+  Users,
+  Euro,
+  Download,
+} from "lucide-react"
 import PageHeader from "../components/page-header"
-import WipBanner from "../components/wip-banner"
-import FilterPanel, { type FilterGroup } from "../components/filter-panel"
 import StatCard from "../components/stat-card"
-import DataTable, { type Column } from "../components/data-table"
-import EmptyState from "../components/empty-state"
-import { useStore } from "@/lib/use-store"
-import type { AISurvey } from "@/lib/types"
+import {
+  getSurveys,
+  saveSurveys,
+  computeStats,
+  type EngagementRecord,
+} from "@/lib/engagements"
+import { exportToExcel, type ExcelColumnDef } from "@/lib/export-excel"
+
+/* SSR-disabled to avoid localStorage hydration mismatch */
+const EngagementTable = dynamic(
+  () => import("../components/engagement-table"),
+  { ssr: false },
+)
 
 /* ------------------------------------------------------------------ */
-/*  Filters                                                           */
+/*  Helper                                                            */
 /* ------------------------------------------------------------------ */
-const filterDefs: FilterGroup[] = [
-  { key: "status", label: "Status", options: ["Completed", "In Progress", "Draft"] },
-]
 
-/* ------------------------------------------------------------------ */
-/*  Columns                                                           */
-/* ------------------------------------------------------------------ */
-const columns: Column<Record<string, unknown>>[] = [
-  { key: "name", label: "Survey" },
-  { key: "topic", label: "Topic" },
-  { key: "sent", label: "Sent To", sortValue: (row) => Number(row._sentCount ?? 0) },
-  { key: "responses", label: "Responses", sortValue: (row) => Number(row._responseCount ?? 0) },
-  { key: "avgNps", label: "Avg NPS", className: "text-right", sortValue: (row) => Number(row._nps ?? -1) },
-  { key: "status", label: "Status", sortValue: (row) => String(row._status ?? "") },
-]
-
-/* ------------------------------------------------------------------ */
-/*  Badge                                                             */
-/* ------------------------------------------------------------------ */
-function StatusBadge({ status }: { status: string }) {
-  const styles: Record<string, string> = {
-    completed: "bg-emerald-50 text-emerald-700",
-    "in-progress": "bg-amber-50 text-amber-700",
-    draft: "bg-muted text-muted-foreground",
-  }
-  const labels: Record<string, string> = {
-    completed: "Completed",
-    "in-progress": "In Progress",
-    draft: "Draft",
-  }
-  return (
-    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${styles[status] || styles.draft}`}>
-      {labels[status] || status}
-    </span>
-  )
+function formatEur(v: number) {
+  return v === 0 ? "€0" : `€${v.toLocaleString("en-US")}`
 }
 
 /* ------------------------------------------------------------------ */
 /*  Page                                                              */
 /* ------------------------------------------------------------------ */
+
 export default function AiSurveysPage() {
-  const { items: surveys } = useStore("surveys")
+  const [records, setRecords] = useState<EngagementRecord[]>([])
+  const [loaded, setLoaded] = useState(false)
 
-  // Filter state
-  const [activeFilters, setActiveFilters] = useState<Record<string, string>>({ status: "" })
-  const [search, setSearch] = useState("")
+  useEffect(() => {
+    setRecords(getSurveys())
+    setLoaded(true)
+  }, [])
 
-  // Stats
-  const completedCount = surveys.filter((s) => s.status === "completed").length
-  const inProgressCount = surveys.filter((s) => s.status === "in-progress").length
-  const withNps = surveys.filter((s) => s.avgNps !== null)
-  const avgNps =
-    withNps.length > 0
-      ? Math.round(withNps.reduce((s, sv) => s + (sv.avgNps ?? 0), 0) / withNps.length)
-      : 0
+  const handleUpdate = useCallback(
+    (index: number, updates: Partial<EngagementRecord>) => {
+      setRecords((prev) => {
+        const next = [...prev]
+        next[index] = { ...next[index], ...updates }
+        saveSurveys(next)
+        return next
+      })
+    },
+    [],
+  )
 
-  // Filtered
-  const filtered = useMemo(() => {
-    let list = [...surveys]
+  const handleAdd = useCallback(
+    (record: EngagementRecord) => {
+      setRecords((prev) => {
+        const next = [record, ...prev]
+        saveSurveys(next)
+        return next
+      })
+    },
+    [],
+  )
 
-    if (activeFilters.status) {
-      const statusMap: Record<string, string> = {
-        Completed: "completed",
-        "In Progress": "in-progress",
-        Draft: "draft",
+  const handleRemove = useCallback(
+    (index: number) => {
+      setRecords((prev) => {
+        const next = prev.filter((_, i) => i !== index)
+        saveSurveys(next)
+        return next
+      })
+    },
+    [],
+  )
+
+  const handleExport = useCallback(() => {
+    const SURVEY_COLUMNS: ExcelColumnDef[] = [
+      { key: "expert_name", header: "Name" },
+      { key: "expert_company", header: "Company" },
+      { key: "expert_role", header: "Role" },
+      { key: "anonymised_role", header: "Anonymised Role" },
+      { key: "expert_type", header: "Type", transform: (v) => {
+        const labels: Record<string, string> = { customer: "Customer", competitor: "Competitor", target: "Target", competitor_customer: "Comp. Customer" }
+        return labels[String(v)] ?? v
+      }},
+      { key: "status", header: "Status", transform: (v) => String(v).charAt(0).toUpperCase() + String(v).slice(1) },
+      { key: "date", header: "Invite Sent" },
+      { key: "network", header: "Network" },
+      { key: "_cost", header: "Cost (EUR)", transform: (_v, row) => {
+        const prices = row.network_prices as Record<string, number | null>
+        return prices?.[row.network as string] ?? ""
+      }},
+      { key: "notes", header: "Notes" },
+    ]
+    exportToExcel({
+      fileName: "Helmsman_AI_Surveys",
+      rows: records as unknown as Record<string, unknown>[],
+      columns: SURVEY_COLUMNS,
+    })
+  }, [records])
+
+  // Compute dashboard stats
+  const stats = computeStats(records)
+  const totalSpend = Object.values(stats.totalSpendByStatus).reduce((a, b) => a + b, 0)
+  const completedSpend = stats.totalSpendByStatus.completed
+
+  // Expert type breakdown (unique experts)
+  const typeBreakdown = Object.entries(stats.uniqueByType)
+    .map(([k, v]) => {
+      const labels: Record<string, string> = {
+        customer: "Cust",
+        competitor: "Comp",
+        target: "Target",
+        competitor_customer: "C.Cust",
       }
-      const val = statusMap[activeFilters.status] || activeFilters.status.toLowerCase()
-      list = list.filter((s) => s.status === val)
-    }
-    if (search) {
-      const q = search.toLowerCase()
-      list = list.filter(
-        (s) => s.name.toLowerCase().includes(q) || s.topic.toLowerCase().includes(q),
-      )
-    }
+      return `${v} ${labels[k] ?? k}`
+    })
+    .join(", ")
 
-    return list
-  }, [surveys, activeFilters, search])
-
-  const rows = filtered.map((s: AISurvey) => ({
-    name: s.name,
-    topic: s.topic,
-    sent: `${s.sentTo} experts`,
-    _sentCount: s.sentTo,
-    responses: `${s.responses} / ${s.sentTo}`,
-    _responseCount: s.responses,
-    avgNps: s.avgNps !== null ? s.avgNps : "--",
-    _nps: s.avgNps ?? -1,
-    status: <StatusBadge status={s.status} />,
-    _status: s.status,
-  }))
+  if (!loaded) {
+    return (
+      <div className="mx-auto max-w-[1600px] px-6 py-10">
+        <div className="flex items-center justify-center py-24 text-sm text-muted-foreground">
+          Loading surveys...
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className="mx-auto max-w-5xl px-6 py-10">
+    <div className="mx-auto max-w-[1600px] px-6 py-10">
       <PageHeader
         title="AI Surveys"
-        description="Create AI-powered surveys, distribute to experts, and extract KPIs from aggregated responses."
+        description="Track AI survey invitations sent to experts. Prices are in EUR. Add new surveys by searching the expert database."
         actions={
           <button
             type="button"
-            className="inline-flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            onClick={handleExport}
+            className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border bg-card px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent"
           >
-            <Plus className="h-3.5 w-3.5" />
-            New Survey
+            <Download className="h-3.5 w-3.5" />
+            Export
           </button>
-  }
+        }
       />
-      <WipBanner feature="ai-surveys" />
-  
-      <div className="mt-6 grid gap-3 sm:grid-cols-3">
-        <StatCard label="Completed" value={completedCount} changeType="positive" icon={CheckCircle2} />
-        <StatCard label="In Progress" value={inProgressCount} change="awaiting responses" changeType="neutral" icon={Clock} />
-        <StatCard label="Avg NPS" value={avgNps} change="across all surveys" changeType="positive" icon={BarChart3} />
-      </div>
 
-      <div className="mt-4">
-        <FilterPanel
-          filters={filterDefs}
-          activeFilters={activeFilters}
-          onFilterChange={(key, value) =>
-            setActiveFilters((prev) => ({ ...prev, [key]: value }))
-          }
-          onClearAll={() => {
-            setActiveFilters({ status: "" })
-            setSearch("")
-          }}
-          searchValue={search}
-          onSearchChange={setSearch}
-          searchPlaceholder="Search surveys..."
+      {/* Dashboard cards */}
+      <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <StatCard
+          label="Experts Contacted"
+          value={stats.uniqueExperts}
+          change={typeBreakdown}
+          changeType="neutral"
+          icon={Users}
+        />
+        <StatCard
+          label="Completed"
+          value={stats.byStatus.completed}
+          change={formatEur(completedSpend)}
+          changeType="positive"
+          icon={ClipboardList}
+        />
+        <StatCard
+          label="Scheduled"
+          value={stats.byStatus.scheduled}
+          change={formatEur(stats.totalSpendByStatus.scheduled)}
+          changeType="neutral"
+          icon={CalendarCheck}
+        />
+        <StatCard
+          label="Invited"
+          value={stats.byStatus.invited}
+          change={formatEur(stats.totalSpendByStatus.invited)}
+          changeType="neutral"
+          icon={SendHorizonal}
+        />
+        <StatCard
+          label="Cancelled"
+          value={stats.byStatus.cancelled}
+          change={formatEur(stats.totalSpendByStatus.cancelled)}
+          changeType={stats.byStatus.cancelled > 0 ? "negative" : "neutral"}
+          icon={XCircle}
         />
       </div>
 
-      <div className="mt-3">
-        {surveys.length === 0 ? (
-          <EmptyState
-            icon={ClipboardList}
-            title="No surveys created"
-            description="Create your first AI-powered survey to distribute to experts and collect structured insights."
-          />
-        ) : (
-          <DataTable
-            columns={columns}
-            rows={rows}
-            pageSize={10}
-            emptyMessage="No surveys match the current filters."
-          />
-        )}
+      {/* Total spend summary */}
+      <div className="mt-3 flex items-center gap-2 rounded-lg border border-border bg-muted/20 px-4 py-2">
+        <Euro className="h-4 w-4 text-muted-foreground" />
+        <p className="text-xs text-muted-foreground">
+          <span className="font-semibold text-foreground">Total projected spend: {formatEur(totalSpend)}</span>
+          {" -- "}
+          Completed {formatEur(completedSpend)} / Scheduled {formatEur(stats.totalSpendByStatus.scheduled)} / Invited {formatEur(stats.totalSpendByStatus.invited)}
+        </p>
       </div>
 
-      <div className="mt-8">
-        <h2 className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-3">
-          KPI Extraction
-        </h2>
-        <EmptyState
-          icon={BarChart3}
-          title="AI KPI extraction coming soon"
-          description="Select a completed survey to automatically extract key performance indicators, sentiment scores, and notable quotes."
+      {/* Engagement table */}
+      <div className="mt-6">
+        <EngagementTable
+          records={records}
+          engagementType="survey"
+          onUpdateRecord={handleUpdate}
+          onAddRecord={handleAdd}
+          onRemoveRecord={handleRemove}
         />
       </div>
     </div>

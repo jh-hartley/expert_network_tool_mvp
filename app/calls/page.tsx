@@ -1,205 +1,225 @@
 "use client"
 
-import { useState, useMemo } from "react"
-import { Phone, Plus, PhoneOff, Clock, DollarSign } from "lucide-react"
+import { useState, useCallback, useEffect } from "react"
+import dynamic from "next/dynamic"
+import {
+  Phone,
+  CalendarCheck,
+  SendHorizonal,
+  XCircle,
+  DollarSign,
+  Users,
+  Download,
+} from "lucide-react"
 import PageHeader from "../components/page-header"
-import WipBanner from "../components/wip-banner"
-import FilterPanel, { type FilterGroup } from "../components/filter-panel"
-import DataTable, { type Column } from "../components/data-table"
 import StatCard from "../components/stat-card"
-import EmptyState from "../components/empty-state"
-import { useStore } from "@/lib/use-store"
-import type { Call } from "@/lib/types"
+import {
+  getCalls,
+  saveCalls,
+  computeStats,
+  computeCallPrice,
+  type EngagementRecord,
+} from "@/lib/engagements"
+import { exportToExcel, type ExcelColumnDef } from "@/lib/export-excel"
+
+/* SSR-disabled to avoid localStorage hydration mismatch */
+const EngagementTable = dynamic(
+  () => import("../components/engagement-table"),
+  { ssr: false },
+)
 
 /* ------------------------------------------------------------------ */
-/*  Helpers                                                           */
+/*  Helper                                                            */
 /* ------------------------------------------------------------------ */
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  })
-}
 
-function formatCost(cents: number) {
-  return cents === 0
-    ? "$0"
-    : `$${(cents / 100).toLocaleString("en-US", { maximumFractionDigits: 0 })}`
-}
-
-/* ------------------------------------------------------------------ */
-/*  Filters                                                           */
-/* ------------------------------------------------------------------ */
-const filterDefs: FilterGroup[] = [
-  { key: "status", label: "Status", options: ["Scheduled", "Completed", "Cancelled", "No-show"] },
-  { key: "project", label: "Project", options: ["Project Alpha", "Project Beta", "Project Gamma"] },
-]
-
-/* ------------------------------------------------------------------ */
-/*  Columns                                                           */
-/* ------------------------------------------------------------------ */
-const columns: Column<Record<string, unknown>>[] = [
-  { key: "expert", label: "Expert" },
-  { key: "date", label: "Date", sortValue: (row) => String(row._dateISO ?? "") },
-  { key: "duration", label: "Duration", sortValue: (row) => Number(row._durationMin ?? 0) },
-  { key: "project", label: "Project" },
-  { key: "status", label: "Status", sortValue: (row) => String(row._status ?? "") },
-  { key: "cost", label: "Cost", className: "text-right", sortValue: (row) => Number(row._costCents ?? 0) },
-  { key: "notes", label: "Notes", defaultHidden: true },
-]
-
-/* ------------------------------------------------------------------ */
-/*  Badges                                                            */
-/* ------------------------------------------------------------------ */
-function StatusBadge({ status }: { status: string }) {
-  const styles: Record<string, string> = {
-    completed: "bg-emerald-50 text-emerald-700",
-    scheduled: "bg-blue-50 text-blue-700",
-    cancelled: "bg-red-50 text-red-700",
-    "no-show": "bg-amber-50 text-amber-700",
-  }
-  const label = status === "no-show" ? "No-show" : status.charAt(0).toUpperCase() + status.slice(1)
-  return (
-    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${styles[status] || styles.scheduled}`}>
-      {label}
-    </span>
-  )
+function formatCurrency(v: number) {
+  return v === 0 ? "$0" : `$${v.toLocaleString("en-US")}`
 }
 
 /* ------------------------------------------------------------------ */
 /*  Page                                                              */
 /* ------------------------------------------------------------------ */
+
 export default function CallsPage() {
-  const { items: calls } = useStore("calls")
+  const [records, setRecords] = useState<EngagementRecord[]>([])
+  const [loaded, setLoaded] = useState(false)
 
-  // Filter state
-  const [activeFilters, setActiveFilters] = useState<Record<string, string>>({
-    status: "",
-    project: "",
-  })
-  const [search, setSearch] = useState("")
+  useEffect(() => {
+    setRecords(getCalls())
+    setLoaded(true)
+  }, [])
 
-  // Stats
-  const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-  const weekCalls = calls.filter((c) => c.date >= oneWeekAgo)
-  const completedWeek = weekCalls.filter((c) => c.status === "completed")
-  const cancelledWeek = weekCalls.filter((c) => c.status === "cancelled")
-  const avgDuration =
-    completedWeek.length > 0
-      ? Math.round(completedWeek.reduce((s, c) => s + c.duration, 0) / completedWeek.length)
-      : 0
-  const totalSpend = calls
-    .filter((c) => {
-      const d = new Date(c.date)
-      const now = new Date()
-      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear() && c.status === "completed"
+  const handleUpdate = useCallback(
+    (index: number, updates: Partial<EngagementRecord>) => {
+      setRecords((prev) => {
+        const next = [...prev]
+        next[index] = { ...next[index], ...updates }
+        saveCalls(next)
+        return next
+      })
+    },
+    [],
+  )
+
+  const handleAdd = useCallback(
+    (record: EngagementRecord) => {
+      setRecords((prev) => {
+        const next = [record, ...prev]
+        saveCalls(next)
+        return next
+      })
+    },
+    [],
+  )
+
+  const handleRemove = useCallback(
+    (index: number) => {
+      setRecords((prev) => {
+        const next = prev.filter((_, i) => i !== index)
+        saveCalls(next)
+        return next
+      })
+    },
+    [],
+  )
+
+  const handleExport = useCallback(() => {
+    const CALL_COLUMNS: ExcelColumnDef[] = [
+      { key: "expert_name", header: "Name" },
+      { key: "expert_company", header: "Company" },
+      { key: "expert_role", header: "Role" },
+      { key: "anonymised_role", header: "Anonymised Role" },
+      { key: "expert_type", header: "Type", transform: (v) => {
+        const labels: Record<string, string> = { customer: "Customer", competitor: "Competitor", target: "Target", competitor_customer: "Comp. Customer" }
+        return labels[String(v)] ?? v
+      }},
+      { key: "status", header: "Status", transform: (v) => String(v).charAt(0).toUpperCase() + String(v).slice(1) },
+      { key: "date", header: "Call Date" },
+      { key: "duration_minutes", header: "Duration (min)" },
+      { key: "is_follow_up", header: "Follow-up", transform: (v) => v ? "Yes" : "No" },
+      { key: "network", header: "Network" },
+      { key: "_rate", header: "Rate ($/hr)", transform: (_v, row) => {
+        const prices = row.network_prices as Record<string, number | null>
+        return prices?.[row.network as string] ?? ""
+      }},
+      { key: "_cost", header: "Cost ($)", transform: (_v, row) => {
+        const prices = row.network_prices as Record<string, number | null>
+        const rate = prices?.[row.network as string] ?? 0
+        return computeCallPrice(rate ?? 0, (row.duration_minutes as number) ?? 0, (row.is_follow_up as boolean) ?? false)
+      }},
+      { key: "notes", header: "Notes" },
+    ]
+    exportToExcel({
+      fileName: "Helmsman_Calls",
+      rows: records as unknown as Record<string, unknown>[],
+      columns: CALL_COLUMNS,
     })
-    .reduce((s, c) => s + c.cost, 0)
+  }, [records])
 
-  // Filtered + sorted
-  const filtered = useMemo(() => {
-    let list = [...calls]
+  // Compute dashboard stats
+  const stats = computeStats(records)
+  const totalSpend = Object.values(stats.totalSpendByStatus).reduce((a, b) => a + b, 0)
+  const completedSpend = stats.totalSpendByStatus.completed
 
-    list.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+  // Expert type breakdown (unique experts)
+  const typeBreakdown = Object.entries(stats.uniqueByType)
+    .map(([k, v]) => {
+      const labels: Record<string, string> = {
+        customer: "Cust",
+        competitor: "Comp",
+        target: "Target",
+        competitor_customer: "C.Cust",
+      }
+      return `${v} ${labels[k] ?? k}`
+    })
+    .join(", ")
 
-    if (activeFilters.status) {
-      const val = activeFilters.status.toLowerCase()
-      list = list.filter((c) => c.status === val)
-    }
-    if (activeFilters.project) {
-      list = list.filter((c) => c.project === activeFilters.project)
-    }
-    if (search) {
-      const q = search.toLowerCase()
-      list = list.filter(
-        (c) =>
-          c.expertName.toLowerCase().includes(q) ||
-          c.project.toLowerCase().includes(q) ||
-          (c.notes && c.notes.toLowerCase().includes(q)),
-      )
-    }
-
-    return list
-  }, [calls, activeFilters, search])
-
-  const rows = filtered.map((c: Call) => ({
-    expert: c.expertName,
-    date: formatDate(c.date),
-    _dateISO: c.date,
-    duration: c.duration > 0 ? `${c.duration} min` : "--",
-    _durationMin: c.duration,
-    project: c.project,
-    status: <StatusBadge status={c.status} />,
-    _status: c.status,
-    cost: formatCost(c.cost),
-    _costCents: c.cost,
-    notes: c.notes || "--",
-  }))
+  if (!loaded) {
+    return (
+      <div className="mx-auto max-w-[1600px] px-6 py-10">
+        <div className="flex items-center justify-center py-24 text-sm text-muted-foreground">
+          Loading calls...
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className="mx-auto max-w-5xl px-6 py-10">
+    <div className="mx-auto max-w-[1600px] px-6 py-10">
       <PageHeader
         title="Calls"
-        description="Track scheduled and completed expert calls, manage follow-ups, and monitor spend."
+        description="Track expert calls from invitation through completion. Add new calls by searching the expert database. Status, notes, and spend persist in your browser."
         actions={
           <button
             type="button"
-            className="inline-flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            onClick={handleExport}
+            className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border bg-card px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent"
           >
-            <Plus className="h-3.5 w-3.5" />
-            Schedule Call
+            <Download className="h-3.5 w-3.5" />
+            Export
           </button>
-  }
+        }
       />
-      <WipBanner feature="calls" />
-  
-      <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="This Week" value={weekCalls.length} change={`${completedWeek.length} completed`} changeType="positive" icon={Phone} />
-        <StatCard label="Cancelled" value={cancelledWeek.length} changeType={cancelledWeek.length > 0 ? "negative" : "neutral"} icon={PhoneOff} />
-        <StatCard label="Avg Duration" value={`${avgDuration} min`} icon={Clock} />
-        <StatCard label="Total Spend" value={formatCost(totalSpend)} change="this month" changeType="neutral" icon={DollarSign} />
-      </div>
 
-      <div className="mt-4">
-        <FilterPanel
-          filters={filterDefs}
-          activeFilters={activeFilters}
-          onFilterChange={(key, value) =>
-            setActiveFilters((prev) => ({ ...prev, [key]: value }))
-          }
-          onClearAll={() => {
-            setActiveFilters({ status: "", project: "" })
-            setSearch("")
-          }}
-          searchValue={search}
-          onSearchChange={setSearch}
-          searchPlaceholder="Search by expert or project..."
+      {/* Dashboard cards */}
+      <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <StatCard
+          label="Experts Contacted"
+          value={stats.uniqueExperts}
+          change={typeBreakdown}
+          changeType="neutral"
+          icon={Users}
+        />
+        <StatCard
+          label="Completed"
+          value={stats.byStatus.completed}
+          change={formatCurrency(completedSpend)}
+          changeType="positive"
+          icon={Phone}
+        />
+        <StatCard
+          label="Scheduled"
+          value={stats.byStatus.scheduled}
+          change={formatCurrency(stats.totalSpendByStatus.scheduled)}
+          changeType="neutral"
+          icon={CalendarCheck}
+        />
+        <StatCard
+          label="Invited"
+          value={stats.byStatus.invited}
+          change={formatCurrency(stats.totalSpendByStatus.invited)}
+          changeType="neutral"
+          icon={SendHorizonal}
+        />
+        <StatCard
+          label="Cancelled"
+          value={stats.byStatus.cancelled}
+          change={formatCurrency(stats.totalSpendByStatus.cancelled)}
+          changeType={stats.byStatus.cancelled > 0 ? "negative" : "neutral"}
+          icon={XCircle}
         />
       </div>
 
-      <div className="mt-3">
-        {calls.length === 0 ? (
-          <EmptyState
-            icon={Phone}
-            title="No calls recorded"
-            description="Calls will appear here once experts have been contacted."
-          />
-        ) : (
-          <DataTable
-            columns={columns}
-            rows={rows}
-            pageSize={10}
-            emptyMessage="No calls match the current filters."
-          />
-        )}
+      {/* Total spend summary */}
+      <div className="mt-3 flex items-center gap-2 rounded-lg border border-border bg-muted/20 px-4 py-2">
+        <DollarSign className="h-4 w-4 text-muted-foreground" />
+        <p className="text-xs text-muted-foreground">
+          <span className="font-semibold text-foreground">Total projected spend: {formatCurrency(totalSpend)}</span>
+          {" -- "}
+          Completed {formatCurrency(completedSpend)} / Scheduled {formatCurrency(stats.totalSpendByStatus.scheduled)} / Invited {formatCurrency(stats.totalSpendByStatus.invited)}
+        </p>
       </div>
 
-      {filtered.length > 0 && filtered.length !== calls.length && (
-        <p className="mt-2 text-[11px] text-muted-foreground">
-          Showing {filtered.length} of {calls.length} calls
-        </p>
-      )}
+      {/* Engagement table */}
+      <div className="mt-6">
+        <EngagementTable
+          records={records}
+          engagementType="call"
+          onUpdateRecord={handleUpdate}
+          onAddRecord={handleAdd}
+          onRemoveRecord={handleRemove}
+        />
+      </div>
     </div>
   )
 }
