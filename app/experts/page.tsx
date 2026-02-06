@@ -1,32 +1,36 @@
 "use client"
 
 import { useState, useCallback, useEffect } from "react"
+import dynamic from "next/dynamic"
 import { Plus } from "lucide-react"
 import Link from "next/link"
 import PageHeader from "../components/page-header"
-import ExpertLensTable from "../components/expert-lens-table"
 import {
   getExpertProfiles,
   saveExpertProfiles,
   type ExpertProfile,
 } from "@/lib/expert-profiles"
 
+/* Dynamically import the lens table with SSR disabled so it never
+   renders on the server -- this eliminates any localStorage-driven
+   hydration mismatches. */
+const ExpertLensTable = dynamic(
+  () => import("../components/expert-lens-table"),
+  { ssr: false },
+)
+
 /* ------------------------------------------------------------------ */
 /*  Experts page                                                       */
 /*                                                                     */
 /*  State is held here so shortlisting, notes, and CID updates are    */
 /*  reflected immediately. Every mutation persists to localStorage.    */
-/*                                                                     */
-/*  We initialise with an empty array and hydrate from localStorage   */
-/*  in an effect so server and client render identically (no           */
-/*  hydration mismatch).                                               */
 /* ------------------------------------------------------------------ */
 
 export default function ExpertsPage() {
   const [experts, setExperts] = useState<ExpertProfile[]>([])
   const [loaded, setLoaded] = useState(false)
 
-  // Hydrate from localStorage after mount (avoids SSR mismatch)
+  // Hydrate from localStorage after mount
   useEffect(() => {
     setExperts(getExpertProfiles())
     setLoaded(true)
