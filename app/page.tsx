@@ -14,8 +14,6 @@ import {
   FileBarChart,
   Search as SearchIcon,
   Database,
-  CheckCircle2,
-  Circle,
 } from "lucide-react"
 
 /* ------------------------------------------------------------------ */
@@ -196,45 +194,24 @@ const dataInputBuckets: {
   },
 ]
 
-/* ------------------------------------------------------------------ */
-/*  Prototype status                                                   */
-/* ------------------------------------------------------------------ */
 
-const status: { done: boolean; text: string }[] = [
-  { done: true, text: "App shell, navigation, and Bain design system" },
-  { done: true, text: "TypeScript data model and localStorage persistence layer" },
-  { done: true, text: "Upload parsing: CSV, email (.eml), and raw text" },
-  { done: true, text: "AI-powered profile extraction from unstructured text (LLM pipeline)" },
-  { done: true, text: "Persist parsed experts with fuzzy deduplication and network-price merging" },
-  { done: true, text: "Experts table with lens-based views (Customer / Competitor / Target), sortable columns, and per-network pricing" },
-  { done: true, text: "Shortlisting, inline notes, and CID clearance request workflow" },
-  { done: true, text: "Calls and AI Surveys tables with spend tracking, auto-populated fields, and Excel export" },
-  { done: true, text: "Dashboard with budget roll-ups, expert-type breakdowns, and spend-by-status reporting" },
-  { done: true, text: "Transcript upload, AI-generated summaries, and KPI extraction" },
-  { done: true, text: "Search across experts, transcripts, and surveys with type and industry filters" },
-  { done: true, text: "Settings: export / import JSON, reset data" },
-  { done: true, text: "Compliance cross-checks against advisory and do-not-contact lists" },
-  { done: false, text: "Vector-embedded search and RAG-powered transcript queries" },
-  { done: false, text: "End-of-project reconciliation tables and network settlement" },
-]
 
 export default function OverviewPage() {
   return (
     <div className="mx-auto max-w-5xl px-6 py-10">
       {/* Status banner */}
-      <div className="mb-8 flex items-start gap-3 rounded-lg border border-sky-200 bg-sky-50 px-4 py-3">
-        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-sky-600" />
+      <div className="mb-8 flex items-start gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3">
+        <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
         <div>
-          <p className="text-sm font-medium text-sky-900">
-            Stages 1-6 are live -- ingestion through to transcripts
+          <p className="text-sm font-medium text-emerald-900">
+            All 8 stages are live
           </p>
-          <p className="mt-0.5 text-xs leading-relaxed text-sky-700">
-            Upload and parse expert data (CSV, email, pasted text), track and
-            shortlist experts, manage calls and spend, enrich profiles, run
-            compliance checks, and upload transcripts with AI-powered
-            summarisation. Search, settings, and dashboard are also functional.
-            All data persists in your browser via localStorage. See the
-            progress tracker at the bottom of this page for detailed status.
+          <p className="mt-0.5 text-xs leading-relaxed text-emerald-700">
+            Upload and parse expert data, track and shortlist experts, manage
+            calls and spend, enrich profiles, run compliance checks, upload
+            transcripts with AI summarisation, search experts and transcripts
+            with natural language, and view dashboard reporting with live NPS
+            scores. All data persists in your browser via localStorage.
           </p>
         </div>
       </div>
@@ -509,36 +486,7 @@ export default function OverviewPage() {
         </div>
       </section>
 
-      <div className="mb-16 border-t border-border" />
-
-      {/* Prototype progress */}
-      <section className="mb-4">
-        <p className="text-[11px] font-semibold uppercase tracking-widest text-primary">
-          Status
-        </p>
-        <h2 className="mt-1 text-xl font-semibold tracking-tight text-foreground mb-6">
-          Prototype Progress
-        </h2>
-        <div className="rounded-lg border border-border bg-card divide-y divide-border">
-          {status.map((item, i) => (
-            <div key={i} className="flex items-center gap-3 px-4 py-2.5">
-              {item.done ? (
-                <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-600" />
-              ) : (
-                <Circle className="h-3.5 w-3.5 shrink-0 text-muted-foreground/30" />
-              )}
-              <span
-                className={[
-                  "text-sm",
-                  item.done ? "text-foreground" : "text-muted-foreground",
-                ].join(" ")}
-              >
-                {item.text}
-              </span>
-            </div>
-          ))}
-        </div>
-      </section>
+      
     </div>
   )
 }

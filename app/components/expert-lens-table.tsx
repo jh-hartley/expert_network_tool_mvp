@@ -719,9 +719,9 @@ export default function ExpertLensTable({
                                 <span
                                   key={flag}
                                   title={`${cfg.label}: ${cfg.description}`}
-                                  className={`inline-flex h-7 items-center gap-1 rounded-md border px-2 text-[11px] font-medium ${cfg.color}`}
+                                  className={`inline-flex items-center gap-1 whitespace-nowrap rounded-md border px-2 py-1 text-[11px] font-medium ${cfg.color}`}
                                 >
-                                  <IconComp className="h-3 w-3" />
+                                  <IconComp className="h-3 w-3 shrink-0" />
                                   <span className="sr-only sm:not-sr-only">{cfg.label}</span>
                                 </span>
                               )

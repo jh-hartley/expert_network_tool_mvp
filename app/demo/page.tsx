@@ -20,7 +20,7 @@ import {
   FileBarChart,
   Building2,
 } from "lucide-react"
-import { Construction } from "lucide-react"
+
 
 /* ------------------------------------------------------------------ */
 /*  Demo scenario                                                      */
@@ -314,7 +314,7 @@ Priya Chakraborty,Engineering Manager,Atlas Cement Corp,Technology,Third Bridge,
 /*  Pipeline steps for the rest of the guide                           */
 /* ------------------------------------------------------------------ */
 
-/* Future steps kept in "Next Steps" section at the bottom -- none currently, all are live or WIP */
+/* All 8 stages are live */
 
 /* ------------------------------------------------------------------ */
 /*  Sample data: Transcripts (.txt -- customer calls with NPS)         */
@@ -432,8 +432,6 @@ export default function DemoPage() {
           search and reconciliation.
         </p>
       </div>
-
-      {/* Status banner removed -- demo is now comprehensive */}
 
       {/* ============================================================ */}
       {/*  STEP 1 -- Ingest & Standardise                               */}
@@ -641,10 +639,30 @@ export default function DemoPage() {
           >
             Experts
           </Link>{" "}
-          tab to view all ingested profiles in a unified table. From there you
-          can review each expert{"'"}s details, screening responses, and
-          compliance status, and begin shortlisting candidates for calls.
+          tab to view all ingested profiles in a unified table. Review each
+          expert{"'"}s details, screening responses, and compliance status, and
+          begin shortlisting candidates for calls. A natural-language search
+          panel lets you describe what you{"'"}re looking for
+          (e.g. {"\u201C"}someone with deep pricing knowledge across mid-market
+          controls vendors{"\u201D"}) and the LLM recommends the best matches
+          from your database -- or tells you there is no suitable expert.
+          Toggle between searching your external expert database and the Bain
+          Expert Network (BEN) advisor pool.
         </p>
+        <ul className="mt-3 flex flex-col gap-1.5 max-w-3xl">
+          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+            Lens-based views (Customer / Competitor / Target) with sortable columns
+          </li>
+          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+            Natural-language expert search with LLM-powered ranking and streaming results
+          </li>
+          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+            Toggle between External Experts and Bain Expert Network advisors
+          </li>
+        </ul>
         <div className="mt-6 flex items-center gap-3">
           <Link
             href="/experts"
@@ -654,7 +672,7 @@ export default function DemoPage() {
             Go to Experts page
           </Link>
           <p className="text-xs text-muted-foreground">
-            Review parsed profiles, filter by type, and start building your shortlist.
+            Try the {"\u201C"}Find Expert{"\u201D"} button and describe what you need in plain English.
           </p>
         </div>
       </section>
@@ -1009,61 +1027,35 @@ export default function DemoPage() {
       </section>
 
       {/* ============================================================ */}
-      {/*  DIVIDER -- Work in Progress section                           */}
+      {/*  STEP 7 -- Transcripts & Search                                */}
       {/* ============================================================ */}
-      <div className="my-12 border-t border-border" />
-
-      <div className="mb-6">
-        <p className="text-[11px] font-semibold uppercase tracking-widest text-amber-700">
-          Work in Progress
-        </p>
-        <h2 className="mt-1 text-xl font-semibold tracking-tight text-foreground">
-          Under Active Development
-        </h2>
-        <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-          The following stage has an initial implementation but is being
-          expanded with additional capabilities.
-        </p>
-      </div>
-
-      {/* ============================================================ */}
-      {/*  STEP 7 -- Transcripts (WIP)                                   */}
-      {/* ============================================================ */}
-      <section>
+      <section className="mt-10">
         <div className="flex items-center gap-3">
           <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
             7
           </span>
           <SearchIcon className="h-4 w-4 text-primary/60" />
           <h2 className="text-lg font-semibold tracking-tight text-foreground">
-            Transcripts
+            Transcripts & Search
           </h2>
-          <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-[10px] font-semibold text-amber-800">
-            <Construction className="h-3 w-3" />
-            Work in Progress
-          </span>
         </div>
         <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">
-          The Transcripts page lists every uploaded call transcript, with filters
-          for expert type and specific expert selection. Browse, expand, and read
-          the full text of any transcript. A natural-language query panel lets you
-          ask questions across your filtered transcripts -- the LLM is given only
-          the transcripts you have selected, with full metadata about who is
-          speaking and their expert type. One feature is still under development:
-          querying transcripts from saved calls.
+          The Transcripts page lists every call and AI survey transcript, with
+          filters for expert type, source (calls vs. surveys), and specific
+          expert selection. NPS KPI cards at the top compute live scores from
+          survey data. A natural-language query panel lets you ask questions
+          across your filtered transcripts -- the LLM is given only the
+          transcripts you have selected, with full metadata about who is
+          speaking and their expert type.
         </p>
         <ul className="mt-3 flex flex-col gap-1.5 max-w-3xl">
           <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
             <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-            Browse all uploaded transcripts in a single list
+            Browse call and AI survey transcripts with source toggles and expert-type filters
           </li>
           <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
             <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-            Filter by expert type (Customer, Competitor, Target, Comp. Customer)
-          </li>
-          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-            Select specific experts using autocomplete to narrow the transcript list
+            Live NPS KPI cards computed from survey transcript data
           </li>
           <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
             <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
@@ -1072,10 +1064,6 @@ export default function DemoPage() {
           <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
             <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
             Query scope indicator showing exactly which transcripts the LLM sees
-          </li>
-          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-amber-400" />
-            Planned: query transcripts from saved calls with structured search
           </li>
         </ul>
         <div className="mt-6 flex items-center gap-3">
