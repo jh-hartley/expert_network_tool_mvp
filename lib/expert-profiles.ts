@@ -244,7 +244,7 @@ export const PROJECT_CONTEXT = {
 /*  Seed profiles                                                      */
 /* ------------------------------------------------------------------ */
 
-const SEED_PROFILES: ExpertProfile[] = [
+export const SEED_PROFILES: ExpertProfile[] = [
   /* ---- Customers ------------------------------------------------- */
   {
     name: "Raj Patel",
