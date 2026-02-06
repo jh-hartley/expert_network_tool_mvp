@@ -11,7 +11,9 @@ import WipBanner from "../components/wip-banner"
 import { useStore } from "@/lib/use-store"
 import { uid } from "@/lib/storage"
 import { extractExperts } from "@/lib/llm-client"
-import type { ExtractedExpert, ExtractionResult, InputFormat as LlmInputFormat } from "@/lib/llm"
+import type { ExtractionResult, InputFormat as LlmInputFormat } from "@/lib/llm"
+import type { ExtractedExpert } from "@/lib/llm"
+import { mergeNewExperts, type MergeResult } from "@/lib/expert-profiles"
 import type { Expert, Network, Industry, ComplianceStatus } from "@/lib/types"
 
 /* ------------------------------------------------------------------ */
@@ -98,6 +100,7 @@ export default function UploadPage() {
   const [result, setResult] = useState<IngestResult | null>(null)
   const [extraction, setExtraction] = useState<ExtractionResult | null>(null)
   const [extractionError, setExtractionError] = useState<string | null>(null)
+  const [mergeResult, setMergeResult] = useState<MergeResult | null>(null)
 
   // Raw content view -- visible before submission so user can sense-check
   const [rawOpen, setRawOpen] = useState(false)
@@ -161,6 +164,7 @@ export default function UploadPage() {
     setResult(null)
     setExtraction(null)
     setExtractionError(null)
+    setMergeResult(null)
     setProcessing(false)
     setRawOpen(false)
     setPreview(null)
@@ -209,9 +213,17 @@ export default function UploadPage() {
         ir.format as LlmInputFormat,
       )
       setExtraction(data)
-      toast.success(
-        `Extracted ${data.experts.length} expert${data.experts.length === 1 ? "" : "s"} from ${ir.sourceName}`,
-      )
+
+      // Merge into localStorage
+      const merge = mergeNewExperts(data.experts)
+      setMergeResult(merge)
+
+      // Build descriptive toast
+      const parts: string[] = []
+      if (merge.added > 0) parts.push(`${merge.added} new expert${merge.added === 1 ? "" : "s"} added`)
+      if (merge.duplicates > 0) parts.push(`${merge.duplicates} already in table`)
+      if (merge.pricesMerged > 0) parts.push(`${merge.pricesMerged} new network price${merge.pricesMerged === 1 ? "" : "s"} merged`)
+      toast.success(parts.join(", ") || `Processed ${data.experts.length} expert${data.experts.length === 1 ? "" : "s"}`)
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Processing failed"
       setExtractionError(msg)
@@ -228,7 +240,7 @@ export default function UploadPage() {
     <div className="mx-auto max-w-5xl px-6 py-10">
       <PageHeader
         title="Upload"
-        description="Import expert profiles from CSV files, network emails, or pasted text. Structured CSV is parsed directly; unstructured content is sent to an LLM for extraction. Note: parsing is fully functional, but parsed experts are not yet saved to the tracker -- the browser storage layer is still buggy and a server-side database is not permitted by company policy."
+        description="Import expert profiles from CSV files, network emails, or pasted text. Structured CSV is parsed directly; unstructured content is sent to an LLM for extraction. New experts are saved to the expert tracker in your browser. Duplicates are detected by fuzzy name + company matching; if an existing expert is found via a new network, the new price is merged automatically."
       />
       <WipBanner feature="upload" />
 
@@ -474,11 +486,28 @@ export default function UploadPage() {
             <CheckCircle2 className="h-5 w-5 text-emerald-600" />
             <div className="flex-1">
               <p className="text-sm font-medium text-emerald-800">
-                {extraction.experts.length} expert{extraction.experts.length === 1 ? "" : "s"} extracted and added to the expert tracker
+                {extraction.experts.length} expert{extraction.experts.length === 1 ? "" : "s"} extracted from {result?.sourceName ?? "uploaded content"}
               </p>
-              <p className="mt-0.5 text-xs text-emerald-700">
-                From {result?.sourceName ?? "uploaded content"}
-              </p>
+              {mergeResult && (
+                <p className="mt-0.5 text-xs text-emerald-700">
+                  {mergeResult.added > 0 && (
+                    <span className="font-medium">{mergeResult.added} new</span>
+                  )}
+                  {mergeResult.added > 0 && mergeResult.duplicates > 0 && " / "}
+                  {mergeResult.duplicates > 0 && (
+                    <span>{mergeResult.duplicates} already in table</span>
+                  )}
+                  {mergeResult.pricesMerged > 0 && (
+                    <span> ({mergeResult.pricesMerged} new network price{mergeResult.pricesMerged === 1 ? "" : "s"} merged)</span>
+                  )}
+                  {" -- "}saved to expert tracker
+                </p>
+              )}
+              {!mergeResult && (
+                <p className="mt-0.5 text-xs text-emerald-700">
+                  From {result?.sourceName ?? "uploaded content"}
+                </p>
+              )}
             </div>
             <div className="flex items-center gap-2">
               <button

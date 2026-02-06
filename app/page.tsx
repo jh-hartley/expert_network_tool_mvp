@@ -202,11 +202,12 @@ const dataInputBuckets: {
 
 const status: { done: boolean; text: string }[] = [
   { done: true, text: "App shell, navigation, and Bain design system" },
-  { done: true, text: "TypeScript data model and localStorage CRUD layer (read-only -- persistence still buggy)" },
+  { done: true, text: "TypeScript data model and localStorage CRUD layer (persistence working)" },
   { done: true, text: "Upload parsing: CSV, email (.eml), and raw text parsed correctly" },
   { done: true, text: "AI-powered profile extraction from unstructured text (LLM pipeline functional)" },
-  { done: false, text: "Persist parsed experts to the tracker (localStorage bugs; database not permitted by company policy)" },
-  { done: false, text: "Data tables with sort, filter, column hiding, and pagination" },
+  { done: true, text: "Persist parsed experts to the tracker with fuzzy deduplication and network-price merging" },
+  { done: true, text: "Experts table with lens-based views (Customer / Competitor / Target), sortable columns, and per-network pricing" },
+  { done: false, text: "Data tables with advanced filtering, column hiding, and pagination" },
   { done: false, text: "Settings: export / import JSON, reset data" },
   { done: false, text: "Compliance cross-checks and CID clearance workflow" },
   { done: false, text: "Vector-embedded search and RAG queries" },
@@ -218,23 +219,22 @@ export default function OverviewPage() {
   return (
     <div className="mx-auto max-w-5xl px-6 py-10">
       {/* Upload status banner */}
-      <div className="mb-8 rounded-lg border-2 border-amber-300 bg-amber-50 px-5 py-4">
+      <div className="mb-8 rounded-lg border-2 border-sky-300 bg-sky-50 px-5 py-4">
         <div className="flex items-start gap-3">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-100">
-            <TriangleAlert className="h-4 w-4 text-amber-600" />
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sky-100">
+            <TriangleAlert className="h-4 w-4 text-sky-600" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-amber-900">
-              Data upload: parsing works, persistence does not
+            <p className="text-sm font-semibold text-sky-900">
+              Data upload and expert tracking now functional
             </p>
-            <p className="mt-1 text-sm leading-relaxed text-amber-700">
-              The upload feature correctly parses expert data from CSV,
-              email, and pasted text. However, parsed results are not yet
-              saved to the expert tracker -- the browser storage layer is
-              still buggy and a server-side database is not permitted by
-              company policy. Uploaded figures will appear in the extraction
-              preview but will not carry over into the Experts or Calls
-              pages.
+            <p className="mt-1 text-sm leading-relaxed text-sky-700">
+              Upload parses expert data from CSV, email, and pasted text. The
+              LLM extraction pipeline and localStorage persistence layer are
+              working -- new experts are merged into the tracker with fuzzy
+              deduplication, and new network prices are added automatically.
+              Data is stored in your browser only (a server-side database is
+              not permitted by company policy).
             </p>
           </div>
         </div>
@@ -248,10 +248,11 @@ export default function OverviewPage() {
             Hackathon prototype
           </p>
           <p className="mt-0.5 text-xs leading-relaxed text-amber-700">
-            Browser-only demo with synthetic seed data. The data parsing
-            pipeline is functional, but results cannot yet be persisted to
-            the tracker. A server-side database is not permitted by company
-            policy and the localStorage layer remains under development.
+            Browser-only demo with synthetic seed data. Data is persisted in
+            your browser via localStorage -- a server-side database is not
+            permitted by company policy. Changes (shortlists, notes, new
+            uploads) survive page reloads but will be lost if you clear
+            site data.
           </p>
         </div>
       </div>

@@ -625,13 +625,13 @@ export default function DemoPage() {
         </div>
 
         {/* Persistence note */}
-        <div className="mt-4 flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
-          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
-          <p className="text-xs leading-relaxed text-amber-800">
-            <span className="font-medium">Note:</span> Parsing is fully functional, but parsed experts are not yet
-            saved to the tracker. The browser storage layer is still buggy and a server-side database is not
-            permitted by company policy. You can review extraction results on the Upload page but they will not
-            carry over into other pages.
+        <div className="mt-4 flex items-start gap-3 rounded-lg border border-sky-200 bg-sky-50 px-4 py-3">
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-sky-600" />
+          <p className="text-xs leading-relaxed text-sky-800">
+            <span className="font-medium">Persistence active.</span> New experts extracted from uploads are
+            automatically merged into the Experts table. Duplicates are detected by fuzzy name + company
+            matching; if an existing expert appears via a new network, the new price is merged in. Data is
+            stored in your browser only.
           </p>
         </div>
       </section>

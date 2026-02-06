@@ -8,6 +8,7 @@ import WipBanner from "../components/wip-banner"
 import ExpertLensTable from "../components/expert-lens-table"
 import {
   getExpertProfiles,
+  saveExpertProfiles,
   type ExpertProfile,
 } from "@/lib/expert-profiles"
 
@@ -29,7 +30,7 @@ export default function ExpertsPage() {
       setExperts((prev) => {
         const next = [...prev]
         next[index] = { ...next[index], ...updates }
-        // TODO: saveExpertProfiles(next) once localStorage is stable
+        saveExpertProfiles(next)
         return next
       })
     },
@@ -40,7 +41,7 @@ export default function ExpertsPage() {
     <div className="mx-auto max-w-[1600px] px-6 py-10">
       <PageHeader
         title="Experts"
-        description="Browse expert profiles by type, review screening responses, and build your shortlist. Use the lens tabs to switch between customer, competitor, and target views with type-specific screening columns."
+        description="Browse expert profiles by type, review screening responses, and build your shortlist. Use the lens tabs to switch between customer, competitor, and target views with type-specific screening columns. Data is persisted in your browser -- shortlists, notes, and new experts from the Upload page are saved automatically."
         actions={
           <Link
             href="/upload"
@@ -54,14 +55,16 @@ export default function ExpertsPage() {
       <WipBanner feature="experts" />
 
       {/* Persistence note */}
-      <div className="mt-4 flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
-        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
-        <p className="text-xs leading-relaxed text-amber-800">
-          <span className="font-medium">Seed data only.</span> The table below
-          displays synthetic demo profiles from the Project Atlas scenario.
-          Shortlisting, notes, and CID clearance actions work in-session but
-          will reset on page reload until localStorage persistence is
-          stabilised.
+      <div className="mt-4 flex items-start gap-3 rounded-lg border border-sky-200 bg-sky-50 px-4 py-3">
+        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-sky-600" />
+        <p className="text-xs leading-relaxed text-sky-800">
+          <span className="font-medium">Browser storage active.</span> The
+          table is initialised with demo profiles from the Project Atlas
+          scenario and persists changes (shortlists, notes, CID requests) in
+          your browser. New experts uploaded via the Upload page are merged
+          automatically -- duplicates are detected by fuzzy name + company
+          matching. Data is private to this browser and will be lost if you
+          clear site data.
         </p>
       </div>
 

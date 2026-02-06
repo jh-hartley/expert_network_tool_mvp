@@ -15,7 +15,7 @@ import {
   X,
 } from "lucide-react"
 import type { ExpertProfile, ExpertLens } from "@/lib/expert-profiles"
-import { NETWORKS, PROJECT_CONTEXT } from "@/lib/expert-profiles"
+import { getNetworks, PROJECT_CONTEXT } from "@/lib/expert-profiles"
 import Modal from "./modal"
 
 /* ------------------------------------------------------------------ */
@@ -165,8 +165,8 @@ const ADDITIONAL_COL: ColDef = {
 }
 
 /** Per-network price columns (rendered on the far right) */
-function networkPriceCols(): ColDef[] {
-  return NETWORKS.map((n) => ({
+function networkPriceCols(experts: ExpertProfile[]): ColDef[] {
+  return getNetworks(experts).map((n) => ({
     key: `price_${n}`,
     label: `${n} ($/hr)`,
     accessor: (e: ExpertProfile) => e.network_prices[n] ?? null,
@@ -175,8 +175,8 @@ function networkPriceCols(): ColDef[] {
   }))
 }
 
-function getColumnsForLens(lens: ExpertLens): ColDef[] {
-  const net = networkPriceCols()
+function getColumnsForLens(lens: ExpertLens, experts: ExpertProfile[]): ColDef[] {
+  const net = networkPriceCols(experts)
   switch (lens) {
     case "customer":
     case "competitor_customer":
@@ -314,7 +314,7 @@ export default function ExpertLensTable({
     }
   }, [editingNotesIdx])
 
-  const columns = useMemo(() => getColumnsForLens(lens), [lens])
+  const columns = useMemo(() => getColumnsForLens(lens, experts), [lens, experts])
 
   const counts = useMemo(() => {
     const map: Record<ExpertLens, number> = {

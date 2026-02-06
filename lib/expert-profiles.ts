@@ -28,30 +28,127 @@ export interface ExpertProfile extends ExtractedExpert {
   cid_clearance_requested: boolean
 }
 
-/** All networks present in the current data set */
-export const NETWORKS = ["AlphaSights", "GLG", "Third Bridge"] as const
+/** Default networks in the demo data set */
+export const DEFAULT_NETWORKS = ["AlphaSights", "GLG", "Third Bridge"] as const
+
+/**
+ * Derive the full set of network names from the current data set.
+ * Returns at least DEFAULT_NETWORKS, plus any extras found in profiles.
+ */
+export function getNetworks(profiles?: ExpertProfile[]): string[] {
+  const set = new Set<string>(DEFAULT_NETWORKS)
+  const list = profiles ?? getExpertProfiles()
+  for (const p of list) {
+    for (const n of Object.keys(p.network_prices)) set.add(n)
+    if (p.network) set.add(p.network)
+  }
+  return Array.from(set)
+}
 
 /* ------------------------------------------------------------------ */
-/*  Read / write helpers (localStorage stubs)                          */
+/*  localStorage keys                                                  */
 /* ------------------------------------------------------------------ */
 
+const LS_KEY = "helmsman_expert_profiles"
+const LS_SEEDED_KEY = "helmsman_expert_profiles_seeded"
+
+/* ------------------------------------------------------------------ */
+/*  Read / write helpers                                               */
+/* ------------------------------------------------------------------ */
+
+/** Ensure seed data is written to localStorage on first visit. */
+function ensureSeeded(): void {
+  if (typeof window === "undefined") return
+  if (localStorage.getItem(LS_SEEDED_KEY)) return
+  localStorage.setItem(LS_KEY, JSON.stringify(SEED_PROFILES))
+  localStorage.setItem(LS_SEEDED_KEY, "1")
+}
+
+/** Read expert profiles from localStorage (seeds automatically on first call). */
 export function getExpertProfiles(): ExpertProfile[] {
-  // TODO: read from localStorage first, fall back to seeds
-  return SEED_PROFILES
+  if (typeof window === "undefined") return SEED_PROFILES
+  ensureSeeded()
+  try {
+    const raw = localStorage.getItem(LS_KEY)
+    if (!raw) return SEED_PROFILES
+    return JSON.parse(raw) as ExpertProfile[]
+  } catch {
+    return SEED_PROFILES
+  }
 }
 
-export function saveExpertProfiles(_profiles: ExpertProfile[]): void {
-  // TODO: localStorage.setItem("helmsman_expert_profiles", JSON.stringify(profiles))
+/** Persist expert profiles to localStorage. */
+export function saveExpertProfiles(profiles: ExpertProfile[]): void {
+  if (typeof window === "undefined") return
+  localStorage.setItem(LS_KEY, JSON.stringify(profiles))
+}
+
+/** Reset to seed data (useful for demo resets). */
+export function resetExpertProfiles(): void {
+  if (typeof window === "undefined") return
+  localStorage.removeItem(LS_KEY)
+  localStorage.removeItem(LS_SEEDED_KEY)
 }
 
 /* ------------------------------------------------------------------ */
-/*  Convert a raw LLM ExtractedExpert into an ExpertProfile            */
-/*  (used when new experts come from the upload pipeline)              */
+/*  Fuzzy name matching (Levenshtein distance)                         */
 /* ------------------------------------------------------------------ */
 
-export function toExpertProfile(e: ExtractedExpert): ExpertProfile {
+function levenshtein(a: string, b: string): number {
+  const la = a.length
+  const lb = b.length
+  const dp: number[][] = Array.from({ length: la + 1 }, () =>
+    Array(lb + 1).fill(0) as number[],
+  )
+  for (let i = 0; i <= la; i++) dp[i][0] = i
+  for (let j = 0; j <= lb; j++) dp[0][j] = j
+  for (let i = 1; i <= la; i++) {
+    for (let j = 1; j <= lb; j++) {
+      dp[i][j] =
+        a[i - 1] === b[j - 1]
+          ? dp[i - 1][j - 1]
+          : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1])
+    }
+  }
+  return dp[la][lb]
+}
+
+/** Normalised similarity 0..1 (1 = identical) */
+function similarity(a: string, b: string): number {
+  const al = a.toLowerCase().trim()
+  const bl = b.toLowerCase().trim()
+  if (al === bl) return 1
+  const maxLen = Math.max(al.length, bl.length)
+  if (maxLen === 0) return 1
+  return 1 - levenshtein(al, bl) / maxLen
+}
+
+/** Check if two experts are likely the same person.
+ *  Name similarity >= 0.8 AND company similarity >= 0.7 */
+function isSameExpert(
+  a: { name: string; company: string },
+  b: { name: string; company: string },
+): boolean {
+  return similarity(a.name, b.name) >= 0.8 && similarity(a.company, b.company) >= 0.7
+}
+
+/* ------------------------------------------------------------------ */
+/*  Convert + merge helpers                                            */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Convert a raw LLM ExtractedExpert into an ExpertProfile.
+ * Ensures all known networks are represented in network_prices.
+ */
+export function toExpertProfile(
+  e: ExtractedExpert,
+  existingNetworks?: string[],
+): ExpertProfile {
+  const nets = existingNetworks ?? [...DEFAULT_NETWORKS]
+  // Make sure the expert's own network is in the set
+  if (e.network && !nets.includes(e.network)) nets.push(e.network)
   const network_prices: Record<string, number | null> = {}
-  for (const n of NETWORKS) {
+  for (const n of nets) {
     network_prices[n] = n === e.network ? e.price : null
   }
   return {
@@ -61,6 +158,73 @@ export function toExpertProfile(e: ExtractedExpert): ExpertProfile {
     notes: "",
     cid_clearance_requested: false,
   }
+}
+
+/* ------------------------------------------------------------------ */
+/*  mergeNewExperts -- the key function for the upload pipeline         */
+/*                                                                     */
+/*  Returns a summary of what happened so the UI can display it.       */
+/* ------------------------------------------------------------------ */
+
+export interface MergeResult {
+  /** Number of brand-new experts added */
+  added: number
+  /** Number of experts that already existed (skipped) */
+  duplicates: number
+  /** Number of existing experts that got a new network price merged */
+  pricesMerged: number
+  /** The full updated profiles list (already saved to localStorage) */
+  profiles: ExpertProfile[]
+}
+
+export function mergeNewExperts(incoming: ExtractedExpert[]): MergeResult {
+  const profiles = getExpertProfiles()
+  const networks = getNetworks(profiles)
+  let added = 0
+  let duplicates = 0
+  let pricesMerged = 0
+
+  for (const raw of incoming) {
+    // See if we already have this expert
+    const existingIdx = profiles.findIndex((p) =>
+      isSameExpert(p, raw),
+    )
+
+    if (existingIdx >= 0) {
+      // Expert exists -- check if this is a new network/price
+      const existing = profiles[existingIdx]
+      const net = raw.network
+      if (
+        net &&
+        raw.price != null &&
+        (existing.network_prices[net] == null ||
+          existing.network_prices[net] === undefined)
+      ) {
+        existing.network_prices[net] = raw.price
+        // Also add to global network set if new
+        if (!networks.includes(net)) networks.push(net)
+        pricesMerged++
+      }
+      duplicates++
+    } else {
+      // Brand new expert
+      const profile = toExpertProfile(raw, networks)
+      profiles.push(profile)
+      added++
+    }
+  }
+
+  // Normalise all profiles so every expert has every network key
+  for (const p of profiles) {
+    for (const n of networks) {
+      if (!(n in p.network_prices)) {
+        p.network_prices[n] = null
+      }
+    }
+  }
+
+  saveExpertProfiles(profiles)
+  return { added, duplicates, pricesMerged, profiles }
 }
 
 /* ------------------------------------------------------------------ */
