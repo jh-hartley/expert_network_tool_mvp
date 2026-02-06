@@ -4,6 +4,7 @@ import "./globals.css"
 import TopNav from "./components/top-nav"
 import Footer from "./components/footer"
 import ToastProvider from "./components/toast-provider"
+import ErrorBoundary from "./components/error-boundary"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -30,10 +31,12 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable}>
       <body className="flex min-h-screen flex-col font-sans">
-        <TopNav />
-        <main className="flex-1">{children}</main>
-        <Footer />
-        <ToastProvider />
+        <ErrorBoundary>
+          <TopNav />
+          <main className="flex-1">{children}</main>
+          <Footer />
+          <ToastProvider />
+        </ErrorBoundary>
       </body>
     </html>
   )
