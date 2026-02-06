@@ -203,7 +203,7 @@ export default function ExpertsPage() {
         return
       }
 
-      // Parse SSE stream
+      // Read plain text stream
       const reader = res.body?.getReader()
       if (!reader) {
         setSearchResult("Error: no response stream.")
@@ -211,36 +211,16 @@ export default function ExpertsPage() {
       }
 
       const decoder = new TextDecoder()
-      let buffer = ""
-      let fullContent = ""
+      let accumulated = ""
 
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
-
-        buffer += decoder.decode(value, { stream: true })
-        const lines = buffer.split("\n")
-        buffer = lines.pop() || ""
-
-        for (const line of lines) {
-          const trimmed = line.trim()
-          if (trimmed.startsWith("data:")) {
-            const data = trimmed.slice(5).trim()
-            if (data === "[DONE]") continue
-            try {
-              const parsed = JSON.parse(data)
-              if (parsed.type === "text-delta" && parsed.textDelta) {
-                fullContent += parsed.textDelta
-                setSearchResult(fullContent)
-              }
-            } catch {
-              /* skip invalid JSON */
-            }
-          }
-        }
+        accumulated += decoder.decode(value, { stream: true })
+        setSearchResult(accumulated)
       }
 
-      if (!fullContent) setSearchResult("No response received from the model.")
+      if (!accumulated) setSearchResult("No response received from the model.")
     } catch {
       setSearchResult("Error: failed to connect to the AI service.")
     } finally {

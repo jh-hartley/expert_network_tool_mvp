@@ -117,36 +117,26 @@ function npsGaugeWidth(nps: number): string {
 }
 
 /* ------------------------------------------------------------------ */
-/*  SSE stream parser                                                  */
+/*  Plain text stream reader                                           */
 /* ------------------------------------------------------------------ */
 
-async function* parseSSEStream(response: Response) {
+async function readTextStream(
+  response: Response,
+  onChunk: (accumulated: string) => void,
+): Promise<string> {
   if (!response.body) throw new Error("No response body")
   const reader = response.body.getReader()
   const decoder = new TextDecoder()
-  let buffer = ""
+  let accumulated = ""
 
   while (true) {
     const { done, value } = await reader.read()
     if (done) break
-
-    buffer += decoder.decode(value, { stream: true })
-    const lines = buffer.split("\n")
-    buffer = lines.pop() || ""
-
-    for (const line of lines) {
-      const trimmed = line.trim()
-      if (trimmed.startsWith("data:")) {
-        const data = trimmed.slice(5).trim()
-        if (data === "[DONE]") return
-        try {
-          yield JSON.parse(data)
-        } catch {
-          /* skip invalid JSON */
-        }
-      }
-    }
+    accumulated += decoder.decode(value, { stream: true })
+    onChunk(accumulated)
   }
+
+  return accumulated
 }
 
 /* ------------------------------------------------------------------ */
@@ -312,8 +302,8 @@ export default function TranscriptsPage() {
 
   const hasActiveFilters = typeFilter !== "" || sourceFilter !== "all" || selectedExperts.length > 0
 
-  /* NPS computed from filtered transcripts */
-  const npsResults = useMemo(() => computeNPSFromTranscripts(filtered), [filtered])
+  /* NPS computed from ALL transcripts (unaffected by filters) */
+  const npsResults = useMemo(() => computeNPSFromTranscripts(transcripts), [transcripts])
 
   /* Identify target product (Meridian Controls) */
   const targetNPS = npsResults.find((r) => r.product === "Meridian Controls") ?? null
@@ -362,13 +352,9 @@ export default function TranscriptsPage() {
           )
         }
 
-        let fullContent = ""
-        for await (const chunk of parseSSEStream(response)) {
-          if (chunk.type === "text-delta" && chunk.textDelta) {
-            fullContent += chunk.textDelta
-            setQueryResult(fullContent)
-          }
-        }
+        await readTextStream(response, (accumulated) => {
+          setQueryResult(accumulated)
+        })
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err)
         setQueryError(message)
@@ -418,7 +404,7 @@ export default function TranscriptsPage() {
               Customer NPS Scores
             </h2>
             <span className="text-[10px] text-muted-foreground">
-              (computed from {sourceFilter === "all" ? "all" : sourceFilter === "survey" ? "survey" : "call"} transcripts{hasActiveFilters ? ", filtered" : ""})
+              (computed from all survey transcripts)
             </span>
           </div>
           <div className={`grid gap-3 ${
