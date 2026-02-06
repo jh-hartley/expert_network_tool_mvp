@@ -15,6 +15,8 @@ import {
   ShieldAlert,
   Briefcase,
   RotateCcw,
+  FileText,
+  Upload,
 } from "lucide-react"
 import type { EngagementRecord, EngagementStatus, EngagementType } from "@/lib/engagements"
 import { getNetworks, type ExpertProfile, type ComplianceFlag } from "@/lib/expert-profiles"
@@ -25,6 +27,7 @@ import {
   computeCallPrice,
   DURATION_OPTIONS,
 } from "@/lib/engagements"
+import { getTranscript, saveTranscript, getTranscriptMap, type Transcript } from "@/lib/transcripts"
 import Modal from "./modal"
 
 /* ------------------------------------------------------------------ */
@@ -201,6 +204,19 @@ export default function EngagementTable({
   // Compliance warning modal
   const [warningDraft, setWarningDraft] = useState<DraftRow | null>(null)
   const [warningFlags, setWarningFlags] = useState<ComplianceFlag[]>([])
+
+  // Transcript modal
+  const [transcriptModal, setTranscriptModal] = useState<{
+    mode: "upload" | "view"
+    record: EngagementRecord
+  } | null>(null)
+  const [transcriptText, setTranscriptText] = useState("")
+  const [transcriptIds, setTranscriptIds] = useState<Set<string>>(new Set())
+
+  // Load transcript map on mount and when records change
+  useEffect(() => {
+    setTranscriptIds(getTranscriptMap())
+  }, [records])
 
   useEffect(() => { setSortKey(null) }, [lens])
 
@@ -407,6 +423,37 @@ export default function EngagementTable({
     setWarningFlags([])
   }
 
+  /* ---- Transcript handlers ---- */
+
+  function openTranscriptUpload(r: EngagementRecord) {
+    setTranscriptText("")
+    setTranscriptModal({ mode: "upload", record: r })
+  }
+
+  function openTranscriptView(r: EngagementRecord) {
+    const t = getTranscript(r.id)
+    setTranscriptText(t?.text ?? "")
+    setTranscriptModal({ mode: "view", record: r })
+  }
+
+  function handleTranscriptSave() {
+    if (!transcriptModal || !transcriptText.trim()) return
+    const r = transcriptModal.record
+    const t: Transcript = {
+      engagement_id: r.id,
+      expert_name: r.expert_name,
+      expert_company: r.expert_company,
+      expert_type: r.expert_type,
+      engagement_type: r.type,
+      text: transcriptText.trim(),
+      uploaded_at: new Date().toISOString(),
+    }
+    saveTranscript(t)
+    setTranscriptIds((prev) => new Set(prev).add(r.id))
+    setTranscriptModal(null)
+    setTranscriptText("")
+  }
+
   const lensCount = (l: Lens) => l === "all" ? records.length : records.filter((r) => r.expert_type === l).length
 
   /* ---- Draft row: compute preview cost ---- */
@@ -514,6 +561,7 @@ export default function EngagementTable({
                 </th>
               ))}
               <th className="px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground" style={{ minWidth: "160px" }}>Notes</th>
+              <th className="px-3 py-2.5 text-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground" style={{ minWidth: "100px" }}>Transcript</th>
               <th className="px-2 py-2.5" style={{ minWidth: "40px" }} />
             </tr>
           </thead>
@@ -693,6 +741,8 @@ export default function EngagementTable({
 
                   {/* Notes -- blank */}
                   <td className="px-3 py-2 text-muted-foreground/40 italic">--</td>
+                  {/* Transcript -- not available for drafts */}
+                  <td className="px-3 py-2 text-center text-muted-foreground/40 italic">--</td>
                   {/* Actions */}
                   <td className="px-2 py-2">
                     <div className="flex items-center gap-1">
@@ -711,7 +761,7 @@ export default function EngagementTable({
             {/* === Committed rows === */}
             {sorted.length === 0 && drafts.length === 0 ? (
               <tr>
-                <td colSpan={COLUMNS.length + 3} className="px-4 py-12 text-center text-sm text-muted-foreground">
+                <td colSpan={COLUMNS.length + 4} className="px-4 py-12 text-center text-sm text-muted-foreground">
                   {records.length === 0
                     ? `No ${engagementType === "call" ? "calls" : "surveys"} recorded yet. Click "${engagementType === "call" ? "Add Call" : "Add Survey"}" to get started.`
                     : "No results match the current filters."}
@@ -870,6 +920,29 @@ export default function EngagementTable({
                       )}
                     </td>
 
+                    {/* Transcript */}
+                    <td className="px-3 py-2 text-center">
+                      {transcriptIds.has(r.id) ? (
+                        <button
+                          type="button"
+                          onClick={() => openTranscriptView(r)}
+                          className="inline-flex h-7 items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 text-[11px] font-medium text-emerald-700 transition-colors hover:bg-emerald-100"
+                        >
+                          <FileText className="h-3 w-3" />
+                          View
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => openTranscriptUpload(r)}
+                          className="inline-flex h-7 items-center gap-1.5 rounded-md border border-border bg-card px-2.5 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                        >
+                          <Upload className="h-3 w-3" />
+                          Upload
+                        </button>
+                      )}
+                    </td>
+
                     {/* Delete */}
                     <td className="px-2 py-2">
                       {onRemoveRecord && (
@@ -935,6 +1008,95 @@ export default function EngagementTable({
             <div className="flex items-center justify-end gap-2">
               <button type="button" onClick={dismissWarning} className="h-8 rounded-md border border-border bg-card px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">Discard</button>
               <button type="button" onClick={overrideWarning} className="h-8 rounded-md bg-amber-600 px-3 text-xs font-medium text-card transition-colors hover:bg-amber-700">Override & Add</button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* ---- Transcript Modal ---- */}
+      <Modal
+        open={transcriptModal !== null}
+        onClose={() => { setTranscriptModal(null); setTranscriptText("") }}
+        title={
+          transcriptModal?.mode === "view"
+            ? "View Transcript"
+            : "Upload Transcript"
+        }
+        description={
+          transcriptModal
+            ? `${transcriptModal.record.expert_name} -- ${transcriptModal.record.expert_role} at ${transcriptModal.record.expert_company}`
+            : undefined
+        }
+        maxWidth="max-w-2xl"
+      >
+        {transcriptModal && transcriptModal.mode === "upload" && (
+          <div className="flex flex-col gap-4">
+            <p className="text-xs text-muted-foreground">
+              Paste the transcript text below. This will be stored and linked to{" "}
+              <span className="font-medium text-foreground">{transcriptModal.record.expert_name}</span>{" "}
+              ({TYPE_LABELS[transcriptModal.record.expert_type] ?? transcriptModal.record.expert_type}).
+            </p>
+            <textarea
+              value={transcriptText}
+              onChange={(e) => setTranscriptText(e.target.value)}
+              rows={12}
+              placeholder="Paste transcript text here..."
+              className="w-full rounded-md border border-border bg-card px-3 py-2 text-xs leading-relaxed text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+              autoFocus
+            />
+            <div className="flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => { setTranscriptModal(null); setTranscriptText("") }}
+                className="h-8 rounded-md border border-border bg-card px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleTranscriptSave}
+                disabled={!transcriptText.trim()}
+                className="h-8 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-40 disabled:pointer-events-none"
+              >
+                Save Transcript
+              </button>
+            </div>
+          </div>
+        )}
+
+        {transcriptModal && transcriptModal.mode === "view" && (
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+              <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium ${TYPE_COLORS[transcriptModal.record.expert_type] ?? ""}`}>
+                {TYPE_LABELS[transcriptModal.record.expert_type] ?? transcriptModal.record.expert_type}
+              </span>
+              <span>{formatDate(transcriptModal.record.date)}</span>
+              {transcriptModal.record.duration_minutes > 0 && (
+                <span>{transcriptModal.record.duration_minutes} min</span>
+              )}
+            </div>
+            <div className="max-h-[60vh] overflow-y-auto rounded-md border border-border bg-muted/30 px-4 py-3">
+              <pre className="whitespace-pre-wrap font-sans text-xs leading-relaxed text-foreground">
+                {transcriptText}
+              </pre>
+            </div>
+            <div className="flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => {
+                  setTranscriptModal({ mode: "upload", record: transcriptModal.record })
+                }}
+                className="h-8 rounded-md border border-border bg-card px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+              >
+                Replace Transcript
+              </button>
+              <button
+                type="button"
+                onClick={() => { setTranscriptModal(null); setTranscriptText("") }}
+                className="h-8 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              >
+                Close
+              </button>
             </div>
           </div>
         )}
