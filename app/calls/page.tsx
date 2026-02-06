@@ -118,7 +118,17 @@ export default function CallsPage() {
     })
   }, [records])
 
-  // Compute dashboard stats
+  if (!loaded) {
+    return (
+      <div className="mx-auto max-w-[1600px] px-6 py-10">
+        <div className="flex items-center justify-center py-24 text-sm text-muted-foreground">
+          Loading calls...
+        </div>
+      </div>
+    )
+  }
+
+  // Compute dashboard stats (only after data is loaded)
   const stats = computeStats(records)
   const totalSpend = Object.values(stats.totalSpendByStatus).reduce((a, b) => a + b, 0)
   const completedSpend = stats.totalSpendByStatus.completed
@@ -135,16 +145,6 @@ export default function CallsPage() {
       return `${v} ${labels[k] ?? k}`
     })
     .join(", ")
-
-  if (!loaded) {
-    return (
-      <div className="mx-auto max-w-[1600px] px-6 py-10">
-        <div className="flex items-center justify-center py-24 text-sm text-muted-foreground">
-          Loading calls...
-        </div>
-      </div>
-    )
-  }
 
   return (
     <div className="mx-auto max-w-[1600px] px-6 py-10">

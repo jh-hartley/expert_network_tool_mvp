@@ -40,7 +40,14 @@ const TYPE_LABELS: Record<string, string> = {
  * caused by SheetJS's Node.js shims being statically analysed.
  */
 export async function exportToExcel({ fileName, rows, columns, typeKey = "expert_type" }: ExportOptions) {
-  const XLSX = await import("xlsx")
+  let XLSX: typeof import("xlsx")
+  try {
+    XLSX = await import("xlsx")
+  } catch (e) {
+    console.error("[v0] Failed to load xlsx library:", e)
+    alert("Excel export is not available. Please try downloading from the Settings page instead.")
+    return
+  }
 
   const wb = XLSX.utils.book_new()
 

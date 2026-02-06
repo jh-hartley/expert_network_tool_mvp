@@ -22,7 +22,7 @@ export default class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
-    console.error("[v0] ErrorBoundary caught:", error, info)
+    console.error("[v0] ErrorBoundary caught:", error.message, error.stack, info.componentStack)
   }
 
   render() {
@@ -33,6 +33,11 @@ export default class ErrorBoundary extends Component<Props, State> {
           <p className="max-w-md text-sm text-muted-foreground">
             {this.state.error?.message ?? "An unexpected error occurred."}
           </p>
+          {this.state.error?.stack && (
+            <pre className="mt-2 max-w-2xl overflow-auto rounded-md bg-muted p-3 text-left text-[10px] text-muted-foreground">
+              {this.state.error.stack}
+            </pre>
+          )}
           <button
             onClick={() => {
               this.setState({ hasError: false, error: null })
