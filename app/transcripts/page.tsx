@@ -1,5 +1,6 @@
 "use client"
 
+/* Transcripts page with NPS KPIs, filters, and natural-language query */
 import { useState, useMemo, useCallback, useEffect, useRef } from "react"
 import {
   FileText,
