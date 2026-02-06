@@ -11,6 +11,12 @@ import {
   Building2,
   Calendar,
   SlidersHorizontal,
+  MessageSquare,
+  Sparkles,
+  Loader2,
+  AlertCircle,
+  Copy,
+  Check,
 } from "lucide-react"
 import PageHeader from "../components/page-header"
 import EmptyState from "../components/empty-state"
@@ -45,6 +51,18 @@ const EXPERT_TYPES: { key: ExpertType; label: string }[] = [
 ]
 
 /* ------------------------------------------------------------------ */
+/*  Suggested queries                                                  */
+/* ------------------------------------------------------------------ */
+
+const SUGGESTED_QUERIES = [
+  "What are the main strengths and weaknesses mentioned across these calls?",
+  "Find me direct quotes about pricing or cost comparisons",
+  "How do different expert types view the competitive landscape?",
+  "What recurring themes appear across multiple transcripts?",
+  "Summarise each expert's key takeaways in bullet points",
+]
+
+/* ------------------------------------------------------------------ */
 /*  Helpers                                                            */
 /* ------------------------------------------------------------------ */
 
@@ -61,6 +79,39 @@ function formatDate(iso: string) {
 function truncateText(text: string, maxLength: number) {
   if (text.length <= maxLength) return text
   return text.slice(0, maxLength).trimEnd() + "..."
+}
+
+/* ------------------------------------------------------------------ */
+/*  SSE stream parser                                                  */
+/* ------------------------------------------------------------------ */
+
+async function* parseSSEStream(response: Response) {
+  if (!response.body) throw new Error("No response body")
+  const reader = response.body.getReader()
+  const decoder = new TextDecoder()
+  let buffer = ""
+
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+
+    buffer += decoder.decode(value, { stream: true })
+    const lines = buffer.split("\n")
+    buffer = lines.pop() || ""
+
+    for (const line of lines) {
+      const trimmed = line.trim()
+      if (trimmed.startsWith("data:")) {
+        const data = trimmed.slice(5).trim()
+        if (data === "[DONE]") return
+        try {
+          yield JSON.parse(data)
+        } catch {
+          /* skip invalid JSON */
+        }
+      }
+    }
+  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -83,6 +134,16 @@ export default function TranscriptsPage() {
 
   /* Expanded transcripts */
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
+
+  /* Query panel */
+  const [queryOpen, setQueryOpen] = useState(false)
+  const [queryText, setQueryText] = useState("")
+  const [queryResult, setQueryResult] = useState("")
+  const [queryLoading, setQueryLoading] = useState(false)
+  const [queryError, setQueryError] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
+  const queryInputRef = useRef<HTMLTextAreaElement>(null)
+  const resultRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     setTranscripts(getTranscripts())
@@ -169,6 +230,74 @@ export default function TranscriptsPage() {
 
   const hasActiveFilters = typeFilter !== "" || selectedExperts.length > 0
 
+  /* ---------------------------------------------------------------- */
+  /*  Query handler                                                    */
+  /* ---------------------------------------------------------------- */
+
+  const handleQuery = useCallback(
+    async (question?: string) => {
+      const q = question ?? queryText.trim()
+      if (!q || filtered.length === 0) return
+
+      setQueryText(q)
+      setQueryLoading(true)
+      setQueryError(null)
+      setQueryResult("")
+      setCopied(false)
+
+      try {
+        const response = await fetch("/api/transcripts-query", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            query: q,
+            transcripts: filtered.map((t) => ({
+              engagement_id: t.engagement_id,
+              expert_name: t.expert_name,
+              expert_company: t.expert_company,
+              expert_type: t.expert_type,
+              engagement_type: t.engagement_type,
+              text: t.text,
+              uploaded_at: t.uploaded_at,
+            })),
+          }),
+        })
+
+        if (!response.ok) {
+          const errorBody = await response.json().catch(() => null)
+          throw new Error(
+            errorBody?.error ?? `Request failed (${response.status})`
+          )
+        }
+
+        let fullContent = ""
+        for await (const chunk of parseSSEStream(response)) {
+          if (chunk.type === "text-delta" && chunk.textDelta) {
+            fullContent += chunk.textDelta
+            setQueryResult(fullContent)
+          }
+        }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err)
+        setQueryError(message)
+      } finally {
+        setQueryLoading(false)
+      }
+    },
+    [queryText, filtered]
+  )
+
+  const handleCopy = useCallback(() => {
+    navigator.clipboard.writeText(queryResult).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    })
+  }, [queryResult])
+
+  /* ---------------------------------------------------------------- */
+  /*  Render                                                           */
+  /* ---------------------------------------------------------------- */
+
   if (!loaded) {
     return (
       <div className="mx-auto max-w-5xl px-6 py-10">
@@ -183,7 +312,7 @@ export default function TranscriptsPage() {
     <div className="mx-auto max-w-5xl px-6 py-10">
       <PageHeader
         title="Transcripts"
-        description="Browse all call transcripts. Filter by expert type or select specific experts to narrow the list."
+        description="Browse all call transcripts. Filter by expert type or select specific experts, then query across them with natural language."
       />
 
       {/* Filters */}
@@ -296,9 +425,209 @@ export default function TranscriptsPage() {
         {hasActiveFilters ? " (filtered)" : ""}
       </p>
 
-      {/* Transcript list */}
+      {/* ============================================================ */}
+      {/*  Query Panel                                                  */}
+      {/* ============================================================ */}
+      <div className="mt-4 rounded-lg border border-border bg-card overflow-hidden">
+        {/* Toggle header */}
+        <button
+          type="button"
+          onClick={() => {
+            setQueryOpen((prev) => !prev)
+            if (!queryOpen) {
+              setTimeout(() => queryInputRef.current?.focus(), 100)
+            }
+          }}
+          className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-accent/30"
+          aria-expanded={queryOpen}
+        >
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10">
+            <Sparkles className="h-4 w-4 text-primary" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-sm font-semibold text-foreground">
+              Ask a Question
+            </h3>
+            <p className="text-[11px] text-muted-foreground">
+              Query across{" "}
+              {filtered.length === transcripts.length
+                ? `all ${filtered.length} transcript${filtered.length === 1 ? "" : "s"}`
+                : `${filtered.length} of ${transcripts.length} transcript${transcripts.length === 1 ? "" : "s"} (filtered)`}{" "}
+              using natural language
+            </p>
+          </div>
+          <div className="shrink-0 text-muted-foreground">
+            {queryOpen ? (
+              <ChevronUp className="h-4 w-4" />
+            ) : (
+              <ChevronDown className="h-4 w-4" />
+            )}
+          </div>
+        </button>
+
+        {queryOpen && (
+          <div className="border-t border-border px-4 py-4">
+            {/* Context indicator */}
+            <div className="mb-3 rounded-md border border-border bg-muted/30 px-3 py-2.5">
+              <p className="text-[11px] font-medium text-muted-foreground mb-1.5">
+                Transcripts included in this query:
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {filtered.map((t) => (
+                  <span
+                    key={t.engagement_id}
+                    className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium ${
+                      TYPE_COLORS[t.expert_type] ?? "bg-muted text-foreground border-border"
+                    }`}
+                  >
+                    {t.expert_name}
+                    <span className="opacity-60">
+                      ({TYPE_LABELS[t.expert_type] ?? t.expert_type})
+                    </span>
+                  </span>
+                ))}
+              </div>
+              {filtered.length === 0 && (
+                <p className="text-[11px] text-muted-foreground flex items-center gap-1.5 mt-1">
+                  <AlertCircle className="h-3 w-3" />
+                  No transcripts match your filters. Adjust filters above to
+                  include transcripts in your query.
+                </p>
+              )}
+            </div>
+
+            {/* Suggested queries */}
+            {!queryResult && !queryLoading && (
+              <div className="mb-3">
+                <p className="text-[11px] font-medium text-muted-foreground mb-1.5">
+                  Suggested questions:
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {SUGGESTED_QUERIES.map((sq) => (
+                    <button
+                      key={sq}
+                      type="button"
+                      onClick={() => {
+                        setQueryText(sq)
+                        handleQuery(sq)
+                      }}
+                      disabled={filtered.length === 0}
+                      className="rounded-full border border-border bg-background px-2.5 py-1 text-[11px] text-foreground transition-colors hover:bg-accent hover:border-primary/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {sq}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Input */}
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <MessageSquare className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <textarea
+                  ref={queryInputRef}
+                  value={queryText}
+                  onChange={(e) => setQueryText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault()
+                      handleQuery()
+                    }
+                  }}
+                  placeholder='e.g. "Find me quotes about pricing comparisons" or "What do customers think about support response times?"'
+                  rows={2}
+                  className="w-full resize-none rounded-md border border-border bg-background py-2.5 pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                  aria-label="Query transcripts"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => handleQuery()}
+                disabled={
+                  queryLoading ||
+                  !queryText.trim() ||
+                  filtered.length === 0
+                }
+                className="inline-flex h-auto items-center gap-1.5 self-end rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {queryLoading ? (
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    Querying...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-3.5 w-3.5" />
+                    Ask
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Error */}
+            {queryError && (
+              <div className="mt-3 rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2.5">
+                <p className="text-xs text-destructive flex items-center gap-1.5">
+                  <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                  {queryError}
+                </p>
+              </div>
+            )}
+
+            {/* Result */}
+            {(queryResult || queryLoading) && (
+              <div className="mt-3" ref={resultRef}>
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-[11px] font-medium text-muted-foreground">
+                    Response
+                  </p>
+                  {queryResult && !queryLoading && (
+                    <button
+                      type="button"
+                      onClick={handleCopy}
+                      className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                    >
+                      {copied ? (
+                        <>
+                          <Check className="h-3 w-3" />
+                          Copied
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="h-3 w-3" />
+                          Copy
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
+                <div className="max-h-[500px] overflow-y-auto rounded-md border border-border bg-muted/20 p-4">
+                  {queryResult ? (
+                    <div className="text-sm leading-relaxed text-foreground/90 whitespace-pre-wrap">
+                      {queryResult}
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Analysing transcripts...
+                    </div>
+                  )}
+                  {queryLoading && queryResult && (
+                    <span className="inline-block w-1.5 h-4 bg-primary/60 animate-pulse ml-0.5 align-middle" />
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* ============================================================ */}
+      {/*  Transcript list                                              */}
+      {/* ============================================================ */}
       {filtered.length > 0 ? (
-        <div className="mt-3 flex flex-col gap-3">
+        <div className="mt-4 flex flex-col gap-3">
           {filtered.map((t) => {
             const isExpanded = expandedIds.has(t.engagement_id)
             return (
