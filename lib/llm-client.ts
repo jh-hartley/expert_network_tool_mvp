@@ -6,32 +6,52 @@
 
 import type { ExtractionResult, InputFormat } from "@/lib/llm"
 
+export interface ExtractionResponse {
+  result: ExtractionResult
+  /** The raw text the LLM returned (for debugging) */
+  rawLlmText: string | null
+}
+
+export interface ExtractionError {
+  message: string
+  /** The raw text the LLM returned (may be present even on error) */
+  rawLlmText: string | null
+  debug: Record<string, unknown> | null
+}
+
 /**
- * Call the /api/extract endpoint and return typed extraction results.
- * Throws on network or server errors with a descriptive message.
+ * Call the /api/extract endpoint and return typed extraction results
+ * along with the raw LLM text for debugging.
+ * Throws an ExtractionError on network or server errors.
  */
 export async function extractExperts(
   content: string,
   format: InputFormat,
-): Promise<ExtractionResult> {
+): Promise<ExtractionResponse> {
   const res = await fetch("/api/extract", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ content, format }),
   })
 
+  const body = await res.json().catch(() => ({})) as Record<string, unknown>
+
   if (!res.ok) {
-    const body = await res.json().catch(() => ({})) as {
-      error?: string
-      debug?: Record<string, unknown>
+    const err: ExtractionError = {
+      message:
+        (body.error as string) ?? `Extraction failed (${res.status})`,
+      rawLlmText: (body.rawLlmText as string) ?? null,
+      debug: (body.debug as Record<string, unknown>) ?? null,
     }
-    const debugStr = body.debug
-      ? `\n\nDebug: ${JSON.stringify(body.debug, null, 2)}`
-      : ""
-    throw new Error(
-      (body.error ?? `Extraction failed (${res.status})`) + debugStr,
-    )
+    throw err
   }
 
-  return res.json() as Promise<ExtractionResult>
+  // Successful response -- extract the rawLlmText and pass through the rest
+  const rawLlmText = (body.rawLlmText as string) ?? null
+  // Remove rawLlmText from the extraction result object
+  const { rawLlmText: _discard, ...rest } = body
+  return {
+    result: rest as unknown as ExtractionResult,
+    rawLlmText,
+  }
 }

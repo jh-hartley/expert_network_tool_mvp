@@ -7,11 +7,12 @@ import {
 import { useState, useRef } from "react"
 import { toast } from "sonner"
 import PageHeader from "../components/page-header"
-import WipBanner from "../components/wip-banner"
 import { useStore } from "@/lib/use-store"
 import { uid } from "@/lib/storage"
-import { extractExperts } from "@/lib/llm-client"
-import type { ExtractedExpert, ExtractionResult, InputFormat as LlmInputFormat } from "@/lib/llm"
+import { extractExperts, type ExtractionError } from "@/lib/llm-client"
+import type { ExtractionResult, InputFormat as LlmInputFormat } from "@/lib/llm"
+import type { ExtractedExpert } from "@/lib/llm"
+import { mergeNewExperts, type MergeResult } from "@/lib/expert-profiles"
 import type { Expert, Network, Industry, ComplianceStatus } from "@/lib/types"
 
 /* ------------------------------------------------------------------ */
@@ -98,9 +99,14 @@ export default function UploadPage() {
   const [result, setResult] = useState<IngestResult | null>(null)
   const [extraction, setExtraction] = useState<ExtractionResult | null>(null)
   const [extractionError, setExtractionError] = useState<string | null>(null)
+  const [extractionDebug, setExtractionDebug] = useState<Record<string, unknown> | null>(null)
+  const [mergeResult, setMergeResult] = useState<MergeResult | null>(null)
+  const [rawLlmText, setRawLlmText] = useState<string | null>(null)
 
   // Raw content view -- visible before submission so user can sense-check
   const [rawOpen, setRawOpen] = useState(false)
+  // LLM response view -- collapsed by default
+  const [llmResponseOpen, setLlmResponseOpen] = useState(false)
   // Preview of parsed input (shown before LLM call)
   const [preview, setPreview] = useState<IngestResult | null>(null)
 
@@ -161,8 +167,12 @@ export default function UploadPage() {
     setResult(null)
     setExtraction(null)
     setExtractionError(null)
+    setExtractionDebug(null)
+    setMergeResult(null)
+    setRawLlmText(null)
     setProcessing(false)
     setRawOpen(false)
+    setLlmResponseOpen(false)
     setPreview(null)
   }
 
@@ -204,17 +214,34 @@ export default function UploadPage() {
       }
 
       // Unstructured -- send to LLM
-      const data = await extractExperts(
+      const { result: data, rawLlmText: llmText } = await extractExperts(
         ir.rawContent,
         ir.format as LlmInputFormat,
       )
       setExtraction(data)
-      toast.success(
-        `Extracted ${data.experts.length} expert${data.experts.length === 1 ? "" : "s"} from ${ir.sourceName}`,
-      )
+      setRawLlmText(llmText)
+
+      // Merge into localStorage
+      const merge = mergeNewExperts(data.experts)
+      setMergeResult(merge)
+
+      // Build descriptive toast
+      const parts: string[] = []
+      if (merge.added > 0) parts.push(`${merge.added} new expert${merge.added === 1 ? "" : "s"} added`)
+      if (merge.duplicates > 0) parts.push(`${merge.duplicates} already in table`)
+      if (merge.pricesMerged > 0) parts.push(`${merge.pricesMerged} new network price${merge.pricesMerged === 1 ? "" : "s"} merged`)
+      toast.success(parts.join(", ") || `Processed ${data.experts.length} expert${data.experts.length === 1 ? "" : "s"}`)
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Processing failed"
+      // ExtractionError from llm-client includes rawLlmText
+      const isExtErr = err && typeof err === "object" && "message" in err && "rawLlmText" in err
+      const msg = isExtErr
+        ? (err as ExtractionError).message
+        : err instanceof Error ? err.message : "Processing failed"
       setExtractionError(msg)
+      if (isExtErr) {
+        setRawLlmText((err as ExtractionError).rawLlmText)
+        setExtractionDebug((err as ExtractionError).debug)
+      }
       toast.error("Extraction failed")
     } finally {
       setProcessing(false)
@@ -228,9 +255,8 @@ export default function UploadPage() {
     <div className="mx-auto max-w-5xl px-6 py-10">
       <PageHeader
         title="Upload"
-        description="Import expert profiles from CSV files, network emails, or pasted text. Structured CSV is parsed directly; unstructured content is sent to an LLM for extraction."
+        description="Import expert profiles from CSV files, network emails, or pasted text. Structured CSV is parsed directly; unstructured content is sent to an LLM for extraction. New experts are saved to the expert tracker in your browser. Duplicates are detected by fuzzy name + company matching; if an existing expert is found via a new network, the new price is merged automatically."
       />
-      <WipBanner feature="upload" />
 
       {/* ---- Input methods ---- */}
       {!processing && !extraction && (
@@ -425,23 +451,63 @@ export default function UploadPage() {
 
           {/* Error from previous attempt */}
           {extractionError && (
-            <div className="mt-4 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
-              <div className="flex items-center gap-3">
-                <AlertCircle className="h-4 w-4 shrink-0 text-destructive" />
-                <p className="flex-1 text-sm font-medium text-destructive">Extraction failed</p>
-                <button
-                  type="button"
-                  onClick={handleProcess}
-                  className="inline-flex h-7 items-center gap-1.5 rounded-md border border-destructive/30 px-2.5 text-xs font-medium text-destructive transition-colors hover:bg-destructive/10"
-                >
-                  Retry
-                </button>
+            <div className="mt-4 space-y-3">
+              <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <AlertCircle className="h-4 w-4 shrink-0 text-destructive" />
+                  <p className="flex-1 text-sm font-medium text-destructive">Extraction failed</p>
+                  <button
+                    type="button"
+                    onClick={handleProcess}
+                    className="inline-flex h-7 items-center gap-1.5 rounded-md border border-destructive/30 px-2.5 text-xs font-medium text-destructive transition-colors hover:bg-destructive/10"
+                  >
+                    Retry
+                  </button>
+                </div>
+                <div className="mt-2 max-h-32 overflow-auto rounded-md bg-destructive/5 p-2">
+                  <pre className="whitespace-pre-wrap font-mono text-[11px] leading-relaxed text-destructive/80">
+                    {extractionError}
+                  </pre>
+                </div>
+                {extractionDebug && (
+                  <div className="mt-2 max-h-32 overflow-auto rounded-md bg-destructive/5 p-2">
+                    <p className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-destructive/60">Debug info</p>
+                    <pre className="whitespace-pre-wrap font-mono text-[11px] leading-relaxed text-destructive/80">
+                      {JSON.stringify(extractionDebug, null, 2)}
+                    </pre>
+                  </div>
+                )}
               </div>
-              <div className="mt-2 max-h-32 overflow-auto rounded-md bg-destructive/5 p-2">
-                <pre className="whitespace-pre-wrap font-mono text-[11px] leading-relaxed text-destructive/80">
-                  {extractionError}
-                </pre>
-              </div>
+
+              {/* LLM Raw Response -- on error */}
+              {rawLlmText && (
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => setLlmResponseOpen(!llmResponseOpen)}
+                    className="flex w-full items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-left transition-colors hover:bg-amber-100"
+                  >
+                    <Sparkles className="h-4 w-4 text-amber-600" />
+                    <span className="flex-1 text-[11px] font-semibold uppercase tracking-widest text-amber-700">
+                      LLM raw response ({rawLlmText.length.toLocaleString()} characters)
+                    </span>
+                    {llmResponseOpen ? (
+                      <ChevronUp className="h-3.5 w-3.5 text-amber-600" />
+                    ) : (
+                      <ChevronDown className="h-3.5 w-3.5 text-amber-600" />
+                    )}
+                  </button>
+                  {llmResponseOpen && (
+                    <div className="overflow-hidden rounded-b-lg border border-t-0 border-amber-200 bg-card">
+                      <div className="max-h-96 overflow-y-auto p-4">
+                        <pre className="whitespace-pre-wrap font-mono text-[12px] leading-relaxed text-foreground/80">
+                          {rawLlmText}
+                        </pre>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </>
@@ -474,11 +540,28 @@ export default function UploadPage() {
             <CheckCircle2 className="h-5 w-5 text-emerald-600" />
             <div className="flex-1">
               <p className="text-sm font-medium text-emerald-800">
-                {extraction.experts.length} expert{extraction.experts.length === 1 ? "" : "s"} extracted and added to the expert tracker
+                {extraction.experts.length} expert{extraction.experts.length === 1 ? "" : "s"} extracted from {result?.sourceName ?? "uploaded content"}
               </p>
-              <p className="mt-0.5 text-xs text-emerald-700">
-                From {result?.sourceName ?? "uploaded content"}
-              </p>
+              {mergeResult && (
+                <p className="mt-0.5 text-xs text-emerald-700">
+                  {mergeResult.added > 0 && (
+                    <span className="font-medium">{mergeResult.added} new</span>
+                  )}
+                  {mergeResult.added > 0 && mergeResult.duplicates > 0 && " / "}
+                  {mergeResult.duplicates > 0 && (
+                    <span>{mergeResult.duplicates} already in table</span>
+                  )}
+                  {mergeResult.pricesMerged > 0 && (
+                    <span> ({mergeResult.pricesMerged} new network price{mergeResult.pricesMerged === 1 ? "" : "s"} merged)</span>
+                  )}
+                  {" -- "}saved to expert tracker
+                </p>
+              )}
+              {!mergeResult && (
+                <p className="mt-0.5 text-xs text-emerald-700">
+                  From {result?.sourceName ?? "uploaded content"}
+                </p>
+              )}
             </div>
             <div className="flex items-center gap-2">
               <button
@@ -595,6 +678,36 @@ export default function UploadPage() {
                   <div className="max-h-64 overflow-y-auto p-4">
                     <pre className="whitespace-pre-wrap font-mono text-[12px] leading-relaxed text-foreground/80">
                       {result.rawContent}
+                    </pre>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* LLM raw response (collapsed by default) */}
+          {rawLlmText && (
+            <div className="mt-3">
+              <button
+                type="button"
+                onClick={() => setLlmResponseOpen(!llmResponseOpen)}
+                className="flex w-full items-center gap-2 rounded-lg border border-border bg-muted/20 px-4 py-3 text-left transition-colors hover:bg-muted/30"
+              >
+                <Sparkles className="h-4 w-4 text-muted-foreground" />
+                <span className="flex-1 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  LLM raw response ({rawLlmText.length.toLocaleString()} characters)
+                </span>
+                {llmResponseOpen ? (
+                  <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" />
+                ) : (
+                  <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                )}
+              </button>
+              {llmResponseOpen && (
+                <div className="overflow-hidden rounded-b-lg border border-t-0 border-border bg-card">
+                  <div className="max-h-96 overflow-y-auto p-4">
+                    <pre className="whitespace-pre-wrap font-mono text-[12px] leading-relaxed text-foreground/80">
+                      {rawLlmText}
                     </pre>
                   </div>
                 </div>

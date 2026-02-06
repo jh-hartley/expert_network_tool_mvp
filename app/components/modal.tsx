@@ -8,10 +8,12 @@ interface ModalProps {
   onClose: () => void
   title: string
   description?: string
+  /** Tailwind max-w class. Defaults to "max-w-md" */
+  maxWidth?: string
   children: ReactNode
 }
 
-export default function Modal({ open, onClose, title, description, children }: ModalProps) {
+export default function Modal({ open, onClose, title, description, maxWidth = "max-w-md", children }: ModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null)
 
   useEffect(() => {
@@ -28,7 +30,7 @@ export default function Modal({ open, onClose, title, description, children }: M
     <dialog
       ref={dialogRef}
       onClose={onClose}
-      className="m-auto w-full max-w-md rounded-lg border border-border bg-card p-0 shadow-lg backdrop:bg-foreground/20 backdrop:backdrop-blur-sm"
+      className={`m-auto w-full ${maxWidth} rounded-lg border border-border bg-card p-0 shadow-lg backdrop:bg-foreground/20 backdrop:backdrop-blur-sm`}
     >
       <div className="flex items-center justify-between border-b border-border px-5 py-4">
         <div>

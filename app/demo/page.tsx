@@ -11,6 +11,7 @@ import {
   Check,
   Download,
   ArrowRight,
+  AlertCircle,
   Users,
   Phone,
   ShieldCheck,
@@ -321,15 +322,15 @@ const futureSteps: {
   status: "coming-soon" | "planned"
 }[] = [
   {
-    step: 2,
+    step: 3,
     title: "Track & Shortlist",
     description:
-      "Once ingested, navigate to the Experts page to view all parsed profiles in a unified table. Tag experts into shortlist groups (customer, competitor, target) and track their lifecycle from recommended through to call completed.",
+      "Tag experts into shortlist groups (customer, competitor, target) and track their lifecycle from recommended through to call completed.",
     icon: Users,
     status: "coming-soon",
   },
   {
-    step: 3,
+    step: 4,
     title: "Schedule Calls & Track Spend",
     description:
       "Move to the Calls page to log scheduled calls. The system auto-populates expert details from the central database and provides live budget roll-ups covering scheduled, completed, and cancelled calls.",
@@ -337,7 +338,7 @@ const futureSteps: {
     status: "coming-soon",
   },
   {
-    step: 4,
+    step: 5,
     title: "Enrich & Classify",
     description:
       "Profiles are automatically enriched with anonymised titles for client-safe sharing, company firmographics from BI integrations, and current/former employee classification with departure-date checks.",
@@ -345,7 +346,7 @@ const futureSteps: {
     status: "planned",
   },
   {
-    step: 5,
+    step: 6,
     title: "Compliance & Clearance",
     description:
       "Cross-check profiles against client advisor lists, BEN advisors, and do-not-contact lists. Mark companies or individuals as cleared for CID purposes, with auto-populated clearance request forms.",
@@ -353,7 +354,7 @@ const futureSteps: {
     status: "planned",
   },
   {
-    step: 6,
+    step: 7,
     title: "Transcripts & KPI Extraction",
     description:
       "Upload call transcripts for AI-generated summaries, KPI extraction into the call tracker, and flagging of references that may need anonymising before client sharing.",
@@ -361,7 +362,7 @@ const futureSteps: {
     status: "planned",
   },
   {
-    step: 7,
+    step: 8,
     title: "Search & Discovery",
     description:
       "Use expert search (database filters + natural language) and transcript search (filter by expert type, then query for supporting quotes) to surface profiles and insights faster.",
@@ -369,7 +370,7 @@ const futureSteps: {
     status: "planned",
   },
   {
-    step: 8,
+    step: 9,
     title: "Reconciliation & Reporting",
     description:
       "Generate structured summary tables for network reconciliation, cost verification with audit trails, and pre-formatted exports ready to paste into emails or slides.",
@@ -620,6 +621,56 @@ export default function DemoPage() {
           </Link>
           <p className="text-xs text-muted-foreground">
             Try the CSV first (direct parse), then paste the raw text or upload the .eml.
+          </p>
+        </div>
+
+        {/* Persistence note */}
+        <div className="mt-4 flex items-start gap-3 rounded-lg border border-sky-200 bg-sky-50 px-4 py-3">
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-sky-600" />
+          <p className="text-xs leading-relaxed text-sky-800">
+            <span className="font-medium">Persistence active.</span> New experts extracted from uploads are
+            automatically merged into the Experts table. Duplicates are detected by fuzzy name + company
+            matching; if an existing expert appears via a new network, the new price is merged in. Data is
+            stored in your browser only.
+          </p>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/*  STEP 2 -- View & Screen Experts                               */}
+      {/* ============================================================ */}
+      <section className="mt-10">
+        <div className="flex items-center gap-3">
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
+            2
+          </span>
+          <Users className="h-4 w-4 text-primary/60" />
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
+            View & Screen Your Experts
+          </h2>
+        </div>
+        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+          Once you have uploaded and parsed your expert data, navigate to the{" "}
+          <Link
+            href="/experts"
+            className="font-medium text-primary underline underline-offset-2"
+          >
+            Experts
+          </Link>{" "}
+          tab to view all ingested profiles in a unified table. From there you
+          can review each expert{"'"}s details, screening responses, and
+          compliance status, and begin shortlisting candidates for calls.
+        </p>
+        <div className="mt-6 flex items-center gap-3">
+          <Link
+            href="/experts"
+            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            <Users className="h-3.5 w-3.5" />
+            Go to Experts page
+          </Link>
+          <p className="text-xs text-muted-foreground">
+            Review parsed profiles, filter by type, and start building your shortlist.
           </p>
         </div>
       </section>
