@@ -28,7 +28,6 @@ const pipeline: {
   subtitle: string
   icon: React.ElementType
   capabilities: string[]
-  href?: string
   accent?: string
 }[] = [
   {
@@ -37,7 +36,6 @@ const pipeline: {
     subtitle:
       "The single biggest time sink today: re-keying unstructured expert data from network emails into trackers. AI handles parsing, deduplication, and field standardisation across networks -- populating a central database that auto-fills every downstream step.",
     icon: Upload,
-    href: "/upload",
     accent: "text-primary",
     capabilities: [
       "Bulk upload from any expert network (CSV, email paste, or direct integration)",
@@ -54,7 +52,7 @@ const pipeline: {
     subtitle:
       "Replace the shared Excel tracker with a single live view. Teammates can tag experts into shortlist groups -- customer, competitor, target, AI survey recipient, and more -- with all profile data already filled in from ingestion.",
     icon: Users,
-    href: "/experts",
+
     capabilities: [
       "Lifecycle tracking: Recommended \u2192 Shortlisted \u2192 Scheduled \u2192 Completed",
       "Group-based shortlisting (e.g. customer, competitor, target, AI survey)",
@@ -68,7 +66,7 @@ const pipeline: {
     subtitle:
       "A call tracker that manages itself. Enter the scheduled time and the rest is handled: budget roll-ups (scheduled vs. completed vs. cancelled), forecast spend, and auto-populated fields that consultants currently maintain by hand in spreadsheets.",
     icon: Phone,
-    href: "/calls",
+
     capabilities: [
       "Auto-populated call details from the central expert database",
       "Dynamic spend tracking: scheduled, completed, cancelled, and forecast",
@@ -109,7 +107,7 @@ const pipeline: {
     subtitle:
       "Upload call transcripts so they are stored, accessible, and queryable in one place. AI handles the administrative processing -- not insight extraction, which requires human judgement -- acting as a first pass that must be verified before sharing.",
     icon: Brain,
-    href: "/ai-surveys",
+
     capabilities: [
       "Auto-generated summaries so users can quickly identify which transcript(s) they need",
       "KPI extraction into the call tracker (e.g. NPS scores for customer calls) -- populated automatically where applicable",
@@ -124,7 +122,7 @@ const pipeline: {
     subtitle:
       "Two types of search in one interface. Expert search combines classic database filters (company, departure date, customer vs. competitor, etc.) with natural language to build shortlists faster. Transcript search lets you filter to a subset of calls -- e.g. only a certain competitor, or only customer transcripts -- then ask for supporting quotes, rather than uploading everything into a separate ChatGPT session each time.",
     icon: SearchIcon,
-    href: "/search",
+
     capabilities: [
       "Expert search: database filters + natural-language queries to surface the right profiles",
       "Transcript search: filter by expert type, company, or call group, then query for quotes to support slide arguments",
