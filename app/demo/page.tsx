@@ -317,6 +317,54 @@ Priya Chakraborty,Engineering Manager,Atlas Cement Corp,Technology,Third Bridge,
 /* Future steps kept in "Next Steps" section at the bottom -- none currently, all are live or WIP */
 
 /* ------------------------------------------------------------------ */
+/*  Sample data: Transcripts (.txt -- customer calls with NPS)         */
+/* ------------------------------------------------------------------ */
+
+const SAMPLE_TRANSCRIPT_RAJ = `CALL TRANSCRIPT -- Raj Patel, VP of Plant Engineering, Solaris Packaging
+Date: 14 November 2025 | Duration: 60 min | Network: AlphaSights
+NPS Score: 8
+
+INTERVIEWER: Thank you for joining, Raj. Could you start by walking us through how Solaris first evaluated Meridian Controls?
+
+RAJ PATEL: Sure. We began our evaluation roughly eighteen months ago when we needed to replace aging Rockwell PLCs across three of our packaging lines. Meridian came onto our radar through an industry conference -- their demo of the real-time adaptive control loop was genuinely impressive compared to what we'd seen from incumbents.
+
+INTERVIEWER: What were the key selection criteria for Solaris?
+
+RAJ PATEL: Three things drove it. First, total cost of ownership -- Meridian's licensing model was roughly 30% lower over a five-year horizon compared to Rockwell and Siemens. Second, ease of integration with our existing SCADA layer. Third, and this was the clincher, their predictive maintenance module. We'd been losing about 12% of uptime annually on unplanned stoppages, and their analytics showed credible paths to cutting that by half.
+
+INTERVIEWER: How has the rollout gone so far?
+
+RAJ PATEL: We're about eight months in and we've completed two of the three lines. I'd say 80% positive. The initial integration was smoother than expected -- their API documentation is vastly better than what we experienced with Honeywell. The main friction point has been lead times on replacement IO modules. We had a six-week wait on a batch of analog input cards which held up Line 2 commissioning.
+
+INTERVIEWER: Would you recommend Meridian to a peer in your position?
+
+RAJ PATEL: With caveats, yes. If your operation is mid-scale -- say 5 to 15 lines -- and you're not locked into a long-term Rockwell enterprise agreement, Meridian is worth serious consideration. For very large plants with 50+ lines, I'd want to see more proof points on their scalability.
+
+[END OF TRANSCRIPT]`
+
+const SAMPLE_TRANSCRIPT_JAMES = `CALL TRANSCRIPT -- James Achebe, Global Automation Manager, FreshPath Foods
+Date: 20 November 2025 | Duration: 45 min | Network: GLG
+NPS Score: 7
+
+INTERVIEWER: James, could you describe FreshPath's experience evaluating Meridian Controls alongside Rockwell?
+
+JAMES ACHEBE: Of course. FreshPath operates 22 food processing facilities globally and we've been on Rockwell ControlLogix for about fifteen years. When the time came to upgrade our batch control systems we ran a formal evaluation that included Rockwell, Siemens, and Meridian.
+
+INTERVIEWER: What set Meridian apart in the evaluation?
+
+JAMES ACHEBE: Two things. First, their batch recipe management module is best-in-class for food and beverage. Our process engineers could configure new product recipes in about 40% less time during the pilot. Second, their pricing model -- Rockwell wanted roughly $2.4M annually for a global enterprise agreement, Meridian's per-site licensing came in at about $380K for four pilot sites.
+
+INTERVIEWER: Were there concerns about switching from Rockwell?
+
+JAMES ACHEBE: Absolutely. Our reliability engineering team was initially sceptical. We negotiated a 90-day proof-of-concept at our Charlotte facility running in parallel with Rockwell. System availability was 99.7% versus Rockwell's 99.8% -- well within tolerance. The Meridian system also flagged two equipment anomalies that the Rockwell predictive module missed entirely.
+
+INTERVIEWER: How is the broader rollout progressing?
+
+JAMES ACHEBE: We've approved Meridian for four pilot sites, two are fully cut over. The board has approved conditional expansion to eight additional sites pending a 12-month review.
+
+[END OF TRANSCRIPT]`
+
+/* ------------------------------------------------------------------ */
 /*  Helper: download a text string as a file                           */
 /* ------------------------------------------------------------------ */
 
@@ -792,6 +840,109 @@ export default function DemoPage() {
             Transcripts are linked to the engagement and accessible from the call row
           </li>
         </ul>
+
+        {/* ---- Sample transcript files ---- */}
+        <p className="mt-6 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Sample Transcripts
+        </p>
+        <p className="mt-1 max-w-3xl text-xs leading-relaxed text-muted-foreground">
+          Download these sample customer call transcripts, then navigate to the
+          Calls page and click {"\"Upload Transcript\""} on the matching completed
+          call row. The NPS score is included in the transcript header.
+        </p>
+
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
+          {/* ---- Raj Patel transcript ---- */}
+          <div className="flex flex-col rounded-lg border border-border bg-card overflow-hidden">
+            <div className="flex items-center gap-3 border-b border-border px-5 py-3.5 bg-muted/30">
+              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/8 ring-1 ring-primary/15">
+                <FileText className="h-4 w-4 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-foreground">
+                  Raj Patel -- Solaris Packaging
+                </h3>
+                <p className="text-[11px] text-muted-foreground">
+                  Customer call | NPS 8 | .txt format
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-1 flex-col px-5 py-4">
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                60-minute call covering Meridian evaluation criteria, rollout
+                progress, and IO module lead-time concerns.
+              </p>
+              <div className="mt-3 flex-1 overflow-auto rounded-md border border-border bg-muted/20 p-3">
+                <pre className="whitespace-pre-wrap text-[11px] leading-relaxed text-foreground/80 font-mono max-h-36 overflow-y-auto">
+                  {SAMPLE_TRANSCRIPT_RAJ.slice(0, 400)}{"..."}
+                </pre>
+              </div>
+              <div className="mt-3 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() =>
+                    downloadTextFile(
+                      SAMPLE_TRANSCRIPT_RAJ,
+                      "transcript-raj-patel-solaris-packaging.txt",
+                      "text/plain"
+                    )
+                  }
+                  className="inline-flex items-center gap-1.5 rounded-md bg-muted px-2.5 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted/80"
+                >
+                  <Download className="h-3 w-3" />
+                  Download .txt file
+                </button>
+                <CopyButton text={SAMPLE_TRANSCRIPT_RAJ} />
+              </div>
+            </div>
+          </div>
+
+          {/* ---- James Achebe transcript ---- */}
+          <div className="flex flex-col rounded-lg border border-border bg-card overflow-hidden">
+            <div className="flex items-center gap-3 border-b border-border px-5 py-3.5 bg-muted/30">
+              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/8 ring-1 ring-primary/15">
+                <FileText className="h-4 w-4 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-foreground">
+                  James Achebe -- FreshPath Foods
+                </h3>
+                <p className="text-[11px] text-muted-foreground">
+                  Customer call | NPS 7 | .txt format
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-1 flex-col px-5 py-4">
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                45-minute call covering batch recipe management, Rockwell
+                vs Meridian pricing, and pilot site rollout progress.
+              </p>
+              <div className="mt-3 flex-1 overflow-auto rounded-md border border-border bg-muted/20 p-3">
+                <pre className="whitespace-pre-wrap text-[11px] leading-relaxed text-foreground/80 font-mono max-h-36 overflow-y-auto">
+                  {SAMPLE_TRANSCRIPT_JAMES.slice(0, 400)}{"..."}
+                </pre>
+              </div>
+              <div className="mt-3 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() =>
+                    downloadTextFile(
+                      SAMPLE_TRANSCRIPT_JAMES,
+                      "transcript-james-achebe-freshpath-foods.txt",
+                      "text/plain"
+                    )
+                  }
+                  className="inline-flex items-center gap-1.5 rounded-md bg-muted px-2.5 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted/80"
+                >
+                  <Download className="h-3 w-3" />
+                  Download .txt file
+                </button>
+                <CopyButton text={SAMPLE_TRANSCRIPT_JAMES} />
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="mt-6 flex items-center gap-3">
           <Link
             href="/calls"
@@ -801,7 +952,7 @@ export default function DemoPage() {
             Go to Calls page
           </Link>
           <p className="text-xs text-muted-foreground">
-            Click the transcript icon on any completed call to upload text.
+            Click {"\"Upload Transcript\""} on a completed call to paste or upload the text. Completed calls with transcripts show a green {"\"View Transcript\""} button instead.
           </p>
         </div>
       </section>
