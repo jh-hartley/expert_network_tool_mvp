@@ -77,8 +77,6 @@ export async function POST(req: Request) {
 
   const transcriptContext = buildTranscriptContext(transcripts)
 
-  console.log("[v0] transcripts-query: starting streamText, transcript count:", transcripts.length, "query:", query.slice(0, 100))
-
   try {
     const result = streamText({
       model: "openai/gpt-4.1",
@@ -93,7 +91,6 @@ export async function POST(req: Request) {
 
     return result.toTextStreamResponse()
   } catch (err) {
-    console.error("[v0] transcripts-query: streamText error:", err)
     return Response.json(
       { error: err instanceof Error ? err.message : "LLM streaming failed" },
       { status: 500 },
