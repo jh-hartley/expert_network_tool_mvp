@@ -135,12 +135,14 @@ export default function DashboardPage() {
   const [experts, setExperts] = useState<ExpertProfile[]>([])
   const [calls, setCalls] = useState<EngagementRecord[]>([])
   const [surveys, setSurveys] = useState<EngagementRecord[]>([])
+  const [npsResults, setNpsResults] = useState<NPSResult[]>([])
   const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
     setExperts(getExpertProfiles())
     setCalls(getCalls())
     setSurveys(getSurveys())
+    setNpsResults(computeNPSFromTranscripts())
     setLoaded(true)
   }, [])
 
@@ -204,8 +206,7 @@ export default function DashboardPage() {
     return m
   }, [experts])
 
-  /* NPS computed from transcript data */
-  const npsResults = useMemo(() => computeNPSFromTranscripts(), [])
+  /* NPS computed from transcript data (populated via useEffect above) */
   const targetNPS = npsResults.find((r) => r.product === TARGET_PRODUCT) ?? null
   const competitorNPS = npsResults.filter((r) => r.product !== TARGET_PRODUCT)
 
