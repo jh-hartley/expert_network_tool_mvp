@@ -36,9 +36,16 @@ export function ensureSeeded(): void {
   if (typeof window === "undefined") return
   if (localStorage.getItem(SEEDED_KEY)) return
   write("experts", seedExperts)
-  write("calls", seedCalls)
+  // Calls and surveys are seeded separately by lib/engagements.ts
+  // with EngagementRecord[] format (includes network_prices).
+  // Only seed them here if engagements.ts hasn't already done so.
+  if (!localStorage.getItem("helmsman_calls_seeded_v2")) {
+    write("calls", seedCalls)
+  }
   write("transcripts", seedTranscripts)
-  write("surveys", seedSurveys)
+  if (!localStorage.getItem("helmsman_surveys_seeded_v2")) {
+    write("surveys", seedSurveys)
+  }
   localStorage.setItem(SEEDED_KEY, "1")
 }
 
