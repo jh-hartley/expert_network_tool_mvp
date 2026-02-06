@@ -99,28 +99,59 @@ export default function UploadPage() {
   const [extraction, setExtraction] = useState<ExtractionResult | null>(null)
   const [extractionError, setExtractionError] = useState<string | null>(null)
 
-  // Raw content view
+  // Raw content view -- visible before submission so user can sense-check
   const [rawOpen, setRawOpen] = useState(false)
+  // Preview of parsed input (shown before LLM call)
+  const [preview, setPreview] = useState<IngestResult | null>(null)
 
   const hasInput = inputMode === "file" ? !!selectedFile : inputMode === "paste" ? pasteText.trim().length > 0 : false
 
-  function selectFile(file: File) {
+  function buildIngestResult(text: string, format: InputFormat, source: string): IngestResult {
+    const rows = format === "csv" ? parseCSV(text) : []
+    return {
+      format,
+      sourceName: source,
+      rawContent: format === "email" ? parseEmlBody(text) : text,
+      fullRaw: text,
+      parsedRows: rows,
+      needsLlm: format !== "csv",
+    }
+  }
+
+  async function selectFile(file: File) {
     setSelectedFile(file)
     setInputMode("file")
     setPasteText("")
-    // Clear previous results
     setResult(null)
     setExtraction(null)
     setExtractionError(null)
+    // Immediately parse file to show preview
+    try {
+      const text = await file.text()
+      const fmt = detectFormat(file)
+      setPreview(buildIngestResult(text, fmt, file.name))
+    } catch {
+      setPreview(null)
+    }
   }
 
   function selectPaste() {
     setInputMode("paste")
     setSelectedFile(null)
-    // Clear previous results
     setResult(null)
     setExtraction(null)
     setExtractionError(null)
+    setPreview(null)
+  }
+
+  // Update preview whenever paste text changes
+  function handlePasteChange(text: string) {
+    setPasteText(text)
+    if (text.trim().length > 0) {
+      setPreview(buildIngestResult(text, "raw-text", "Pasted text"))
+    } else {
+      setPreview(null)
+    }
   }
 
   function clear() {
@@ -132,41 +163,19 @@ export default function UploadPage() {
     setExtractionError(null)
     setProcessing(false)
     setRawOpen(false)
-  }
-
-  function processInput(text: string, format: InputFormat, source: string) {
-    const rows = format === "csv" ? parseCSV(text) : []
-    const needsLlm = format !== "csv"
-    return {
-      format,
-      sourceName: source,
-      rawContent: format === "email" ? parseEmlBody(text) : text,
-      fullRaw: text,
-      parsedRows: rows,
-      needsLlm,
-    } as IngestResult
+    setPreview(null)
   }
 
   async function handleProcess() {
-    if (!hasInput) return
+    if (!hasInput || !preview) return
     setProcessing(true)
     setExtractionError(null)
     setExtraction(null)
-    setResult(null)
+
+    const ir = preview
+    setResult(ir)
 
     try {
-      let ir: IngestResult
-
-      if (inputMode === "file" && selectedFile) {
-        const text = await selectedFile.text()
-        const fmt = detectFormat(selectedFile)
-        ir = processInput(text, fmt, selectedFile.name)
-      } else {
-        ir = processInput(pasteText, "raw-text", "Pasted text")
-      }
-
-      setResult(ir)
-
       if (ir.format === "csv") {
         // CSV -- parsed directly, import into tracker
         if (ir.parsedRows.length === 0) {
@@ -212,6 +221,7 @@ export default function UploadPage() {
     }
   }
 
+  const emlSource = preview?.format === "email" ? extractEmlMeta(preview.fullRaw) : null
   const eml = result?.format === "email" ? extractEmlMeta(result.fullRaw) : null
 
   return (
@@ -326,7 +336,7 @@ export default function UploadPage() {
                 <div className="border-t border-border px-5 py-4">
                   <textarea
                     value={pasteText}
-                    onChange={(e) => setPasteText(e.target.value)}
+                    onChange={(e) => handlePasteChange(e.target.value)}
                     placeholder="Paste expert recommendation text here..."
                     rows={8}
                     className="w-full resize-none rounded-md border border-border bg-muted/20 px-3 py-2.5 font-mono text-[12px] leading-relaxed text-foreground placeholder:text-muted-foreground/60 focus:border-primary/40 focus:outline-none focus:ring-1 focus:ring-primary/20"
@@ -341,6 +351,49 @@ export default function UploadPage() {
               )}
             </div>
           </div>
+
+          {/* ---- Raw content preview (collapsed by default, before LLM submit) ---- */}
+          {preview && (
+            <div className="mt-4">
+              <button
+                type="button"
+                onClick={() => setRawOpen(!rawOpen)}
+                className="flex w-full items-center gap-2 rounded-lg border border-border bg-muted/20 px-4 py-3 text-left transition-colors hover:bg-muted/30"
+              >
+                <FileText className="h-4 w-4 text-muted-foreground" />
+                <span className="flex-1 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Raw content to be submitted ({preview.rawContent.length.toLocaleString()} characters)
+                </span>
+                {rawOpen ? (
+                  <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" />
+                ) : (
+                  <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                )}
+              </button>
+              {rawOpen && (
+                <div className="overflow-hidden rounded-b-lg border border-t-0 border-border bg-card">
+                  {emlSource && emlSource.subject && (
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 border-b border-border px-4 py-2.5 text-[11px] text-muted-foreground">
+                      {emlSource.from && (
+                        <span><span className="font-semibold text-foreground/70">From:</span> {emlSource.from}</span>
+                      )}
+                      {emlSource.subject && (
+                        <span><span className="font-semibold text-foreground/70">Subject:</span> {emlSource.subject}</span>
+                      )}
+                      {emlSource.date && (
+                        <span><span className="font-semibold text-foreground/70">Date:</span> {emlSource.date}</span>
+                      )}
+                    </div>
+                  )}
+                  <div className="max-h-64 overflow-y-auto p-4">
+                    <pre className="whitespace-pre-wrap font-mono text-[12px] leading-relaxed text-foreground/80">
+                      {preview.rawContent}
+                    </pre>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* ---- Process button ---- */}
           <div className="mt-5 flex items-center gap-3">
