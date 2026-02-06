@@ -3,7 +3,7 @@ export default function Footer() {
     <footer className="mt-auto border-t border-border">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
         <p className="text-[11px] text-muted-foreground">
-          Helmsman v0.1 &mdash; scaffold
+          Helmsman v1.0 &mdash; demo
         </p>
         <p className="text-[11px] text-muted-foreground">
           Internal prototype &middot; Not for distribution
