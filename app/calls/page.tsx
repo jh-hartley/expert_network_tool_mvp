@@ -108,6 +108,7 @@ export default function CallsPage() {
         const isfu = followUps.has(row.id as string)
         return computeCallPrice(rate ?? 0, dur, isfu)
       }},
+      { key: "nps", header: "NPS", transform: (v) => v != null ? v : "" },
       { key: "notes", header: "Notes" },
     ]
     exportToExcel({

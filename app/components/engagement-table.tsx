@@ -241,6 +241,9 @@ export default function EngagementTable({
     }
     cols.push({ key: "call_time", label: "Time", minWidth: "80px", align: "center" })
     cols.push({ key: "cost", label: engagementType === "call" ? "Cost" : "Cost (EUR)", minWidth: "90px", align: "right" })
+    if (engagementType === "call") {
+      cols.push({ key: "nps", label: "NPS", minWidth: "70px", align: "center" })
+    }
     return cols
   }, [lens, engagementType])
 
@@ -295,6 +298,7 @@ export default function EngagementTable({
         }
         return r.network_prices?.[r.network] ?? null
       }
+      case "nps": return r.nps ?? null
       default: return null
     }
   }
@@ -736,6 +740,11 @@ export default function EngagementTable({
                       )
                     }
 
+                    /* NPS -- not editable on drafts */
+                    if (col.key === "nps") {
+                      return <td key={col.key} className="px-3 py-2 text-center text-muted-foreground/40">--</td>
+                    }
+
                     /* Type badge */
                     if (col.key === "expert_type" && expert) {
                       const label = TYPE_LABELS[expert.expert_type] ?? expert.expert_type
@@ -913,6 +922,45 @@ export default function EngagementTable({
                         return (
                           <td key={col.key} className="px-3 py-2 text-right">
                             <span className="font-medium tabular-nums">{costStr}</span>
+                          </td>
+                        )
+                      }
+
+                      /* NPS -- editable for completed calls */
+                      if (col.key === "nps") {
+                        const isCompleted = r.status === "completed"
+                        const npsVal = r.nps
+                        const npsColor = npsVal != null
+                          ? npsVal >= 9 ? "text-emerald-700" : npsVal >= 7 ? "text-sky-700" : npsVal >= 5 ? "text-amber-700" : "text-red-700"
+                          : "text-muted-foreground/40"
+                        return (
+                          <td key={col.key} className="px-3 py-2 text-center">
+                            {isCompleted ? (
+                              <input
+                                type="number"
+                                min={0}
+                                max={10}
+                                value={npsVal ?? ""}
+                                placeholder="--"
+                                onChange={(e) => {
+                                  const idx = findOriginalIndex(r)
+                                  if (idx < 0) return
+                                  const raw = e.target.value
+                                  if (raw === "") {
+                                    onUpdateRecord(idx, { nps: null })
+                                  } else {
+                                    const n = Math.min(10, Math.max(0, parseInt(raw, 10)))
+                                    if (!isNaN(n)) onUpdateRecord(idx, { nps: n })
+                                  }
+                                }}
+                                className={[
+                                  "h-7 w-[52px] rounded-md border border-border bg-card px-1.5 text-xs font-semibold text-center tabular-nums focus:outline-none focus:ring-1 focus:ring-ring",
+                                  npsColor,
+                                ].join(" ")}
+                              />
+                            ) : (
+                              <span className="text-muted-foreground/40">--</span>
+                            )}
                           </td>
                         )
                       }

@@ -43,6 +43,8 @@ export interface EngagementRecord {
   network: string
   /** Whether this is a follow-up engagement (25% discount on hourly rate) */
   is_follow_up: boolean
+  /** NPS score (0-10) -- only relevant for completed customer calls */
+  nps?: number | null
   /** User notes */
   notes: string
   created_at: string
@@ -63,7 +65,7 @@ export function generateId(): string {
 /* ------------------------------------------------------------------ */
 
 const CALLS_KEY = "helmsman_calls"
-const CALLS_SEEDED = "helmsman_calls_seeded_v4"
+const CALLS_SEEDED = "helmsman_calls_seeded_v5"
 const SURVEYS_KEY = "helmsman_surveys"
 const SURVEYS_SEEDED = "helmsman_surveys_seeded_v4"
 
@@ -179,6 +181,7 @@ export function createEngagementFromExpert(
     network_prices: np,
     network: expert.network ?? "",
     is_follow_up: false,
+    nps: null,
     notes: "",
     created_at: new Date().toISOString(),
     ...overrides,
@@ -313,6 +316,7 @@ export const SEED_CALLS: EngagementRecord[] = [
     network_prices: { AlphaSights: 650, GLG: null, "Third Bridge": null },
     network: "AlphaSights",
     is_follow_up: false,
+    nps: 8,
     notes: "Very insightful on Meridian adoption drivers. Follow up on lead times.",
     created_at: "2025-11-10T09:00:00Z",
   },
@@ -421,6 +425,7 @@ export const SEED_CALLS: EngagementRecord[] = [
     network_prices: { AlphaSights: null, GLG: 750, "Third Bridge": null },
     network: "GLG",
     is_follow_up: false,
+    nps: 7,
     notes: "Excellent perspective on Meridian vs Rockwell evaluation process.",
     created_at: "2025-11-16T10:00:00Z",
   },
