@@ -2,7 +2,7 @@
 
 import {
   Upload, FileText, CheckCircle2, ClipboardPaste, Mail, Table2, X,
-  ChevronDown, ChevronUp, Braces, ArrowRight, AlertCircle, Loader2, Sparkles,
+  ChevronDown, ChevronUp, ArrowRight, AlertCircle, Loader2, Sparkles,
 } from "lucide-react"
 import { useState, useRef } from "react"
 import { toast } from "sonner"
@@ -19,6 +19,7 @@ import type { Expert, Network, Industry, ComplianceStatus } from "@/lib/types"
 /* ------------------------------------------------------------------ */
 
 type InputFormat = "csv" | "email" | "raw-text"
+type InputMode = "file" | "paste" | null
 
 interface ParsedRow {
   name: string
@@ -84,488 +85,383 @@ function detectFormat(file: File): InputFormat {
 
 export default function UploadPage() {
   const { items: experts, add } = useStore("experts")
-  const [dragOver, setDragOver] = useState(false)
-  const [result, setResult] = useState<IngestResult | null>(null)
+
+  // Input state
+  const [inputMode, setInputMode] = useState<InputMode>(null)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [pasteText, setPasteText] = useState("")
-  const [showPaste, setShowPaste] = useState(false)
-  const [debugOpen, setDebugOpen] = useState(true)
-  const [extracting, setExtracting] = useState(false)
-  const [extraction, setExtraction] = useState<ExtractionResult | null>(null)
-  const [extractionError, setExtractionError] = useState<string | null>(null)
+  const [dragOver, setDragOver] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
-  function handleFile(file: File) {
-    const fmt = detectFormat(file)
-    const reader = new FileReader()
-    reader.onload = (e) => processInput(e.target?.result as string, fmt, file.name)
-    reader.readAsText(file)
+  // Processing state
+  const [processing, setProcessing] = useState(false)
+  const [result, setResult] = useState<IngestResult | null>(null)
+  const [extraction, setExtraction] = useState<ExtractionResult | null>(null)
+  const [extractionError, setExtractionError] = useState<string | null>(null)
+
+  // Raw content view
+  const [rawOpen, setRawOpen] = useState(false)
+
+  const hasInput = inputMode === "file" ? !!selectedFile : inputMode === "paste" ? pasteText.trim().length > 0 : false
+
+  function selectFile(file: File) {
+    setSelectedFile(file)
+    setInputMode("file")
+    setPasteText("")
+    // Clear previous results
+    setResult(null)
+    setExtraction(null)
+    setExtractionError(null)
   }
 
-  function handlePaste() {
-    if (!pasteText.trim()) {
-      toast.error("Please paste some text first.")
-      return
-    }
-    processInput(pasteText, "raw-text", "Pasted text")
+  function selectPaste() {
+    setInputMode("paste")
+    setSelectedFile(null)
+    // Clear previous results
+    setResult(null)
+    setExtraction(null)
+    setExtractionError(null)
+  }
+
+  function clear() {
+    setInputMode(null)
+    setSelectedFile(null)
+    setPasteText("")
+    setResult(null)
+    setExtraction(null)
+    setExtractionError(null)
+    setProcessing(false)
+    setRawOpen(false)
   }
 
   function processInput(text: string, format: InputFormat, source: string) {
     const rows = format === "csv" ? parseCSV(text) : []
     const needsLlm = format !== "csv"
-    const ir: IngestResult = {
+    return {
       format,
       sourceName: source,
       rawContent: format === "email" ? parseEmlBody(text) : text,
       fullRaw: text,
       parsedRows: rows,
       needsLlm,
-    }
-    setResult(ir)
-    if (format === "csv") {
-      rows.length === 0
-        ? toast.error("No valid rows found.")
-        : toast.success(`Parsed ${rows.length} expert${rows.length === 1 ? "" : "s"} from ${source}`)
-    } else {
-      toast.success(`Loaded ${format === "email" ? "email" : "raw text"} from ${source} -- ready for LLM parsing`)
-    }
+    } as IngestResult
   }
 
-  function handleImport() {
-    if (!result || result.parsedRows.length === 0) return
-    const now = new Date().toISOString()
-    let dupes = 0
-    result.parsedRows.forEach((row) => {
-      if (
-        experts.some(
-          (ex) =>
-            ex.name.toLowerCase() === row.name.toLowerCase() &&
-            ex.company.toLowerCase() === row.company.toLowerCase()
-        )
-      ) {
-        dupes++
+  async function handleProcess() {
+    if (!hasInput) return
+    setProcessing(true)
+    setExtractionError(null)
+    setExtraction(null)
+    setResult(null)
+
+    try {
+      let ir: IngestResult
+
+      if (inputMode === "file" && selectedFile) {
+        const text = await selectedFile.text()
+        const fmt = detectFormat(selectedFile)
+        ir = processInput(text, fmt, selectedFile.name)
+      } else {
+        ir = processInput(pasteText, "raw-text", "Pasted text")
+      }
+
+      setResult(ir)
+
+      if (ir.format === "csv") {
+        // CSV -- parsed directly, import into tracker
+        if (ir.parsedRows.length === 0) {
+          toast.error("No valid rows found in CSV.")
+        } else {
+          const now = new Date().toISOString()
+          let dupes = 0
+          ir.parsedRows.forEach((row) => {
+            if (experts.some(
+              (ex) => ex.name.toLowerCase() === row.name.toLowerCase() &&
+                ex.company.toLowerCase() === row.company.toLowerCase()
+            )) {
+              dupes++
+              return
+            }
+            const expert: Expert = {
+              id: uid(), ...row, callCount: 0, createdAt: now, updatedAt: now,
+            }
+            add(expert)
+          })
+          const n = ir.parsedRows.length - dupes
+          toast.success(`Imported ${n} expert${n === 1 ? "" : "s"}${dupes > 0 ? `, ${dupes} duplicates skipped` : ""}`)
+        }
+        setProcessing(false)
         return
       }
-      const expert: Expert = {
-        id: uid(),
-        ...row,
-        callCount: 0,
-        createdAt: now,
-        updatedAt: now,
-      }
-      add(expert)
-    })
-    const n = result.parsedRows.length - dupes
-    toast.success(
-      `Imported ${n} expert${n === 1 ? "" : "s"}${dupes > 0 ? `, ${dupes} skipped` : ""}`
-    )
-    setResult(null)
-  }
 
-  function clear() {
-    setResult(null)
-    setPasteText("")
-    setShowPaste(false)
-    setExtraction(null)
-    setExtractionError(null)
-  }
-
-  async function handleExtract() {
-    if (!result || !result.needsLlm) return
-    setExtracting(true)
-    setExtractionError(null)
-    setExtraction(null)
-    try {
+      // Unstructured -- send to LLM
       const data = await extractExperts(
-        result.rawContent,
-        result.format as LlmInputFormat,
+        ir.rawContent,
+        ir.format as LlmInputFormat,
       )
       setExtraction(data)
       toast.success(
-        `Extracted ${data.experts.length} expert${data.experts.length === 1 ? "" : "s"} from ${result.sourceName}`,
+        `Extracted ${data.experts.length} expert${data.experts.length === 1 ? "" : "s"} from ${ir.sourceName}`,
       )
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Extraction failed"
+      const msg = err instanceof Error ? err.message : "Processing failed"
       setExtractionError(msg)
-      toast.error(msg)
+      toast.error("Extraction failed")
     } finally {
-      setExtracting(false)
+      setProcessing(false)
     }
   }
 
-  const eml =
-    result?.format === "email" ? extractEmlMeta(result.fullRaw) : null
+  const eml = result?.format === "email" ? extractEmlMeta(result.fullRaw) : null
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-10">
       <PageHeader
         title="Upload"
-        description="Import expert profiles from CSV files, network emails, or pasted text. Structured CSV is parsed directly; unstructured content is queued for LLM extraction."
+        description="Import expert profiles from CSV files, network emails, or pasted text. Structured CSV is parsed directly; unstructured content is sent to an LLM for extraction."
       />
       <WipBanner feature="upload" />
 
       {/* ---- Input methods ---- */}
-      <div className="mt-6 grid gap-4 lg:grid-cols-2">
-        {/* File drop zone */}
-        <div
-          onDragOver={(e) => {
-            e.preventDefault()
-            setDragOver(true)
-          }}
-          onDragLeave={() => setDragOver(false)}
-          onDrop={(e) => {
-            e.preventDefault()
-            setDragOver(false)
-            const f = e.dataTransfer.files[0]
-            if (f) handleFile(f)
-          }}
-          onClick={() => fileRef.current?.click()}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") fileRef.current?.click()
-          }}
-          className={[
-            "flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed px-6 py-14 text-center transition-colors",
-            dragOver
-              ? "border-primary/50 bg-primary/5"
-              : "border-border bg-muted/20 hover:border-primary/30 hover:bg-muted/30",
-          ].join(" ")}
-        >
-          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-muted">
-            <Upload className="h-5 w-5 text-muted-foreground" />
-          </div>
-          <p className="mt-3 text-sm font-medium text-foreground">
-            Drop a file here, or click to browse
-          </p>
-          <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
-            <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-              <Table2 className="h-2.5 w-2.5" /> .csv
-            </span>
-            <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-              <Mail className="h-2.5 w-2.5" /> .eml
-            </span>
-            <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-              <FileText className="h-2.5 w-2.5" /> .txt
-            </span>
-          </div>
-          <input
-            ref={fileRef}
-            type="file"
-            accept=".csv,.eml,.txt,.msg"
-            className="hidden"
-            onChange={(e) => {
-              const f = e.target.files?.[0]
-              if (f) handleFile(f)
-            }}
-          />
-        </div>
-
-        {/* Paste raw text */}
-        <div className="flex flex-col overflow-hidden rounded-lg border border-border bg-card">
-          <button
-            type="button"
-            onClick={() => setShowPaste(!showPaste)}
-            className="flex items-center gap-3 px-5 py-4 text-left transition-colors hover:bg-muted/30"
-          >
-            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-muted">
-              <ClipboardPaste className="h-5 w-5 text-muted-foreground" />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-foreground">
-                Paste raw text
-              </p>
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                Paste an email body, screening notes, or any unstructured expert
-                data
-              </p>
-            </div>
-            {showPaste ? (
-              <ChevronUp className="h-4 w-4 text-muted-foreground" />
-            ) : (
-              <ChevronDown className="h-4 w-4 text-muted-foreground" />
-            )}
-          </button>
-          {showPaste && (
-            <div className="border-t border-border px-5 py-4">
-              <textarea
-                value={pasteText}
-                onChange={(e) => setPasteText(e.target.value)}
-                placeholder="Paste expert recommendation text here..."
-                rows={8}
-                className="w-full resize-none rounded-md border border-border bg-muted/20 px-3 py-2.5 font-mono text-[12px] leading-relaxed text-foreground placeholder:text-muted-foreground/60 focus:border-primary/40 focus:outline-none focus:ring-1 focus:ring-primary/20"
-              />
-              <div className="mt-3 flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handlePaste}
-                  disabled={!pasteText.trim()}
-                  className="inline-flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <ArrowRight className="h-3.5 w-3.5" />
-                  Process text
-                </button>
-                {pasteText.length > 0 && (
-                  <span className="text-[11px] text-muted-foreground">
-                    {pasteText.length.toLocaleString()} characters
-                  </span>
-                )}
+      {!processing && !extraction && (
+        <>
+          <div className="mt-6 grid gap-4 lg:grid-cols-2">
+            {/* File drop zone */}
+            <div
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={(e) => {
+                e.preventDefault()
+                setDragOver(false)
+                const f = e.dataTransfer.files[0]
+                if (f) selectFile(f)
+              }}
+              onClick={() => fileRef.current?.click()}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") fileRef.current?.click() }}
+              className={[
+                "flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 px-6 py-14 text-center transition-colors",
+                inputMode === "file"
+                  ? "border-primary bg-primary/5"
+                  : dragOver
+                    ? "border-primary/50 bg-primary/5 border-dashed"
+                    : inputMode === "paste"
+                      ? "border-border bg-muted/10 opacity-50 border-dashed"
+                      : "border-border bg-muted/20 hover:border-primary/30 hover:bg-muted/30 border-dashed",
+              ].join(" ")}
+            >
+              <div className={`flex h-11 w-11 items-center justify-center rounded-full ${inputMode === "file" ? "bg-primary/10" : "bg-muted"}`}>
+                <Upload className={`h-5 w-5 ${inputMode === "file" ? "text-primary" : "text-muted-foreground"}`} />
               </div>
+              {selectedFile ? (
+                <>
+                  <p className="mt-3 text-sm font-medium text-foreground">{selectedFile.name}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {(selectedFile.size / 1024).toFixed(1)} KB -- click to change
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="mt-3 text-sm font-medium text-foreground">
+                    Drop a file here, or click to browse
+                  </p>
+                  <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                      <Table2 className="h-2.5 w-2.5" /> .csv
+                    </span>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                      <Mail className="h-2.5 w-2.5" /> .eml
+                    </span>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                      <FileText className="h-2.5 w-2.5" /> .txt
+                    </span>
+                  </div>
+                </>
+              )}
+              <input
+                ref={fileRef}
+                type="file"
+                accept=".csv,.eml,.txt,.msg"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0]
+                  if (f) selectFile(f)
+                }}
+              />
             </div>
-          )}
-        </div>
-      </div>
 
-      {/* ---- CSV preview table ---- */}
-      {result && result.format === "csv" && result.parsedRows.length > 0 && (
-        <div className="mt-6">
-          <div className="mb-3 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Table2 className="h-4 w-4 text-muted-foreground" />
-              <h2 className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                CSV Preview ({result.parsedRows.length} records from{" "}
-                {result.sourceName})
-              </h2>
-            </div>
-            <div className="flex items-center gap-2">
+            {/* Paste raw text */}
+            <div
+              className={[
+                "flex flex-col overflow-hidden rounded-lg border-2 transition-colors",
+                inputMode === "paste"
+                  ? "border-primary bg-card"
+                  : inputMode === "file"
+                    ? "border-border bg-card opacity-50"
+                    : "border-border bg-card hover:border-primary/30",
+              ].join(" ")}
+            >
               <button
                 type="button"
-                onClick={handleImport}
-                className="inline-flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                onClick={selectPaste}
+                className="flex items-center gap-3 px-5 py-4 text-left transition-colors hover:bg-muted/30"
               >
-                <CheckCircle2 className="h-3.5 w-3.5" />
-                Import All
+                <div className={`flex h-11 w-11 items-center justify-center rounded-full ${inputMode === "paste" ? "bg-primary/10" : "bg-muted"}`}>
+                  <ClipboardPaste className={`h-5 w-5 ${inputMode === "paste" ? "text-primary" : "text-muted-foreground"}`} />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-foreground">Paste raw text</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    Paste an email body, screening notes, or any unstructured expert data
+                  </p>
+                </div>
+                {inputMode === "paste" ? (
+                  <CheckCircle2 className="h-4 w-4 text-primary" />
+                ) : (
+                  <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                )}
               </button>
+              {inputMode === "paste" && (
+                <div className="border-t border-border px-5 py-4">
+                  <textarea
+                    value={pasteText}
+                    onChange={(e) => setPasteText(e.target.value)}
+                    placeholder="Paste expert recommendation text here..."
+                    rows={8}
+                    className="w-full resize-none rounded-md border border-border bg-muted/20 px-3 py-2.5 font-mono text-[12px] leading-relaxed text-foreground placeholder:text-muted-foreground/60 focus:border-primary/40 focus:outline-none focus:ring-1 focus:ring-primary/20"
+                    autoFocus
+                  />
+                  {pasteText.length > 0 && (
+                    <p className="mt-1.5 text-[11px] text-muted-foreground">
+                      {pasteText.length.toLocaleString()} characters
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* ---- Process button ---- */}
+          <div className="mt-5 flex items-center gap-3">
+            <button
+              type="button"
+              onClick={handleProcess}
+              disabled={!hasInput}
+              className="inline-flex h-10 items-center gap-2 rounded-lg bg-primary px-5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <Sparkles className="h-4 w-4" />
+              Process Input
+            </button>
+            {inputMode && (
               <button
                 type="button"
                 onClick={clear}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-muted"
-                aria-label="Clear"
+                className="inline-flex h-10 items-center gap-1.5 rounded-lg border border-border px-4 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted"
               >
                 <X className="h-3.5 w-3.5" />
+                Clear
               </button>
-            </div>
-          </div>
-          <div className="overflow-hidden rounded-lg border border-border bg-card">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border bg-muted/40">
-                    {["Name", "Title", "Company", "Network", "Status"].map(
-                      (h) => (
-                        <th
-                          key={h}
-                          className="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"
-                        >
-                          {h}
-                        </th>
-                      )
-                    )}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {result.parsedRows.slice(0, 10).map((row, i) => (
-                    <tr
-                      key={i}
-                      className="transition-colors hover:bg-muted/30"
-                    >
-                      <td className="px-4 py-2.5 text-sm text-foreground">
-                        {row.name}
-                      </td>
-                      <td className="px-4 py-2.5 text-sm text-muted-foreground">
-                        {row.title}
-                      </td>
-                      <td className="px-4 py-2.5 text-sm text-muted-foreground">
-                        {row.company}
-                      </td>
-                      <td className="px-4 py-2.5 text-sm text-muted-foreground">
-                        {row.network}
-                      </td>
-                      <td className="px-4 py-2.5">
-                        <StatusBadge status={row.compliance} />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            {result.parsedRows.length > 10 && (
-              <div className="border-t border-border px-4 py-2 text-[11px] text-muted-foreground">
-                ...and {result.parsedRows.length - 10} more
-              </div>
+            )}
+            {!hasInput && inputMode && (
+              <span className="text-xs text-muted-foreground">
+                {inputMode === "file" ? "Select a file to continue" : "Paste some text to continue"}
+              </span>
             )}
           </div>
-        </div>
-      )}
 
-      {/* ---- Unstructured content (email / raw text) ---- */}
-      {result && result.needsLlm && (
-        <div className="mt-6">
-          <div className="mb-3 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              {result.format === "email" ? (
-                <Mail className="h-4 w-4 text-muted-foreground" />
-              ) : (
-                <FileText className="h-4 w-4 text-muted-foreground" />
-              )}
-              <h2 className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                {result.format === "email" ? "Email" : "Raw text"} loaded from{" "}
-                {result.sourceName}
-              </h2>
-            </div>
-            <button
-              type="button"
-              onClick={clear}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-muted"
-              aria-label="Clear"
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
-          </div>
-
-          {eml && eml.subject && (
-            <div className="mb-3 flex flex-wrap gap-x-4 gap-y-1 rounded-md border border-border bg-muted/20 px-4 py-2.5 text-[11px] text-muted-foreground">
-              {eml.from && (
-                <span>
-                  <span className="font-semibold text-foreground/70">
-                    From:
-                  </span>{" "}
-                  {eml.from}
-                </span>
-              )}
-              {eml.subject && (
-                <span>
-                  <span className="font-semibold text-foreground/70">
-                    Subject:
-                  </span>{" "}
-                  {eml.subject}
-                </span>
-              )}
-              {eml.date && (
-                <span>
-                  <span className="font-semibold text-foreground/70">
-                    Date:
-                  </span>{" "}
-                  {eml.date}
-                </span>
-              )}
-            </div>
-          )}
-
-          <div className="overflow-hidden rounded-lg border border-border bg-card">
-            <div className="flex items-center justify-between border-b border-border bg-muted/30 px-4 py-2.5">
-              <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                Extracted content
-              </span>
-              <span className="text-[11px] text-muted-foreground">
-                {result.rawContent.length.toLocaleString()} characters
-              </span>
-            </div>
-            <div className="max-h-64 overflow-y-auto p-4">
-              <pre className="whitespace-pre-wrap font-mono text-[12px] leading-relaxed text-foreground/80">
-                {result.rawContent}
-              </pre>
-            </div>
-          </div>
-
-          {/* Extract button */}
-          {!extraction && !extracting && (
-            <div className="mt-3 flex items-center gap-3">
-              <button
-                type="button"
-                onClick={handleExtract}
-                disabled={extracting}
-                className="inline-flex h-9 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <Sparkles className="h-4 w-4" />
-                Extract with LLM
-              </button>
-              <span className="text-xs text-muted-foreground">
-                Sends content to GPT-4o for structured expert extraction
-              </span>
-            </div>
-          )}
-
-          {/* Loading state */}
-          {extracting && (
-            <div className="mt-3 flex items-center gap-3 rounded-lg border border-border bg-muted/30 px-4 py-4">
-              <div className="relative flex h-8 w-8 items-center justify-center">
-                <Loader2 className="h-5 w-5 animate-spin text-primary" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-foreground">
-                  Extracting expert profiles...
-                </p>
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  Analysing {result.rawContent.length.toLocaleString()} characters with GPT-4.1. This typically takes 10-30 seconds.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Error state */}
+          {/* Error from previous attempt */}
           {extractionError && (
-            <div className="mt-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+            <div className="mt-4 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
               <div className="flex items-center gap-3">
                 <AlertCircle className="h-4 w-4 shrink-0 text-destructive" />
-                <p className="flex-1 text-sm font-medium text-destructive">
-                  Extraction failed
-                </p>
+                <p className="flex-1 text-sm font-medium text-destructive">Extraction failed</p>
                 <button
                   type="button"
-                  onClick={handleExtract}
+                  onClick={handleProcess}
                   className="inline-flex h-7 items-center gap-1.5 rounded-md border border-destructive/30 px-2.5 text-xs font-medium text-destructive transition-colors hover:bg-destructive/10"
                 >
                   Retry
                 </button>
               </div>
-              <div className="mt-2 max-h-48 overflow-auto rounded-md bg-destructive/5 p-2">
+              <div className="mt-2 max-h-32 overflow-auto rounded-md bg-destructive/5 p-2">
                 <pre className="whitespace-pre-wrap font-mono text-[11px] leading-relaxed text-destructive/80">
                   {extractionError}
                 </pre>
               </div>
             </div>
           )}
+        </>
+      )}
+
+      {/* ---- Processing spinner ---- */}
+      {processing && (
+        <div className="mt-10 flex flex-col items-center justify-center py-16">
+          <div className="relative flex h-16 w-16 items-center justify-center">
+            <div className="absolute inset-0 animate-ping rounded-full bg-primary/10" />
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+          <p className="mt-5 text-sm font-medium text-foreground">
+            Processing input...
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {inputMode === "file" && selectedFile
+              ? `Analysing ${selectedFile.name}`
+              : `Analysing ${pasteText.length.toLocaleString()} characters of pasted text`}
+            {" "}with GPT-4.1. This typically takes 10-30 seconds.
+          </p>
         </div>
       )}
 
-      {/* ---- LLM Extraction Results ---- */}
+      {/* ---- Results ---- */}
       {extraction && extraction.experts.length > 0 && (
         <div className="mt-6">
-          <div className="mb-3 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-primary" />
-              <h2 className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                LLM Extraction Results ({extraction.experts.length} experts)
-              </h2>
+          {/* Success banner */}
+          <div className="mb-4 flex items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3">
+            <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-emerald-800">
+                {extraction.experts.length} expert{extraction.experts.length === 1 ? "" : "s"} extracted and added to the expert tracker
+              </p>
+              <p className="mt-0.5 text-xs text-emerald-700">
+                From {result?.sourceName ?? "uploaded content"}
+              </p>
             </div>
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => {
-                  setExtraction(null)
-                  setExtractionError(null)
-                }}
-                className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted"
+                onClick={() => { setExtraction(null); setExtractionError(null) }}
+                className="inline-flex h-8 items-center gap-1.5 rounded-md border border-emerald-300 px-3 text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-100"
               >
                 Re-extract
               </button>
+              <button
+                type="button"
+                onClick={clear}
+                className="inline-flex h-8 items-center gap-1.5 rounded-md border border-emerald-300 px-3 text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-100"
+              >
+                Upload more
+              </button>
             </div>
           </div>
+
+          {/* Results heading */}
+          <div className="mb-3 flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-primary" />
+            <h2 className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+              Extraction Results ({extraction.experts.length} experts)
+            </h2>
+          </div>
+
+          {/* Results table */}
           <div className="overflow-hidden rounded-lg border border-border bg-card">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/40">
                     {[
-                      "Name",
-                      "Role (Anonymised)",
-                      "Company",
-                      "Type",
-                      "Former",
-                      "Price/hr",
-                      "Network",
-                      "Industry",
-                      "FTEs",
+                      "Name", "Role (Anonymised)", "Company", "Type",
+                      "Former", "Price/hr", "Network", "Industry", "FTEs",
                     ].map((h) => (
                       <th
                         key={h}
@@ -578,43 +474,24 @@ export default function UploadPage() {
                 </thead>
                 <tbody className="divide-y divide-border">
                   {extraction.experts.map((ex, i) => (
-                    <tr
-                      key={i}
-                      className="transition-colors hover:bg-muted/30"
-                    >
-                      <td className="whitespace-nowrap px-3 py-2.5 text-sm font-medium text-foreground">
-                        {ex.name}
-                      </td>
-                      <td className="px-3 py-2.5 text-sm text-muted-foreground">
-                        {ex.role}
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-2.5 text-sm text-muted-foreground">
-                        {ex.company}
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-2.5">
-                        <ExpertTypeBadge type={ex.expert_type} />
-                      </td>
+                    <tr key={i} className="transition-colors hover:bg-muted/30">
+                      <td className="whitespace-nowrap px-3 py-2.5 text-sm font-medium text-foreground">{ex.name}</td>
+                      <td className="px-3 py-2.5 text-sm text-muted-foreground">{ex.role}</td>
+                      <td className="whitespace-nowrap px-3 py-2.5 text-sm text-muted-foreground">{ex.company}</td>
+                      <td className="whitespace-nowrap px-3 py-2.5"><ExpertTypeBadge type={ex.expert_type} /></td>
                       <td className="whitespace-nowrap px-3 py-2.5 text-sm text-muted-foreground">
                         {ex.former ? (
                           <span className="text-amber-600">
                             Yes{ex.date_left !== "N/A" && ex.date_left !== "Unknown" ? ` (${ex.date_left})` : ""}
                           </span>
-                        ) : (
-                          "Current"
-                        )}
+                        ) : "Current"}
                       </td>
                       <td className="whitespace-nowrap px-3 py-2.5 text-sm text-muted-foreground">
                         {ex.price != null ? `$${ex.price}` : "--"}
                       </td>
-                      <td className="whitespace-nowrap px-3 py-2.5 text-sm text-muted-foreground">
-                        {ex.network}
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-2.5 text-sm text-muted-foreground">
-                        {ex.industry_guess}
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-2.5 text-sm text-muted-foreground">
-                        {ex.fte_estimate}
-                      </td>
+                      <td className="whitespace-nowrap px-3 py-2.5 text-sm text-muted-foreground">{ex.network}</td>
+                      <td className="whitespace-nowrap px-3 py-2.5 text-sm text-muted-foreground">{ex.industry_guess}</td>
+                      <td className="whitespace-nowrap px-3 py-2.5 text-sm text-muted-foreground">{ex.fte_estimate}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -622,132 +499,86 @@ export default function UploadPage() {
             </div>
           </div>
 
-          {/* Screener details (expandable per expert) */}
+          {/* Screener detail cards */}
           <div className="mt-4 space-y-3">
             {extraction.experts.map((ex, i) => (
               <ExpertDetailCard key={i} expert={ex} />
             ))}
           </div>
-        </div>
-      )}
 
-      {/* ---- Debug panel ---- */}
-      {result && (
-        <div className="mt-8">
-          <button
-            type="button"
-            onClick={() => setDebugOpen(!debugOpen)}
-            className="flex w-full items-center gap-2 rounded-t-lg border border-border bg-muted/30 px-4 py-3 text-left transition-colors hover:bg-muted/50"
-          >
-            <Braces className="h-4 w-4 text-muted-foreground" />
-            <span className="flex-1 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-              {"Debug: Parse result & LLM payload"}
-            </span>
-            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-800">
-              Dev only
-            </span>
-            {debugOpen ? (
-              <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" />
-            ) : (
-              <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-            )}
-          </button>
-          {debugOpen && (
-            <div className="overflow-hidden rounded-b-lg border border-t-0 border-border bg-card">
-              <div className="grid grid-cols-2 gap-px bg-border sm:grid-cols-4">
-                <DebugCell label="Format" value={result.format} />
-                <DebugCell label="Source" value={result.sourceName} />
-                <DebugCell
-                  label="Content length"
-                  value={`${result.rawContent.length.toLocaleString()} chars`}
-                />
-                <DebugCell
-                  label="Parse method"
-                  value={
-                    result.needsLlm ? "LLM (pending)" : "CSV (direct)"
-                  }
-                />
-              </div>
-
-              {!result.needsLlm && result.parsedRows.length > 0 && (
-                <div className="border-t border-border p-4">
-                  <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                    Parsed rows (direct CSV extraction)
-                  </h3>
-                  <div className="max-h-48 overflow-auto rounded-md bg-muted/20 p-3">
-                    <pre className="font-mono text-[11px] leading-relaxed text-foreground/70">
-                      {JSON.stringify(result.parsedRows, null, 2)}
+          {/* Raw content (collapsed by default) */}
+          {result && (
+            <div className="mt-6">
+              <button
+                type="button"
+                onClick={() => setRawOpen(!rawOpen)}
+                className="flex w-full items-center gap-2 rounded-lg border border-border bg-muted/20 px-4 py-3 text-left transition-colors hover:bg-muted/30"
+              >
+                <FileText className="h-4 w-4 text-muted-foreground" />
+                <span className="flex-1 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Raw source content ({result.rawContent.length.toLocaleString()} characters)
+                </span>
+                {rawOpen ? (
+                  <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" />
+                ) : (
+                  <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                )}
+              </button>
+              {rawOpen && (
+                <div className="overflow-hidden rounded-b-lg border border-t-0 border-border bg-card">
+                  {eml && eml.subject && (
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 border-b border-border px-4 py-2.5 text-[11px] text-muted-foreground">
+                      {eml.from && (
+                        <span><span className="font-semibold text-foreground/70">From:</span> {eml.from}</span>
+                      )}
+                      {eml.subject && (
+                        <span><span className="font-semibold text-foreground/70">Subject:</span> {eml.subject}</span>
+                      )}
+                      {eml.date && (
+                        <span><span className="font-semibold text-foreground/70">Date:</span> {eml.date}</span>
+                      )}
+                    </div>
+                  )}
+                  <div className="max-h-64 overflow-y-auto p-4">
+                    <pre className="whitespace-pre-wrap font-mono text-[12px] leading-relaxed text-foreground/80">
+                      {result.rawContent}
                     </pre>
                   </div>
                 </div>
               )}
-
-              {extraction && (
-                <div className="border-t border-border p-4">
-                  <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                    LLM extraction response
-                  </h3>
-                  <div className="max-h-64 overflow-auto rounded-md bg-muted/20 p-3">
-                    <pre className="font-mono text-[11px] leading-relaxed text-foreground/70">
-                      {JSON.stringify(extraction, null, 2)}
-                    </pre>
-                  </div>
-                </div>
-              )}
-
-              <div className="border-t border-border p-4">
-                <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                  Raw content (first 2,000 characters)
-                </h3>
-                <div className="max-h-48 overflow-auto rounded-md bg-muted/20 p-3">
-                  <pre className="whitespace-pre-wrap font-mono text-[11px] leading-relaxed text-foreground/70">
-                    {result.rawContent.slice(0, 2000)}
-                    {result.rawContent.length > 2000 && "\n\n... truncated"}
-                  </pre>
-                </div>
-              </div>
             </div>
           )}
         </div>
       )}
 
-      {/* ---- Tips (no result loaded) ---- */}
-      {!result && (
+      {/* ---- Tips (no input selected) ---- */}
+      {!inputMode && !processing && !extraction && (
         <div className="mt-8 grid gap-3 sm:grid-cols-3">
           <div className="rounded-lg border border-border bg-card p-4">
             <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted">
               <Table2 className="h-4 w-4 text-muted-foreground" />
             </div>
-            <h3 className="mt-3 text-sm font-semibold text-foreground">
-              CSV / Spreadsheet
-            </h3>
+            <h3 className="mt-3 text-sm font-semibold text-foreground">CSV / Spreadsheet</h3>
             <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-              Standard CSV with headers. Parsed directly into structured expert
-              records.
+              Standard CSV with headers. Parsed directly into structured expert records.
             </p>
           </div>
           <div className="rounded-lg border border-border bg-card p-4">
             <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted">
               <Mail className="h-4 w-4 text-muted-foreground" />
             </div>
-            <h3 className="mt-3 text-sm font-semibold text-foreground">
-              Email Files
-            </h3>
+            <h3 className="mt-3 text-sm font-semibold text-foreground">Email Files</h3>
             <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-              Upload .eml files from network emails. Headers extracted, body
-              queued for LLM parsing.
+              Upload .eml files from network emails. Headers extracted, body sent to LLM for parsing.
             </p>
           </div>
           <div className="rounded-lg border border-border bg-card p-4">
             <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted">
               <ClipboardPaste className="h-4 w-4 text-muted-foreground" />
             </div>
-            <h3 className="mt-3 text-sm font-semibold text-foreground">
-              Raw Text Paste
-            </h3>
+            <h3 className="mt-3 text-sm font-semibold text-foreground">Raw Text Paste</h3>
             <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-              Paste any unstructured text -- email bodies, screening notes, or
-              copied profiles.
+              Paste any unstructured text -- email bodies, screening notes, or copied profiles.
             </p>
           </div>
         </div>
@@ -772,17 +603,6 @@ function StatusBadge({ status }: { status: string }) {
     >
       {status.charAt(0).toUpperCase() + status.slice(1)}
     </span>
-  )
-}
-
-function DebugCell({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="bg-card px-4 py-3">
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-        {label}
-      </p>
-      <p className="mt-0.5 text-sm font-medium text-foreground">{value}</p>
-    </div>
   )
 }
 
