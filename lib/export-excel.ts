@@ -6,8 +6,6 @@
 /*  expert_type.  Uses the SheetJS (xlsx) library.                     */
 /* ------------------------------------------------------------------ */
 
-import * as XLSX from "xlsx"
-
 /** Column mapping: key from the data object -> header label in Excel */
 export interface ExcelColumnDef {
   key: string
@@ -37,8 +35,13 @@ const TYPE_LABELS: Record<string, string> = {
 /**
  * Build and download an .xlsx file.
  * Creates sheets: "All", then one per unique expert_type value.
+ *
+ * xlsx is dynamically imported at call-time to avoid Turbopack panics
+ * caused by SheetJS's Node.js shims being statically analysed.
  */
-export function exportToExcel({ fileName, rows, columns, typeKey = "expert_type" }: ExportOptions) {
+export async function exportToExcel({ fileName, rows, columns, typeKey = "expert_type" }: ExportOptions) {
+  const XLSX = await import("xlsx")
+
   const wb = XLSX.utils.book_new()
 
   function buildSheetData(data: Record<string, unknown>[]) {
@@ -55,7 +58,7 @@ export function exportToExcel({ fileName, rows, columns, typeKey = "expert_type"
   // "All" sheet
   const allData = buildSheetData(rows)
   const wsAll = XLSX.utils.aoa_to_sheet(allData)
-  autoWidth(wsAll, allData)
+  autoWidth(XLSX, wsAll, allData)
   XLSX.utils.book_append_sheet(wb, wsAll, "All")
 
   // Per-type sheets
@@ -71,7 +74,7 @@ export function exportToExcel({ fileName, rows, columns, typeKey = "expert_type"
     const sheetName = label.slice(0, 31)
     const data = buildSheetData(filtered)
     const ws = XLSX.utils.aoa_to_sheet(data)
-    autoWidth(ws, data)
+    autoWidth(XLSX, ws, data)
     XLSX.utils.book_append_sheet(wb, ws, sheetName)
   }
 
@@ -79,8 +82,9 @@ export function exportToExcel({ fileName, rows, columns, typeKey = "expert_type"
   XLSX.writeFile(wb, `${fileName}.xlsx`)
 }
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /** Set column widths to fit content */
-function autoWidth(ws: XLSX.WorkSheet, data: unknown[][]) {
+function autoWidth(XLSX: any, ws: any, data: unknown[][]) {
   if (data.length === 0) return
   const colWidths = (data[0] as unknown[]).map((_, ci) => {
     let max = 10
