@@ -204,8 +204,9 @@ export default function OverviewPage() {
             Hackathon prototype
           </p>
           <p className="mt-0.5 text-xs leading-relaxed text-amber-700">
-            Browser-only demo with synthetic seed data. No server persistence or
-            production data.
+            Browser-only demo with synthetic seed data. All data is stored
+            locally in your browser -- changes do not persist between sessions
+            and cannot be shared between users.
           </p>
         </div>
       </div>
