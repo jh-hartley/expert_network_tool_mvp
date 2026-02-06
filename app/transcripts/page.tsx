@@ -29,6 +29,7 @@ import EmptyState from "../components/empty-state"
 import { getTranscripts, computeNPSFromTranscripts, type Transcript, type NPSResult } from "@/lib/transcripts"
 import { searchExperts } from "@/lib/engagements"
 import type { ExpertProfile } from "@/lib/expert-profiles"
+import MarkdownRenderer from "@/app/components/markdown-renderer"
 
 /* ------------------------------------------------------------------ */
 /*  Expert type metadata                                               */
@@ -763,9 +764,7 @@ export default function TranscriptsPage() {
                 </div>
                 <div className="max-h-[500px] overflow-y-auto rounded-md border border-border bg-muted/20 p-4">
                   {queryResult ? (
-                    <div className="text-sm leading-relaxed text-foreground/90 whitespace-pre-wrap">
-                      {queryResult}
-                    </div>
+                    <MarkdownRenderer content={queryResult} />
                   ) : (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Loader2 className="h-4 w-4 animate-spin" />
