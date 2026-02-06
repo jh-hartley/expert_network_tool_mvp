@@ -143,6 +143,7 @@ const pipeline: {
       "Expert-usage reporting to reduce end-of-project back-and-forth",
       "Team end-of-day email summaries -- formatted and ready to send",
       "All tables exportable in pre-formatted layouts ready to copy-paste into emails or slides",
+      "Project data can be cleared automatically at close-out in line with company data retention policies and project timelines",
     ],
   },
 ]
