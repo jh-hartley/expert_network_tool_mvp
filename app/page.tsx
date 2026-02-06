@@ -176,12 +176,12 @@ export default function OverviewPage() {
           </div>
           <div>
             <p className="text-sm font-semibold text-red-900">
-              Data submission is temporarily unavailable
+              Note: the data upload feature is currently broken
             </p>
             <p className="mt-1 text-sm leading-relaxed text-red-700">
-              We are aware of an issue affecting data uploads and are actively
-              working on a fix. This will be resolved as soon as possible.
-              All other features remain operational.
+              I{"'"}m debugging an issue with the file upload pipeline and
+              working to fix it ASAP. Everything else in the demo should work
+              as expected.
             </p>
           </div>
         </div>
