@@ -168,6 +168,25 @@ const status: { done: boolean; text: string }[] = [
 export default function OverviewPage() {
   return (
     <div className="mx-auto max-w-5xl px-6 py-10">
+      {/* Submission broken banner */}
+      <div className="mb-8 rounded-lg border-2 border-red-300 bg-red-50 px-5 py-4">
+        <div className="flex items-start gap-3">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-red-100">
+            <TriangleAlert className="h-4 w-4 text-red-600" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-red-900">
+              Data submission is temporarily unavailable
+            </p>
+            <p className="mt-1 text-sm leading-relaxed text-red-700">
+              We are aware of an issue affecting data uploads and are actively
+              working on a fix. This will be resolved as soon as possible.
+              All other features remain operational.
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Hackathon banner */}
       <div className="mb-8 flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
         <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
@@ -183,21 +202,81 @@ export default function OverviewPage() {
       </div>
 
       {/* Hero */}
-      <section className="mb-12">
+      <section className="mb-6">
         <h1 className="text-3xl font-semibold tracking-tight text-foreground text-balance">
           Helmsman
         </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-          A single operational workspace for expert network workstreams --
-          replacing fragmented Excel- and email-based processes with a unified
-          system for expert identification, clearance, tracking, and
-          reconciliation end to end.
+        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+          The end-to-end operating system for expert network workstreams --
+          replacing fragmented spreadsheets, email chains, and manual processes
+          with a single, intelligent platform.
         </p>
-        <p className="mt-3 max-w-2xl text-xs leading-relaxed text-muted-foreground/80">
-          The focus is on administrative excellence and risk reduction, not
-          automated insight generation. The right expert calls materially shape
-          case outcomes -- this tool lets teams scale coverage with confidence.
-        </p>
+      </section>
+
+      {/* Value propositions -- 4 columns */}
+      <section className="mb-14">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {/* 1 -- Reduced Admin */}
+          <div className="group relative overflow-hidden rounded-lg border border-border bg-card p-5 transition-colors hover:border-primary/20 hover:bg-primary/[0.02]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/8 ring-1 ring-primary/15">
+              <Sparkles className="h-5 w-5 text-primary" />
+            </div>
+            <h3 className="mt-4 text-sm font-semibold text-foreground">
+              Massively Reduced Admin
+            </h3>
+            <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+              Eliminate hours of manual data entry, copy-paste, and tracker
+              maintenance. AI-driven parsing and auto-populated fields let your
+              team focus on expert selection, not spreadsheet wrangling.
+            </p>
+          </div>
+
+          {/* 2 -- Increased Coverage */}
+          <div className="group relative overflow-hidden rounded-lg border border-border bg-card p-5 transition-colors hover:border-primary/20 hover:bg-primary/[0.02]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/8 ring-1 ring-primary/15">
+              <Users className="h-5 w-5 text-primary" />
+            </div>
+            <h3 className="mt-4 text-sm font-semibold text-foreground">
+              Increased Expert Coverage
+            </h3>
+            <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+              Review and shortlist significantly more experts in the same time
+              window. Standardised profiles and smart filtering mean broader
+              coverage without compromising quality.
+            </p>
+          </div>
+
+          {/* 3 -- Automated Outputs */}
+          <div className="group relative overflow-hidden rounded-lg border border-border bg-card p-5 transition-colors hover:border-primary/20 hover:bg-primary/[0.02]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/8 ring-1 ring-primary/15">
+              <FileBarChart className="h-5 w-5 text-primary" />
+            </div>
+            <h3 className="mt-4 text-sm font-semibold text-foreground">
+              Automated Reporting
+            </h3>
+            <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+              Budgeting, team updates, and KPI extraction handled
+              automatically. Export ready-to-send email digests, track spend in
+              real time via the dashboard, and auto-anonymise transcripts for
+              safe sharing.
+            </p>
+          </div>
+
+          {/* 4 -- Unified Interface */}
+          <div className="group relative overflow-hidden rounded-lg border border-border bg-card p-5 transition-colors hover:border-primary/20 hover:bg-primary/[0.02]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/8 ring-1 ring-primary/15">
+              <Database className="h-5 w-5 text-primary" />
+            </div>
+            <h3 className="mt-4 text-sm font-semibold text-foreground">
+              Unified Interface
+            </h3>
+            <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+              One platform connecting Bain{"'"}s existing tools -- CID clearance,
+              network portals, compliance lists, and enrichment data -- so
+              nothing falls through the cracks.
+            </p>
+          </div>
+        </div>
       </section>
 
       {/* Pipeline */}
