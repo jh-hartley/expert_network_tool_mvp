@@ -958,81 +958,7 @@ export default function DemoPage() {
       </section>
 
       {/* ============================================================ */}
-      {/*  DIVIDER -- Work in Progress section                           */}
-      {/* ============================================================ */}
-      <div className="my-12 border-t border-border" />
-
-      <div className="mb-6">
-        <p className="text-[11px] font-semibold uppercase tracking-widest text-amber-700">
-          Work in Progress
-        </p>
-        <h2 className="mt-1 text-xl font-semibold tracking-tight text-foreground">
-          Under Active Development
-        </h2>
-        <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-          The following stages have initial implementations but are being
-          expanded with additional capabilities.
-        </p>
-      </div>
-
-      {/* ============================================================ */}
-      {/*  STEP 7 -- Search & Discovery (WIP)                            */}
-      {/* ============================================================ */}
-      <section>
-        <div className="flex items-center gap-3">
-          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
-            7
-          </span>
-          <SearchIcon className="h-4 w-4 text-primary/60" />
-          <h2 className="text-lg font-semibold tracking-tight text-foreground">
-            Search & Discovery
-          </h2>
-          <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-[10px] font-semibold text-amber-800">
-            <Construction className="h-3 w-3" />
-            Work in Progress
-          </span>
-        </div>
-        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">
-          The Search page provides a unified search across experts, transcripts,
-          and survey responses. Type and industry filters narrow results.
-          Currently, search is keyword-based across stored data. Future
-          enhancements will add vector-embedded semantic search and RAG-powered
-          transcript queries with source attribution.
-        </p>
-        <ul className="mt-3 flex flex-col gap-1.5 max-w-3xl">
-          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-            Search across experts, transcripts, and surveys from a single input
-          </li>
-          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-            Filter by type (Experts / Transcripts / Surveys) and industry
-          </li>
-          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-amber-400" />
-            Planned: vector-embedded semantic search for natural-language queries
-          </li>
-          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-amber-400" />
-            Planned: transcript search with supporting quotes linked back to source
-          </li>
-        </ul>
-        <div className="mt-6 flex items-center gap-3">
-          <Link
-            href="/search"
-            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            <SearchIcon className="h-3.5 w-3.5" />
-            Go to Search page
-          </Link>
-          <p className="text-xs text-muted-foreground">
-            Try searching for an expert name or company from the demo data.
-          </p>
-        </div>
-      </section>
-
-      {/* ============================================================ */}
-      {/*  STEP 8 -- Reconciliation & Reporting (WIP)                    */}
+      {/*  STEP 8 -- Reconciliation & Reporting                          */}
       {/* ============================================================ */}
       <section className="mt-10">
         <div className="flex items-center gap-3">
@@ -1043,16 +969,12 @@ export default function DemoPage() {
           <h2 className="text-lg font-semibold tracking-tight text-foreground">
             Reconciliation & Reporting
           </h2>
-          <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-[10px] font-semibold text-amber-800">
-            <Construction className="h-3 w-3" />
-            Work in Progress
-          </span>
         </div>
         <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">
           The Dashboard page provides budget roll-ups, expert-type breakdowns,
           and spend-by-status reporting. The Budget tab shows cost breakdowns
-          across scheduled, completed, and cancelled calls. Full reconciliation
-          tables for network settlement and audit-trail exports are planned.
+          across scheduled, completed, and cancelled calls. Reconciliation
+          tables for network settlement and audit-trail exports are available.
         </p>
         <ul className="mt-3 flex flex-col gap-1.5 max-w-3xl">
           <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
@@ -1064,12 +986,12 @@ export default function DemoPage() {
             Expert-type breakdown showing customer, competitor, and target counts
           </li>
           <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-amber-400" />
-            Planned: structured reconciliation tables for network settlement
+            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+            Structured reconciliation tables for network settlement
           </li>
           <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-amber-400" />
-            Planned: cost verification with full audit trail and project close-out
+            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+            Cost verification with full audit trail and project close-out
           </li>
         </ul>
         <div className="mt-6 flex items-center gap-3">
@@ -1082,6 +1004,84 @@ export default function DemoPage() {
           </Link>
           <p className="text-xs text-muted-foreground">
             Review budget roll-ups and explore the spend breakdown by status and type.
+          </p>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/*  DIVIDER -- Work in Progress section                           */}
+      {/* ============================================================ */}
+      <div className="my-12 border-t border-border" />
+
+      <div className="mb-6">
+        <p className="text-[11px] font-semibold uppercase tracking-widest text-amber-700">
+          Work in Progress
+        </p>
+        <h2 className="mt-1 text-xl font-semibold tracking-tight text-foreground">
+          Under Active Development
+        </h2>
+        <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+          The following stage has an initial implementation but is being
+          expanded with additional capabilities.
+        </p>
+      </div>
+
+      {/* ============================================================ */}
+      {/*  STEP 7 -- Transcripts (WIP)                                   */}
+      {/* ============================================================ */}
+      <section>
+        <div className="flex items-center gap-3">
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
+            7
+          </span>
+          <SearchIcon className="h-4 w-4 text-primary/60" />
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
+            Transcripts
+          </h2>
+          <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-[10px] font-semibold text-amber-800">
+            <Construction className="h-3 w-3" />
+            Work in Progress
+          </span>
+        </div>
+        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+          The Transcripts page lists every uploaded call transcript, with filters
+          for expert type and specific expert selection. Browse, expand, and read
+          the full text of any transcript. Two features are still under development:
+          querying transcripts from saved calls, and searching experts with
+          natural-language prompts.
+        </p>
+        <ul className="mt-3 flex flex-col gap-1.5 max-w-3xl">
+          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+            Browse all uploaded transcripts in a single list
+          </li>
+          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+            Filter by expert type (Customer, Competitor, Target, Comp. Customer)
+          </li>
+          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+            Select specific experts using autocomplete to narrow the transcript list
+          </li>
+          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-amber-400" />
+            Planned: query transcripts from saved calls with structured search
+          </li>
+          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-amber-400" />
+            Planned: search experts using natural-language prompts
+          </li>
+        </ul>
+        <div className="mt-6 flex items-center gap-3">
+          <Link
+            href="/transcripts"
+            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            <SearchIcon className="h-3.5 w-3.5" />
+            Go to Transcripts page
+          </Link>
+          <p className="text-xs text-muted-foreground">
+            View all 3 seed transcripts and try filtering by expert type or name.
           </p>
         </div>
       </section>
