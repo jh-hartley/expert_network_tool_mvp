@@ -496,7 +496,7 @@ export default function UploadPage() {
                   Extracting expert profiles...
                 </p>
                 <p className="mt-0.5 text-xs text-muted-foreground">
-                  Analysing {result.rawContent.length.toLocaleString()} characters with GPT-4o. This typically takes 10-30 seconds.
+                  Analysing {result.rawContent.length.toLocaleString()} characters with GPT-4.1. This typically takes 10-30 seconds.
                 </p>
               </div>
             </div>
@@ -504,23 +504,25 @@ export default function UploadPage() {
 
           {/* Error state */}
           {extractionError && (
-            <div className="mt-3 flex items-center gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
-              <AlertCircle className="h-4 w-4 shrink-0 text-destructive" />
-              <div className="flex-1">
-                <p className="text-sm font-medium text-destructive">
+            <div className="mt-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+              <div className="flex items-center gap-3">
+                <AlertCircle className="h-4 w-4 shrink-0 text-destructive" />
+                <p className="flex-1 text-sm font-medium text-destructive">
                   Extraction failed
                 </p>
-                <p className="mt-0.5 text-xs text-destructive/80">
-                  {extractionError}
-                </p>
+                <button
+                  type="button"
+                  onClick={handleExtract}
+                  className="inline-flex h-7 items-center gap-1.5 rounded-md border border-destructive/30 px-2.5 text-xs font-medium text-destructive transition-colors hover:bg-destructive/10"
+                >
+                  Retry
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={handleExtract}
-                className="inline-flex h-7 items-center gap-1.5 rounded-md border border-destructive/30 px-2.5 text-xs font-medium text-destructive transition-colors hover:bg-destructive/10"
-              >
-                Retry
-              </button>
+              <div className="mt-2 max-h-48 overflow-auto rounded-md bg-destructive/5 p-2">
+                <pre className="whitespace-pre-wrap font-mono text-[11px] leading-relaxed text-destructive/80">
+                  {extractionError}
+                </pre>
+              </div>
             </div>
           )}
         </div>

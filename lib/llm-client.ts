@@ -21,10 +21,15 @@ export async function extractExperts(
   })
 
   if (!res.ok) {
-    const body = await res.json().catch(() => ({}))
+    const body = await res.json().catch(() => ({})) as {
+      error?: string
+      debug?: Record<string, unknown>
+    }
+    const debugStr = body.debug
+      ? `\n\nDebug: ${JSON.stringify(body.debug, null, 2)}`
+      : ""
     throw new Error(
-      (body as { error?: string }).error ??
-        `Extraction failed (${res.status})`,
+      (body.error ?? `Extraction failed (${res.status})`) + debugStr,
     )
   }
 
