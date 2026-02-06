@@ -170,7 +170,7 @@ function networkPriceCols(experts: ExpertProfile[]): ColDef[] {
   return getNetworks(experts).map((n) => ({
     key: `price_${n}`,
     label: `${n} ($/hr)`,
-    accessor: (e: ExpertProfile) => e.network_prices[n] ?? null,
+    accessor: (e: ExpertProfile) => e.network_prices?.[n] ?? null,
     className: "text-right",
     minWidth: "110px",
   }))

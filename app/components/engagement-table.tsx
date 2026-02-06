@@ -119,14 +119,14 @@ function formatDate(iso: string) {
 }
 
 function formatCallCost(r: EngagementRecord): string {
-  const hourlyRate = r.network_prices[r.network] ?? 0
+  const hourlyRate = r.network_prices?.[r.network] ?? 0
   if (hourlyRate <= 0) return "--"
   const cost = computeCallPrice(hourlyRate, r.duration_minutes, r.is_follow_up ?? false)
   return cost > 0 ? `$${cost.toLocaleString()}` : "--"
 }
 
 function formatSurveyCost(r: EngagementRecord): string {
-  const price = r.network_prices[r.network] ?? 0
+  const price = r.network_prices?.[r.network] ?? 0
   return price > 0 ? `\u20AC${price.toLocaleString()}` : "--"
 }
 
@@ -262,13 +262,13 @@ export default function EngagementTable({
       case "date": return r.date
       case "duration": return r.duration_minutes || null
       case "follow_up": return r.is_follow_up ? 1 : 0
-      case "hourly_rate": return r.network_prices[r.network] ?? null
+      case "hourly_rate": return r.network_prices?.[r.network] ?? null
       case "cost": {
         if (engagementType === "call") {
-          const rate = r.network_prices[r.network] ?? 0
+          const rate = r.network_prices?.[r.network] ?? 0
           return rate > 0 ? computeCallPrice(rate, r.duration_minutes, r.is_follow_up ?? false) : null
         }
-        return r.network_prices[r.network] ?? null
+        return r.network_prices?.[r.network] ?? null
       }
       default: return null
     }
@@ -771,7 +771,7 @@ export default function EngagementTable({
               sorted.map((r) => {
                 const globalIdx = findOriginalIndex(r)
                 const isEditingN = editingNotes === globalIdx
-                const availableNets = Object.entries(r.network_prices).filter(([, v]) => v != null).map(([k]) => k)
+                const availableNets = Object.entries(r.network_prices ?? {}).filter(([, v]) => v != null).map(([k]) => k)
                 return (
                   <tr key={r.id} className="border-b border-border last:border-0 transition-colors hover:bg-accent/30">
                     {/* Status */}
@@ -872,7 +872,7 @@ export default function EngagementTable({
 
                       /* Hourly rate */
                       if (col.key === "hourly_rate") {
-                        const rate = r.network_prices[r.network]
+                        const rate = r.network_prices?.[r.network]
                         return (
                           <td key={col.key} className="px-3 py-2 text-right tabular-nums">
                             {rate != null ? (engagementType === "survey" ? `\u20AC${rate}` : `$${rate}`) : <span className="text-muted-foreground/40">--</span>}
