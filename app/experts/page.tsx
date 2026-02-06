@@ -8,7 +8,6 @@ import ExpertLensTable from "../components/expert-lens-table"
 import {
   getExpertProfiles,
   saveExpertProfiles,
-  SEED_PROFILES,
   type ExpertProfile,
 } from "@/lib/expert-profiles"
 
@@ -18,17 +17,19 @@ import {
 /*  State is held here so shortlisting, notes, and CID updates are    */
 /*  reflected immediately. Every mutation persists to localStorage.    */
 /*                                                                     */
-/*  We initialise with SEED_PROFILES (deterministic) so server and    */
-/*  client render identically, then hydrate from localStorage in an   */
-/*  effect to pick up any user changes.                                */
+/*  We initialise with an empty array and hydrate from localStorage   */
+/*  in an effect so server and client render identically (no           */
+/*  hydration mismatch).                                               */
 /* ------------------------------------------------------------------ */
 
 export default function ExpertsPage() {
-  const [experts, setExperts] = useState<ExpertProfile[]>(SEED_PROFILES)
+  const [experts, setExperts] = useState<ExpertProfile[]>([])
+  const [loaded, setLoaded] = useState(false)
 
   // Hydrate from localStorage after mount (avoids SSR mismatch)
   useEffect(() => {
     setExperts(getExpertProfiles())
+    setLoaded(true)
   }, [])
 
   const handleUpdate = useCallback(
@@ -42,6 +43,16 @@ export default function ExpertsPage() {
     },
     [],
   )
+
+  if (!loaded) {
+    return (
+      <div className="mx-auto max-w-[1600px] px-6 py-10">
+        <div className="flex items-center justify-center py-24 text-sm text-muted-foreground">
+          Loading expert profiles...
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="mx-auto max-w-[1600px] px-6 py-10">
