@@ -8,7 +8,7 @@ import {
   Users,
   Phone,
   ClipboardList,
-  Search,
+  FileText,
   Settings,
   Compass,
 } from "lucide-react"
@@ -20,7 +20,7 @@ const links = [
   { href: "/experts", label: "Experts", icon: Users },
   { href: "/calls", label: "Calls", icon: Phone },
   { href: "/ai-surveys", label: "AI Surveys", icon: ClipboardList },
-  { href: "/search", label: "Search", icon: Search },
+  { href: "/transcripts", label: "Transcripts", icon: FileText },
   { href: "/settings", label: "Settings", icon: Settings },
 ]
 
