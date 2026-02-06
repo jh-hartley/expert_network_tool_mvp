@@ -22,6 +22,7 @@ import {
   type ExpertProfile,
 } from "@/lib/expert-profiles"
 import { exportToExcel, type ExcelColumnDef } from "@/lib/export-excel"
+import MarkdownRenderer from "@/app/components/markdown-renderer"
 
 /* Dynamically import the lens table with SSR disabled so it never
    renders on the server -- this eliminates any localStorage-driven
@@ -463,9 +464,9 @@ export default function ExpertsPage() {
                   </div>
                   <div
                     ref={resultRef}
-                    className="mt-3 max-h-[400px] overflow-y-auto text-sm leading-relaxed text-foreground whitespace-pre-wrap"
+                    className="mt-3 max-h-[400px] overflow-y-auto"
                   >
-                    {searchResult}
+                    <MarkdownRenderer content={searchResult} />
                     {isSearching && (
                       <span className="inline-block h-4 w-1.5 animate-pulse bg-primary/60 align-middle" />
                     )}
