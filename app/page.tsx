@@ -98,36 +98,38 @@ const pipeline: {
     capabilities: [
       "Cross-check against client advisors, BEN advisors, and do-not-contact lists",
       "Flag or block profiles that should not be booked through networks",
-      "CID clearance: mark companies or individuals as cleared",
+      "CID clearance: mark whole companies or individual experts as cleared",
       "Auto-populate CID request forms (project lead, contact details, rationale) -- defined once, reused for every request",
-      "Full audit trail of clearance decisions",
+      "In-app button-based approval with full audit trail -- no more losing clearance decisions in email threads, reducing the risk of calls booked by mistake",
     ],
   },
   {
     stage: 6,
-    title: "AI Interviews & Transcripts",
-    subtitle: "Administrative AI support for interview workstreams",
+    title: "Transcripts & KPI Extraction",
+    subtitle:
+      "Upload call transcripts so they are stored, accessible, and queryable in one place. AI handles the administrative processing -- not insight extraction, which requires human judgement -- acting as a first pass that must be verified before sharing.",
     icon: Brain,
     href: "/ai-surveys",
     capabilities: [
-      "Separate workspace for AI interview KPIs and billing",
-      "LLM extraction of NPS-style measures and key quotations",
-      "Neutral summaries for faster human synthesis",
-      "Anonymised titles for safe external sharing",
-      "Keyword search and filtered context windows",
+      "Auto-generated summaries so users can quickly identify which transcript(s) they need",
+      "KPI extraction into the call tracker (e.g. NPS scores for customer calls) -- populated automatically where applicable",
+      "Flag references in the text that may need anonymising before client sharing (first-pass only; requires manual review)",
+      "Rename and standardise transcript files for consistent storage",
+      "Separate workspace for AI interview billing and tracking",
     ],
   },
   {
     stage: 7,
     title: "Search & Discovery",
-    subtitle: "Natural-language queries powered by vector similarity",
+    subtitle:
+      "Two types of search in one interface. Expert search combines classic database filters (company, departure date, customer vs. competitor, etc.) with natural language to build shortlists faster. Transcript search lets you filter to a subset of calls -- e.g. only a certain competitor, or only customer transcripts -- then ask for supporting quotes, rather than uploading everything into a separate ChatGPT session each time.",
     icon: SearchIcon,
     href: "/search",
     capabilities: [
-      "Embedded expert descriptions with context vectors",
-      "Miniature RAG model for semantic similarity search",
-      "Natural-language queries across experts and quotations",
-      "Faceted results by network, industry, compliance status, and more",
+      "Expert search: database filters + natural-language queries to surface the right profiles",
+      "Transcript search: filter by expert type, company, or call group, then query for quotes to support slide arguments",
+      "Eliminates re-uploading subsets of transcripts into ChatGPT for each new question",
+      "Future: link quotes back to their source location in the transcript for easy cross-checking against hallucinations",
     ],
   },
   {
@@ -149,12 +151,38 @@ const pipeline: {
 /*  Required data inputs                                               */
 /* ------------------------------------------------------------------ */
 
-const dataInputs = [
-  "Unstructured expert profile data from networks",
-  "BEN advisor details and advisors flagged for fraud by Compliance",
-  "Call transcripts (human and AI interviews)",
-  "External reference data (e.g. FTEs, industry classification)",
-  "CID connection to support auto-filing clearance forms and marking companies / experts as safe to contact",
+const dataInputBuckets: {
+  label: string
+  description: string
+  items: string[]
+}[] = [
+  {
+    label: "Necessary & readily available",
+    description: "Data the team already has to hand for every workstream.",
+    items: [
+      "Unstructured expert profile data from networks (email paste or CSV export)",
+      "Call transcripts (human and AI interviews)",
+    ],
+  },
+  {
+    label: "Internal but requires setup",
+    description:
+      "Sourced from within Bain; needs integration or one-time upload.",
+    items: [
+      "BEN advisor details and advisors flagged for fraud by Compliance",
+      "CID connection for auto-filing clearance forms and marking companies / experts as safe to contact",
+      "Client advisor lists uploaded per project for compliance cross-checks",
+    ],
+  },
+  {
+    label: "Third-party integrations (future)",
+    description:
+      "External services that unlock full automation; the trickiest to implement.",
+    items: [
+      "Direct expert network API feeds to auto-populate the tracker (removing the manual data ingestion step entirely)",
+      "Business intelligence platforms (e.g. D&B Hoovers, Gain.pro) for company industry, FTE counts, and descriptions",
+    ],
+  },
 ]
 
 /* ------------------------------------------------------------------ */
@@ -415,20 +443,37 @@ export default function OverviewPage() {
         </h2>
         <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-muted-foreground">
           For full end-state functionality, Helmsman requires the following data
-          sources to be connected or uploaded.
+          sources -- grouped by availability and implementation effort.
         </p>
 
-        <ul className="mt-6 flex flex-col gap-2.5">
-          {dataInputs.map((item, i) => (
-            <li
+        <div className="mt-8 grid gap-4 sm:grid-cols-3">
+          {dataInputBuckets.map((bucket, i) => (
+            <div
               key={i}
-              className="flex items-start gap-3 text-sm leading-relaxed text-foreground"
+              className="flex flex-col rounded-lg border border-border bg-card"
             >
-              <span className="mt-2 block h-1 w-1 shrink-0 rounded-full bg-muted-foreground/40" />
-              {item}
-            </li>
+              <div className="border-b border-border px-5 py-3.5">
+                <h3 className="text-sm font-semibold text-foreground">
+                  {bucket.label}
+                </h3>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  {bucket.description}
+                </p>
+              </div>
+              <ul className="flex flex-1 flex-col gap-2 px-5 py-4">
+                {bucket.items.map((item, j) => (
+                  <li
+                    key={j}
+                    className="flex items-start gap-2 text-sm leading-relaxed text-foreground/80"
+                  >
+                    <span className="mt-2 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
           ))}
-        </ul>
+        </div>
       </section>
 
       <div className="mb-16 border-t border-border" />
