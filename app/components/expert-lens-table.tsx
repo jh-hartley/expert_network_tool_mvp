@@ -8,11 +8,15 @@ import {
   Search,
   Star,
   ShieldCheck,
+  ShieldAlert,
   StickyNote,
   Check,
   X,
+  AlertTriangle,
+  UserX,
+  Briefcase,
 } from "lucide-react"
-import type { ExpertProfile, ExpertLens } from "@/lib/expert-profiles"
+import type { ExpertProfile, ExpertLens, ComplianceFlag } from "@/lib/expert-profiles"
 import { getNetworks, PROJECT_CONTEXT } from "@/lib/expert-profiles"
 import Modal from "./modal"
 
@@ -209,6 +213,40 @@ const TYPE_LABELS: Record<string, string> = {
   competitor: "Competitor",
   target: "Target",
   competitor_customer: "Comp. Customer",
+}
+
+/* ------------------------------------------------------------------ */
+/*  Compliance flag display config                                     */
+/* ------------------------------------------------------------------ */
+
+const COMPLIANCE_FLAG_CONFIG: Record<
+  ComplianceFlag,
+  { label: string; description: string; color: string; Icon: typeof AlertTriangle }
+> = {
+  cid_cleared: {
+    label: "CID Cleared",
+    description: "CID clearance has been granted for this expert.",
+    color: "border-emerald-300 bg-emerald-50 text-emerald-700",
+    Icon: ShieldCheck,
+  },
+  ben_advisor: {
+    label: "BEN Advisor",
+    description: "This expert is registered as a BEN (Business Ethics Network) advisor. Additional compliance review may be required before engagement.",
+    color: "border-amber-300 bg-amber-50 text-amber-700",
+    Icon: AlertTriangle,
+  },
+  compliance_flagged: {
+    label: "Compliance Flag",
+    description: "Compliance has flagged this expert as potentially fraudulent. Do not proceed without explicit compliance team approval.",
+    color: "border-red-300 bg-red-50 text-red-700",
+    Icon: ShieldAlert,
+  },
+  client_advisor: {
+    label: "Client Advisor",
+    description: "This expert is a current client advisor. Engaging may create a conflict of interest. Check with the engagement manager.",
+    color: "border-orange-300 bg-orange-50 text-orange-700",
+    Icon: Briefcase,
+  },
 }
 
 /* ------------------------------------------------------------------ */
@@ -640,26 +678,55 @@ export default function ExpertLensTable({
                           </button>
 
                           {/* CID clearance button */}
-                          <button
-                            type="button"
-                            onClick={() => openCidModal(expert)}
-                            title={
-                              expert.cid_clearance_requested
-                                ? "CID clearance requested"
-                                : "Request CID clearance"
-                            }
-                            className={[
-                              "inline-flex h-7 items-center gap-1 rounded-md border px-2 text-[11px] font-medium transition-colors",
-                              expert.cid_clearance_requested
-                                ? "border-emerald-300 bg-emerald-50 text-emerald-700"
-                                : "border-border bg-card text-muted-foreground hover:bg-accent hover:text-foreground",
-                            ].join(" ")}
-                          >
-                            <ShieldCheck className="h-3 w-3" />
-                            <span className="sr-only sm:not-sr-only">
-                              CID
+                          {expert.compliance_flags?.includes("cid_cleared") ? (
+                            <span
+                              className="inline-flex h-7 items-center gap-1 rounded-md border border-emerald-300 bg-emerald-50 px-2 text-[11px] font-medium text-emerald-700"
+                              title="CID clearance granted"
+                            >
+                              <ShieldCheck className="h-3 w-3" />
+                              <span className="sr-only sm:not-sr-only">Cleared</span>
                             </span>
-                          </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => openCidModal(expert)}
+                              title={
+                                expert.cid_clearance_requested
+                                  ? "CID clearance requested (pending)"
+                                  : "Request CID clearance"
+                              }
+                              className={[
+                                "inline-flex h-7 items-center gap-1 rounded-md border px-2 text-[11px] font-medium transition-colors",
+                                expert.cid_clearance_requested
+                                  ? "border-sky-300 bg-sky-50 text-sky-700"
+                                  : "border-border bg-card text-muted-foreground hover:bg-accent hover:text-foreground",
+                              ].join(" ")}
+                            >
+                              <ShieldCheck className="h-3 w-3" />
+                              <span className="sr-only sm:not-sr-only">
+                                {expert.cid_clearance_requested ? "Pending" : "CID"}
+                              </span>
+                            </button>
+                          )}
+
+                          {/* Compliance warning badges */}
+                          {(expert.compliance_flags ?? [])
+                            .filter((f) => f !== "cid_cleared")
+                            .map((flag) => {
+                              const cfg = COMPLIANCE_FLAG_CONFIG[flag]
+                              if (!cfg) return null
+                              const IconComp = cfg.Icon
+                              return (
+                                <span
+                                  key={flag}
+                                  title={`${cfg.label}: ${cfg.description}`}
+                                  className={`inline-flex h-7 items-center gap-1 rounded-md border px-2 text-[11px] font-medium ${cfg.color}`}
+                                >
+                                  <IconComp className="h-3 w-3" />
+                                  <span className="sr-only sm:not-sr-only">{cfg.label}</span>
+                                </span>
+                              )
+                            })}
                         </div>
                       </td>
 

@@ -11,10 +11,44 @@ import {
   X,
   StickyNote,
   Trash2,
+  AlertTriangle,
+  ShieldAlert,
+  Briefcase,
 } from "lucide-react"
 import type { EngagementRecord, EngagementStatus, EngagementType } from "@/lib/engagements"
-import { getNetworks, type ExpertProfile } from "@/lib/expert-profiles"
+import { getNetworks, type ExpertProfile, type ComplianceFlag } from "@/lib/expert-profiles"
 import { searchExperts, createEngagementFromExpert, generateId } from "@/lib/engagements"
+import Modal from "./modal"
+
+/* ------------------------------------------------------------------ */
+/*  Compliance flag warnings                                           */
+/* ------------------------------------------------------------------ */
+
+const WARNING_FLAGS: ComplianceFlag[] = ["ben_advisor", "compliance_flagged", "client_advisor"]
+
+const FLAG_META: Record<
+  string,
+  { label: string; description: string; severity: "warning" | "danger"; Icon: typeof AlertTriangle }
+> = {
+  ben_advisor: {
+    label: "BEN Advisor",
+    description: "This expert is registered as a BEN (Business Ethics Network) advisor. Additional compliance review may be required before engagement.",
+    severity: "warning",
+    Icon: AlertTriangle,
+  },
+  compliance_flagged: {
+    label: "Potentially Fraudulent",
+    description: "Compliance has flagged this expert as potentially fraudulent. Do not proceed without explicit compliance team approval.",
+    severity: "danger",
+    Icon: ShieldAlert,
+  },
+  client_advisor: {
+    label: "Current Client Advisor",
+    description: "This expert is a current client advisor. Engaging may create a conflict of interest. Check with the engagement manager before proceeding.",
+    severity: "warning",
+    Icon: Briefcase,
+  },
+}
 
 /* ------------------------------------------------------------------ */
 /*  Lens tabs (same as experts page)                                   */
@@ -184,6 +218,10 @@ export default function EngagementTable({
   const [editingDate, setEditingDate] = useState<number | null>(null)
   const [editingDuration, setEditingDuration] = useState<number | null>(null)
 
+  // Compliance warning modal
+  const [warningDraft, setWarningDraft] = useState<DraftRow | null>(null)
+  const [warningFlags, setWarningFlags] = useState<ComplianceFlag[]>([])
+
   useEffect(() => {
     setSortKey(null)
   }, [lens])
@@ -294,8 +332,21 @@ export default function EngagementTable({
     setAcOpenId(null)
   }
 
-  function commitDraft(draft: DraftRow) {
+  function commitDraft(draft: DraftRow, bypassWarning = false) {
     if (!draft.expert) return
+
+    // Check for compliance warnings (unless already overridden)
+    if (!bypassWarning) {
+      const flags = (draft.expert.compliance_flags ?? []).filter((f) =>
+        WARNING_FLAGS.includes(f),
+      )
+      if (flags.length > 0) {
+        setWarningDraft(draft)
+        setWarningFlags(flags)
+        return // Show warning modal instead
+      }
+    }
+
     const record = createEngagementFromExpert(draft.expert, engagementType, {
       id: draft.id,
       status: draft.status,
@@ -309,6 +360,18 @@ export default function EngagementTable({
     })
     onAddRecord(record)
     removeDraft(draft.id)
+  }
+
+  function dismissWarning() {
+    if (warningDraft) removeDraft(warningDraft.id)
+    setWarningDraft(null)
+    setWarningFlags([])
+  }
+
+  function overrideWarning() {
+    if (warningDraft) commitDraft(warningDraft, true)
+    setWarningDraft(null)
+    setWarningFlags([])
   }
 
   const lensCount = (l: Lens) => l === "all" ? records.length : records.filter((r) => r.expert_type === l).length
@@ -554,20 +617,29 @@ export default function EngagementTable({
                             />
                             {showAc && (
                               <div className="absolute left-0 top-full z-50 mt-1 max-h-48 w-72 overflow-y-auto rounded-md border border-border bg-card shadow-lg">
-                                {acResults.map((exp) => (
-                                  <button
-                                    key={`${exp.name}-${exp.company}`}
-                                    type="button"
-                                    onClick={() => handleDraftSelectExpert(draft, exp)}
-                                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs hover:bg-accent"
-                                  >
-                                    <span className="font-medium text-foreground">{exp.name}</span>
-                                    <span className="truncate text-muted-foreground">{exp.company}</span>
-                                    <span className={`ml-auto shrink-0 inline-flex items-center rounded-full border px-1.5 py-0.5 text-[10px] font-medium ${TYPE_COLORS[exp.expert_type] ?? ""}`}>
-                                      {TYPE_LABELS[exp.expert_type] ?? exp.expert_type}
-                                    </span>
-                                  </button>
-                                ))}
+                                {acResults.map((exp) => {
+                                  const hasWarnings = (exp.compliance_flags ?? []).some((f) => WARNING_FLAGS.includes(f))
+                                  return (
+                                    <button
+                                      key={`${exp.name}-${exp.company}`}
+                                      type="button"
+                                      onClick={() => handleDraftSelectExpert(draft, exp)}
+                                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs hover:bg-accent"
+                                    >
+                                      <span className="font-medium text-foreground">{exp.name}</span>
+                                      <span className="truncate text-muted-foreground">{exp.company}</span>
+                                      {hasWarnings && (
+                                        <AlertTriangle className="h-3 w-3 shrink-0 text-amber-500" title="Compliance warning" />
+                                      )}
+                                      {(exp.compliance_flags ?? []).includes("cid_cleared") && (
+                                        <span className="shrink-0 text-[9px] font-semibold text-emerald-600" title="CID Cleared">CID</span>
+                                      )}
+                                      <span className={`ml-auto shrink-0 inline-flex items-center rounded-full border px-1.5 py-0.5 text-[10px] font-medium ${TYPE_COLORS[exp.expert_type] ?? ""}`}>
+                                        {TYPE_LABELS[exp.expert_type] ?? exp.expert_type}
+                                      </span>
+                                    </button>
+                                  )
+                                })}
                               </div>
                             )}
                             {showNoResults && (
@@ -771,6 +843,77 @@ export default function EngagementTable({
           </p>
         </div>
       </div>
+
+      {/* ---- Compliance Warning Modal ---- */}
+      <Modal
+        open={warningDraft !== null}
+        onClose={dismissWarning}
+        title="Compliance Warning"
+        description={
+          warningDraft?.expert
+            ? `${warningDraft.expert.name} -- ${warningDraft.expert.original_role ?? warningDraft.expert.role} at ${warningDraft.expert.company}`
+            : undefined
+        }
+        maxWidth="max-w-md"
+      >
+        {warningDraft && (
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-3">
+              {warningFlags.map((flag) => {
+                const meta = FLAG_META[flag]
+                if (!meta) return null
+                const IconComp = meta.Icon
+                const borderColor =
+                  meta.severity === "danger"
+                    ? "border-red-200 bg-red-50"
+                    : "border-amber-200 bg-amber-50"
+                const textColor =
+                  meta.severity === "danger" ? "text-red-800" : "text-amber-800"
+                const iconColor =
+                  meta.severity === "danger" ? "text-red-600" : "text-amber-600"
+                return (
+                  <div
+                    key={flag}
+                    className={`flex items-start gap-3 rounded-md border p-3 ${borderColor}`}
+                  >
+                    <IconComp className={`mt-0.5 h-4 w-4 shrink-0 ${iconColor}`} />
+                    <div>
+                      <p className={`text-xs font-semibold ${textColor}`}>
+                        {meta.label}
+                      </p>
+                      <p className={`mt-0.5 text-xs leading-relaxed ${textColor} opacity-80`}>
+                        {meta.description}
+                      </p>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+
+            <p className="text-xs text-muted-foreground">
+              Do you want to override this warning and proceed with adding the{" "}
+              {engagementType === "call" ? "call" : "survey"}, or discard it?
+            </p>
+
+            <div className="flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={dismissWarning}
+                className="h-8 rounded-md border border-border bg-card px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+              >
+                Discard
+              </button>
+              <button
+                type="button"
+                onClick={overrideWarning}
+                className="h-8 rounded-md bg-amber-600 px-3 text-xs font-medium text-card transition-colors hover:bg-amber-700"
+              >
+                Override & Add
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   )
 }

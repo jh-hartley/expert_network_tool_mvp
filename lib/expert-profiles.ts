@@ -20,12 +20,21 @@ export type ExpertLens =
   | "target"
   | "competitor_customer"
 
+/** Compliance flags that can be attached to an expert */
+export type ComplianceFlag =
+  | "cid_cleared"       // CID clearance has been granted
+  | "ben_advisor"       // Expert is a BEN (Business Ethics Network) advisor
+  | "compliance_flagged" // Compliance has flagged the expert as potentially fraudulent
+  | "client_advisor"    // Expert is a current client advisor
+
 export interface ExpertProfile extends ExtractedExpert {
   /** Prices per network.  e.g. { AlphaSights: 650, GLG: 700 } */
   network_prices: Record<string, number | null>
   shortlisted: boolean
   notes: string
   cid_clearance_requested: boolean
+  /** Compliance & CID flags. Empty array = no flags. */
+  compliance_flags: ComplianceFlag[]
 }
 
 /** Default networks in the demo data set */
@@ -50,7 +59,7 @@ export function getNetworks(profiles?: ExpertProfile[]): string[] {
 /* ------------------------------------------------------------------ */
 
 const LS_KEY = "helmsman_expert_profiles"
-const LS_SEEDED_KEY = "helmsman_expert_profiles_seeded"
+const LS_SEEDED_KEY = "helmsman_expert_profiles_seeded_v2"
 
 /* ------------------------------------------------------------------ */
 /*  Read / write helpers                                               */
@@ -71,7 +80,12 @@ export function getExpertProfiles(): ExpertProfile[] {
   try {
     const raw = localStorage.getItem(LS_KEY)
     if (!raw) return SEED_PROFILES
-    return JSON.parse(raw) as ExpertProfile[]
+    const profiles = JSON.parse(raw) as ExpertProfile[]
+    // Backward compat: ensure compliance_flags exists on all profiles
+    for (const p of profiles) {
+      if (!p.compliance_flags) p.compliance_flags = []
+    }
+    return profiles
   } catch {
     return SEED_PROFILES
   }
@@ -157,6 +171,7 @@ export function toExpertProfile(
     shortlisted: false,
     notes: "",
     cid_clearance_requested: false,
+    compliance_flags: [],
   }
 }
 
@@ -275,7 +290,8 @@ export const SEED_PROFILES: ExpertProfile[] = [
       "16 years in plant operations. Manages automation procurement across 12 North American facilities. Annual controls spend ~$8M. Previously at Unilever manufacturing ops.",
     shortlisted: false,
     notes: "",
-    cid_clearance_requested: false,
+    cid_clearance_requested: true,
+    compliance_flags: ["cid_cleared"],
   },
   {
     name: "Marcus Oyelaran",
@@ -306,7 +322,8 @@ export const SEED_PROFILES: ExpertProfile[] = [
       "11 years in food & beverage manufacturing. Oversees automation strategy for 4 breweries. Manages $3.5M annual controls budget.",
     shortlisted: false,
     notes: "",
-    cid_clearance_requested: false,
+    cid_clearance_requested: true,
+    compliance_flags: ["cid_cleared"],
   },
   {
     name: "Chen Wei-Lin",
@@ -338,6 +355,7 @@ export const SEED_PROFILES: ExpertProfile[] = [
     shortlisted: false,
     notes: "",
     cid_clearance_requested: false,
+    compliance_flags: [],
   },
   {
     name: "James Achebe",
@@ -369,6 +387,7 @@ export const SEED_PROFILES: ExpertProfile[] = [
     shortlisted: false,
     notes: "",
     cid_clearance_requested: false,
+    compliance_flags: ["ben_advisor"],
   },
   {
     name: "Roberto Garza",
@@ -400,6 +419,7 @@ export const SEED_PROFILES: ExpertProfile[] = [
     shortlisted: false,
     notes: "",
     cid_clearance_requested: false,
+    compliance_flags: ["client_advisor"],
   },
   {
     name: "Angela Moretti",
@@ -427,6 +447,7 @@ export const SEED_PROFILES: ExpertProfile[] = [
     shortlisted: false,
     notes: "",
     cid_clearance_requested: false,
+    compliance_flags: ["compliance_flagged"],
   },
   {
     name: "Yuki Tanaka",
@@ -454,6 +475,7 @@ export const SEED_PROFILES: ExpertProfile[] = [
     shortlisted: false,
     notes: "",
     cid_clearance_requested: false,
+    compliance_flags: [],
   },
   {
     name: "Priya Chakraborty",
@@ -481,6 +503,7 @@ export const SEED_PROFILES: ExpertProfile[] = [
     shortlisted: false,
     notes: "",
     cid_clearance_requested: false,
+    compliance_flags: [],
   },
 
   /* ---- Competitors ----------------------------------------------- */
@@ -514,6 +537,7 @@ export const SEED_PROFILES: ExpertProfile[] = [
     shortlisted: false,
     notes: "",
     cid_clearance_requested: false,
+    compliance_flags: [],
   },
   {
     name: "Sandra Voss",
@@ -545,6 +569,7 @@ export const SEED_PROFILES: ExpertProfile[] = [
     shortlisted: false,
     notes: "",
     cid_clearance_requested: false,
+    compliance_flags: [],
   },
   {
     name: "Tomoko Sato",
@@ -576,6 +601,7 @@ export const SEED_PROFILES: ExpertProfile[] = [
     shortlisted: false,
     notes: "",
     cid_clearance_requested: false,
+    compliance_flags: [],
   },
   {
     name: "Henrik Larsson",
@@ -603,6 +629,7 @@ export const SEED_PROFILES: ExpertProfile[] = [
     shortlisted: false,
     notes: "",
     cid_clearance_requested: false,
+    compliance_flags: [],
   },
   {
     name: "Derek Otieno",
@@ -630,6 +657,7 @@ export const SEED_PROFILES: ExpertProfile[] = [
     shortlisted: false,
     notes: "",
     cid_clearance_requested: false,
+    compliance_flags: [],
   },
 
   /* ---- Target (Meridian Controls insiders) ----------------------- */
@@ -663,6 +691,7 @@ export const SEED_PROFILES: ExpertProfile[] = [
     shortlisted: false,
     notes: "",
     cid_clearance_requested: false,
+    compliance_flags: [],
   },
   {
     name: "Nathan Cross",
@@ -690,5 +719,6 @@ export const SEED_PROFILES: ExpertProfile[] = [
     shortlisted: false,
     notes: "",
     cid_clearance_requested: false,
+    compliance_flags: [],
   },
 ]
