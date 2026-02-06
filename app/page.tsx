@@ -154,29 +154,41 @@ const pipeline: {
 
 const dataInputBuckets: {
   label: string
+  tag: string
+  tagColor: string
+  accentColor: string
   description: string
   items: string[]
 }[] = [
   {
-    label: "Necessary & readily available",
+    label: "Readily available",
+    tag: "Ready now",
+    tagColor: "bg-emerald-100 text-emerald-800",
+    accentColor: "bg-emerald-500",
     description: "Data the team already has to hand for every workstream.",
     items: [
       "Unstructured expert profile data from networks (email paste or CSV export)",
       "Call transcripts (human and AI interviews)",
+      "Client advisor lists uploaded per project for compliance cross-checks",
     ],
   },
   {
-    label: "Internal but requires setup",
+    label: "Internal setup required",
+    tag: "Internal",
+    tagColor: "bg-amber-100 text-amber-800",
+    accentColor: "bg-amber-500",
     description:
       "Sourced from within Bain; needs integration or one-time upload.",
     items: [
       "BEN advisor details and advisors flagged for fraud by Compliance",
       "CID connection for auto-filing clearance forms and marking companies / experts as safe to contact",
-      "Client advisor lists uploaded per project for compliance cross-checks",
     ],
   },
   {
-    label: "Third-party integrations (future)",
+    label: "Third-party integrations",
+    tag: "Future",
+    tagColor: "bg-sky-100 text-sky-800",
+    accentColor: "bg-sky-500",
     description:
       "External services that unlock full automation; the trickiest to implement.",
     items: [
@@ -218,8 +230,9 @@ export default function OverviewPage() {
             </p>
             <p className="mt-1 text-sm leading-relaxed text-red-700">
               I{"'"}ve rolled back to a previous stable version and am
-              re-implementing the upload features as quickly as possible.
-              Everything else in the demo should work as expected.
+              re-implementing features as quickly as possible. See the
+              prototype progress tracker at the bottom of this page for
+              current status.
             </p>
           </div>
         </div>
@@ -447,27 +460,42 @@ export default function OverviewPage() {
           sources -- grouped by availability and implementation effort.
         </p>
 
-        <div className="mt-8 grid gap-4 sm:grid-cols-3">
+        <div className="mt-8 grid gap-5 sm:grid-cols-3">
           {dataInputBuckets.map((bucket, i) => (
             <div
               key={i}
-              className="flex flex-col rounded-lg border border-border bg-card"
+              className="relative flex flex-col overflow-hidden rounded-lg border border-border bg-card"
             >
-              <div className="border-b border-border px-5 py-3.5">
-                <h3 className="text-sm font-semibold text-foreground">
-                  {bucket.label}
-                </h3>
-                <p className="mt-0.5 text-xs text-muted-foreground">
+              {/* Accent top bar */}
+              <div className={`h-1 w-full ${bucket.accentColor}`} />
+
+              <div className="px-5 pt-4 pb-3">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-semibold text-foreground">
+                    {bucket.label}
+                  </h3>
+                  <span
+                    className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold ${bucket.tagColor}`}
+                  >
+                    {bucket.tag}
+                  </span>
+                </div>
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                   {bucket.description}
                 </p>
               </div>
-              <ul className="flex flex-1 flex-col gap-2 px-5 py-4">
+
+              <div className="border-t border-border" />
+
+              <ul className="flex flex-1 flex-col gap-2.5 px-5 py-4">
                 {bucket.items.map((item, j) => (
                   <li
                     key={j}
-                    className="flex items-start gap-2 text-sm leading-relaxed text-foreground/80"
+                    className="flex items-start gap-2.5 text-sm leading-relaxed text-foreground/80"
                   >
-                    <span className="mt-2 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+                    <span
+                      className={`mt-2 block h-1.5 w-1.5 shrink-0 rounded-full ${bucket.accentColor}`}
+                    />
                     {item}
                   </li>
                 ))}

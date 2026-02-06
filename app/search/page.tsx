@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react"
 import { Search, FileText, Users, MessageSquare } from "lucide-react"
 import PageHeader from "../components/page-header"
+import WipBanner from "../components/wip-banner"
 import FilterPanel, { type FilterGroup } from "../components/filter-panel"
 import EmptyState from "../components/empty-state"
 import { useStore } from "@/lib/use-store"
@@ -95,9 +96,10 @@ export default function SearchPage() {
     <div className="mx-auto max-w-5xl px-6 py-10">
       <PageHeader
         title="Search"
-        description="Search across experts, call transcripts, and survey responses using filters or natural language queries."
+  description="Search across experts, call transcripts, and survey responses using filters or natural language queries."
       />
-
+      <WipBanner feature="search" />
+  
       {/* Search input */}
       <div className="mt-6">
         <div className="relative">

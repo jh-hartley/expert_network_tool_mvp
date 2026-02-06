@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react"
 import { Phone, Plus, PhoneOff, Clock, DollarSign } from "lucide-react"
 import PageHeader from "../components/page-header"
+import WipBanner from "../components/wip-banner"
 import FilterPanel, { type FilterGroup } from "../components/filter-panel"
 import DataTable, { type Column } from "../components/data-table"
 import StatCard from "../components/stat-card"
@@ -149,9 +150,10 @@ export default function CallsPage() {
             <Plus className="h-3.5 w-3.5" />
             Schedule Call
           </button>
-        }
+  }
       />
-
+      <WipBanner feature="calls" />
+  
       <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="This Week" value={weekCalls.length} change={`${completedWeek.length} completed`} changeType="positive" icon={Phone} />
         <StatCard label="Cancelled" value={cancelledWeek.length} changeType={cancelledWeek.length > 0 ? "negative" : "neutral"} icon={PhoneOff} />

@@ -4,6 +4,7 @@ import { Upload, FileText, Users, AlertCircle, CheckCircle2 } from "lucide-react
 import { useState, useRef } from "react"
 import { toast } from "sonner"
 import PageHeader from "../components/page-header"
+import WipBanner from "../components/wip-banner"
 import EmptyState from "../components/empty-state"
 import { useStore } from "@/lib/use-store"
 import { uid } from "@/lib/storage"
@@ -105,6 +106,7 @@ export default function UploadPage() {
         title="Upload"
         description="Import expert profiles from CSV files exported from GLG, AlphaSights, or other network platforms."
       />
+      <WipBanner feature="upload" />
 
       {/* Drop zone */}
       <div className="mt-6">

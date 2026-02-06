@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react"
 import { Plus, BarChart3, Clock, CheckCircle2, ClipboardList } from "lucide-react"
 import PageHeader from "../components/page-header"
+import WipBanner from "../components/wip-banner"
 import FilterPanel, { type FilterGroup } from "../components/filter-panel"
 import StatCard from "../components/stat-card"
 import DataTable, { type Column } from "../components/data-table"
@@ -118,9 +119,10 @@ export default function AiSurveysPage() {
             <Plus className="h-3.5 w-3.5" />
             New Survey
           </button>
-        }
+  }
       />
-
+      <WipBanner feature="ai-surveys" />
+  
       <div className="mt-6 grid gap-3 sm:grid-cols-3">
         <StatCard label="Completed" value={completedCount} changeType="positive" icon={CheckCircle2} />
         <StatCard label="In Progress" value={inProgressCount} change="awaiting responses" changeType="neutral" icon={Clock} />

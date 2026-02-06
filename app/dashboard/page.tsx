@@ -16,6 +16,7 @@ import {
   UserCheck,
 } from "lucide-react"
 import PageHeader from "../components/page-header"
+import WipBanner from "../components/wip-banner"
 import StatCard from "../components/stat-card"
 import { useStore } from "@/lib/use-store"
 
@@ -76,9 +77,10 @@ export default function DashboardPage() {
     <div className="mx-auto max-w-5xl px-6 py-10">
       <PageHeader
         title="Dashboard"
-        description="Key metrics and recent activity across the expert network."
+  description="Key metrics and recent activity across the expert network."
       />
-
+      <WipBanner feature="dashboard" />
+  
       {/* Expert stats */}
       <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Total Experts" value={totalExperts} change={`+${newThisWeek} this week`} changeType="positive" icon={Users} />
