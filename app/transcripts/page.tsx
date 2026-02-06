@@ -217,7 +217,12 @@ export default function TranscriptsPage() {
   const resultRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    setTranscripts(getTranscripts())
+    const all = getTranscripts()
+    console.log("[v0] Transcripts loaded:", all.length, "calls:", all.filter(t => t.engagement_type === "call").length, "surveys:", all.filter(t => t.engagement_type === "survey").length)
+    if (all.length > 0) {
+      console.log("[v0] First transcript:", all[0].engagement_id, all[0].expert_name, all[0].engagement_type)
+    }
+    setTranscripts(all)
     setLoaded(true)
   }, [])
 
