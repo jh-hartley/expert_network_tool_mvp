@@ -4,6 +4,7 @@ import { useState, useRef } from "react"
 import { Download, Upload, RotateCcw, Database, Shield, Bell } from "lucide-react"
 import { toast } from "sonner"
 import PageHeader from "../components/page-header"
+import WipBanner from "../components/wip-banner"
 import Modal from "../components/modal"
 import { exportJSON, importJSON, resetAll } from "@/lib/storage"
 import { notifyStoreChange } from "@/lib/use-store"
@@ -54,9 +55,10 @@ export default function SettingsPage() {
     <div className="mx-auto max-w-5xl px-6 py-10">
       <PageHeader
         title="Settings"
-        description="Manage application data, export backups, and configure preferences."
+  description="Manage application data, export backups, and configure preferences."
       />
-
+      <WipBanner feature="settings" />
+  
       <div className="mt-6 flex flex-col gap-4">
         {/* Data Management section */}
         <section>

@@ -4,6 +4,7 @@ import { useState, useMemo } from "react"
 import { Plus, Users } from "lucide-react"
 import Link from "next/link"
 import PageHeader from "../components/page-header"
+import WipBanner from "../components/wip-banner"
 import FilterPanel, { type FilterGroup } from "../components/filter-panel"
 import DataTable, { type Column } from "../components/data-table"
 import EmptyState from "../components/empty-state"
@@ -117,6 +118,7 @@ export default function ExpertsPage() {
           </Link>
         }
       />
+      <WipBanner feature="experts" />
 
       <div className="mt-4">
         <FilterPanel
