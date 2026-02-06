@@ -1,10 +1,9 @@
 "use client"
 
 import { useState, useCallback } from "react"
-import { Plus, AlertCircle } from "lucide-react"
+import { Plus } from "lucide-react"
 import Link from "next/link"
 import PageHeader from "../components/page-header"
-import WipBanner from "../components/wip-banner"
 import ExpertLensTable from "../components/expert-lens-table"
 import {
   getExpertProfiles,
@@ -16,8 +15,7 @@ import {
 /*  Experts page                                                       */
 /*                                                                     */
 /*  State is held here so shortlisting, notes, and CID updates are    */
-/*  reflected immediately. When localStorage is stabilised, persist    */
-/*  `experts` on every update via saveExpertProfiles().                */
+/*  reflected immediately. Every mutation persists to localStorage.    */
 /* ------------------------------------------------------------------ */
 
 export default function ExpertsPage() {
@@ -52,22 +50,6 @@ export default function ExpertsPage() {
           </Link>
         }
       />
-      <WipBanner feature="experts" />
-
-      {/* Persistence note */}
-      <div className="mt-4 flex items-start gap-3 rounded-lg border border-sky-200 bg-sky-50 px-4 py-3">
-        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-sky-600" />
-        <p className="text-xs leading-relaxed text-sky-800">
-          <span className="font-medium">Browser storage active.</span> The
-          table is initialised with demo profiles from the Project Atlas
-          scenario and persists changes (shortlists, notes, CID requests) in
-          your browser. New experts uploaded via the Upload page are merged
-          automatically -- duplicates are detected by fuzzy name + company
-          matching. Data is private to this browser and will be lost if you
-          clear site data.
-        </p>
-      </div>
-
       {/* Lens table */}
       <div className="mt-6">
         <ExpertLensTable

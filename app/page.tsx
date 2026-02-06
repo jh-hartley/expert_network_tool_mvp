@@ -202,14 +202,15 @@ const dataInputBuckets: {
 
 const status: { done: boolean; text: string }[] = [
   { done: true, text: "App shell, navigation, and Bain design system" },
-  { done: true, text: "TypeScript data model and localStorage CRUD layer (persistence working)" },
-  { done: true, text: "Upload parsing: CSV, email (.eml), and raw text parsed correctly" },
-  { done: true, text: "AI-powered profile extraction from unstructured text (LLM pipeline functional)" },
-  { done: true, text: "Persist parsed experts to the tracker with fuzzy deduplication and network-price merging" },
+  { done: true, text: "TypeScript data model and localStorage persistence layer" },
+  { done: true, text: "Upload parsing: CSV, email (.eml), and raw text" },
+  { done: true, text: "AI-powered profile extraction from unstructured text (LLM pipeline)" },
+  { done: true, text: "Persist parsed experts with fuzzy deduplication and network-price merging" },
   { done: true, text: "Experts table with lens-based views (Customer / Competitor / Target), sortable columns, and per-network pricing" },
+  { done: true, text: "Shortlisting, inline notes, and CID clearance request workflow" },
   { done: false, text: "Data tables with advanced filtering, column hiding, and pagination" },
   { done: false, text: "Settings: export / import JSON, reset data" },
-  { done: false, text: "Compliance cross-checks and CID clearance workflow" },
+  { done: false, text: "Compliance cross-checks against advisory and do-not-contact lists" },
   { done: false, text: "Vector-embedded search and RAG queries" },
   { done: false, text: "LLM transcript extraction and summarisation" },
   { done: false, text: "End-of-project reconciliation tables" },
@@ -218,25 +219,20 @@ const status: { done: boolean; text: string }[] = [
 export default function OverviewPage() {
   return (
     <div className="mx-auto max-w-5xl px-6 py-10">
-      {/* Upload status banner */}
-      <div className="mb-8 rounded-lg border-2 border-sky-300 bg-sky-50 px-5 py-4">
-        <div className="flex items-start gap-3">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sky-100">
-            <TriangleAlert className="h-4 w-4 text-sky-600" />
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-sky-900">
-              Data upload and expert tracking now functional
-            </p>
-            <p className="mt-1 text-sm leading-relaxed text-sky-700">
-              Upload parses expert data from CSV, email, and pasted text. The
-              LLM extraction pipeline and localStorage persistence layer are
-              working -- new experts are merged into the tracker with fuzzy
-              deduplication, and new network prices are added automatically.
-              Data is stored in your browser only (a server-side database is
-              not permitted by company policy).
-            </p>
-          </div>
+      {/* Status banner */}
+      <div className="mb-8 flex items-start gap-3 rounded-lg border border-sky-200 bg-sky-50 px-4 py-3">
+        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-sky-600" />
+        <div>
+          <p className="text-sm font-medium text-sky-900">
+            Upload, extraction, and expert tracking are live
+          </p>
+          <p className="mt-0.5 text-xs leading-relaxed text-sky-700">
+            Parse expert data from CSV, email, or pasted text. The LLM
+            extraction pipeline identifies and structures expert profiles,
+            which are merged into the tracker with fuzzy deduplication. All
+            data persists in your browser via localStorage. See the progress
+            tracker at the bottom of this page for detailed status.
+          </p>
         </div>
       </div>
 

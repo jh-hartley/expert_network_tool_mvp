@@ -7,7 +7,6 @@ import {
 import { useState, useRef } from "react"
 import { toast } from "sonner"
 import PageHeader from "../components/page-header"
-import WipBanner from "../components/wip-banner"
 import { useStore } from "@/lib/use-store"
 import { uid } from "@/lib/storage"
 import { extractExperts } from "@/lib/llm-client"
@@ -242,7 +241,6 @@ export default function UploadPage() {
         title="Upload"
         description="Import expert profiles from CSV files, network emails, or pasted text. Structured CSV is parsed directly; unstructured content is sent to an LLM for extraction. New experts are saved to the expert tracker in your browser. Duplicates are detected by fuzzy name + company matching; if an existing expert is found via a new network, the new price is merged automatically."
       />
-      <WipBanner feature="upload" />
 
       {/* ---- Input methods ---- */}
       {!processing && !extraction && (
