@@ -13,7 +13,6 @@ import {
   Check,
   X,
   AlertTriangle,
-  UserX,
   Briefcase,
 } from "lucide-react"
 import type { ExpertProfile, ExpertLens, ComplianceFlag } from "@/lib/expert-profiles"
