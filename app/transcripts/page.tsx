@@ -326,6 +326,7 @@ export default function TranscriptsPage() {
       setCopied(false)
 
       try {
+        console.log("[v0] handleQuery: starting fetch, transcripts:", filtered.length)
         const response = await fetch("/api/transcripts-query", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -346,18 +347,27 @@ export default function TranscriptsPage() {
           }),
         })
 
+        console.log("[v0] handleQuery: response status:", response.status, "ok:", response.ok)
+
         if (!response.ok) {
           const errorBody = await response.json().catch(() => null)
+          console.log("[v0] handleQuery: error body:", errorBody)
           throw new Error(
             errorBody?.error ?? `Request failed (${response.status})`
           )
         }
 
-        await readTextStream(response, (accumulated) => {
+        const finalText = await readTextStream(response, (accumulated) => {
           setQueryResult(accumulated)
         })
+        console.log("[v0] handleQuery: stream complete, length:", finalText.length)
+        // Ensure final state is set even if the last onChunk was missed
+        if (finalText) {
+          setQueryResult(finalText)
+        }
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err)
+        console.log("[v0] handleQuery: error:", message)
         setQueryError(message)
       } finally {
         setQueryLoading(false)
