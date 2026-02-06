@@ -976,57 +976,6 @@ export default function DemoPage() {
       </section>
 
       {/* ============================================================ */}
-      {/*  STEP 8 -- Reconciliation & Reporting                          */}
-      {/* ============================================================ */}
-      <section className="mt-10">
-        <div className="flex items-center gap-3">
-          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
-            8
-          </span>
-          <FileBarChart className="h-4 w-4 text-primary/60" />
-          <h2 className="text-lg font-semibold tracking-tight text-foreground">
-            Reconciliation & Reporting
-          </h2>
-        </div>
-        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">
-          The Dashboard page provides budget roll-ups, expert-type breakdowns,
-          and spend-by-status reporting. The Budget tab shows cost breakdowns
-          across scheduled, completed, and cancelled calls. Reconciliation
-          tables for network settlement and audit-trail exports are available.
-        </p>
-        <ul className="mt-3 flex flex-col gap-1.5 max-w-3xl">
-          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-            Dashboard with live budget roll-ups across all statuses
-          </li>
-          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-            Expert-type breakdown showing customer, competitor, and target counts
-          </li>
-          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-            Structured reconciliation tables for network settlement
-          </li>
-          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-            Cost verification with full audit trail and project close-out
-          </li>
-        </ul>
-        <div className="mt-6 flex items-center gap-3">
-          <Link
-            href="/dashboard"
-            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            <FileBarChart className="h-3.5 w-3.5" />
-            Go to Dashboard
-          </Link>
-          <p className="text-xs text-muted-foreground">
-            Review budget roll-ups and explore the spend breakdown by status and type.
-          </p>
-        </div>
-      </section>
-
-      {/* ============================================================ */}
       {/*  STEP 7 -- Transcripts & Search                                */}
       {/* ============================================================ */}
       <section className="mt-10">
@@ -1076,6 +1025,57 @@ export default function DemoPage() {
           </Link>
           <p className="text-xs text-muted-foreground">
             Try asking a question like &ldquo;Find me quotes about pricing&rdquo; across the seed transcripts.
+          </p>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/*  STEP 8 -- Reconciliation & Reporting                          */}
+      {/* ============================================================ */}
+      <section className="mt-10">
+        <div className="flex items-center gap-3">
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
+            8
+          </span>
+          <FileBarChart className="h-4 w-4 text-primary/60" />
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
+            Reconciliation & Reporting
+          </h2>
+        </div>
+        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+          The Dashboard page provides budget roll-ups, expert-type breakdowns,
+          and spend-by-status reporting. The Budget tab shows cost breakdowns
+          across scheduled, completed, and cancelled calls. Reconciliation
+          tables for network settlement and audit-trail exports are available.
+        </p>
+        <ul className="mt-3 flex flex-col gap-1.5 max-w-3xl">
+          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+            Dashboard with live budget roll-ups across all statuses
+          </li>
+          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+            Expert-type breakdown showing customer, competitor, and target counts
+          </li>
+          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+            Structured reconciliation tables for network settlement
+          </li>
+          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+            Cost verification with full audit trail and project close-out
+          </li>
+        </ul>
+        <div className="mt-6 flex items-center gap-3">
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            <FileBarChart className="h-3.5 w-3.5" />
+            Go to Dashboard
+          </Link>
+          <p className="text-xs text-muted-foreground">
+            Review budget roll-ups and explore the spend breakdown by status and type.
           </p>
         </div>
       </section>
