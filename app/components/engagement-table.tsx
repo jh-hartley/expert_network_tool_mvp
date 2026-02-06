@@ -956,7 +956,7 @@ export default function EngagementTable({
                           className="inline-flex h-7 items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 text-[11px] font-medium text-emerald-700 transition-colors hover:bg-emerald-100"
                         >
                           <FileText className="h-3 w-3" />
-                          View
+                          View Transcript
                         </button>
                       ) : (
                         <button
@@ -965,7 +965,7 @@ export default function EngagementTable({
                           className="inline-flex h-7 items-center gap-1.5 rounded-md border border-border bg-card px-2.5 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                         >
                           <Upload className="h-3 w-3" />
-                          Upload
+                          Upload Transcript
                         </button>
                       )}
                     </td>
