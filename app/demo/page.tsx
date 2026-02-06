@@ -314,7 +314,7 @@ Priya Chakraborty,Engineering Manager,Atlas Cement Corp,Technology,Third Bridge,
 /*  Pipeline steps for the rest of the guide                           */
 /* ------------------------------------------------------------------ */
 
-/* Future steps kept in "Next Steps" section at the bottom -- none currently, all are live or WIP */
+/* All 8 stages are live */
 
 /* ------------------------------------------------------------------ */
 /*  Sample data: Transcripts (.txt -- customer calls with NPS)         */
@@ -432,8 +432,6 @@ export default function DemoPage() {
           search and reconciliation.
         </p>
       </div>
-
-      {/* Status banner removed -- demo is now comprehensive */}
 
       {/* ============================================================ */}
       {/*  STEP 1 -- Ingest & Standardise                               */}
