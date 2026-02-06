@@ -222,13 +222,22 @@ export default function OverviewPage() {
               <Sparkles className="h-5 w-5 text-primary" />
             </div>
             <h3 className="mt-4 text-sm font-semibold text-foreground">
-              Massively Reduced Admin
+              Reduced Typing & Admin
             </h3>
-            <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
-              Eliminate hours of manual data entry, copy-paste, and tracker
-              maintenance. AI-driven parsing and auto-populated fields let your
-              team focus on expert selection, not spreadsheet wrangling.
-            </p>
+            <ul className="mt-2 flex flex-col gap-1.5">
+              <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+                <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+                Eliminate manual data entry, copy-paste, and tracker maintenance
+              </li>
+              <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+                <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+                AI-driven parsing and auto-populated fields
+              </li>
+              <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+                <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+                Focus on expert selection, not spreadsheet wrangling
+              </li>
+            </ul>
           </div>
 
           {/* 2 -- Increased Coverage */}
@@ -239,11 +248,20 @@ export default function OverviewPage() {
             <h3 className="mt-4 text-sm font-semibold text-foreground">
               Increased Expert Coverage
             </h3>
-            <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
-              Review and shortlist significantly more experts in the same time
-              window. Standardised profiles and smart filtering mean broader
-              coverage without compromising quality.
-            </p>
+            <ul className="mt-2 flex flex-col gap-1.5">
+              <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+                <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+                Review and shortlist more experts in the same time window
+              </li>
+              <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+                <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+                Standardised profiles and smart filtering
+              </li>
+              <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+                <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+                Broader coverage without compromising quality
+              </li>
+            </ul>
           </div>
 
           {/* 3 -- Automated Outputs */}
@@ -254,12 +272,20 @@ export default function OverviewPage() {
             <h3 className="mt-4 text-sm font-semibold text-foreground">
               Automated Reporting
             </h3>
-            <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
-              Budgeting, team updates, and KPI extraction handled
-              automatically. Export ready-to-send email digests, track spend in
-              real time via the dashboard, and auto-anonymise transcripts for
-              safe sharing.
-            </p>
+            <ul className="mt-2 flex flex-col gap-1.5">
+              <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+                <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+                Budgeting and spend tracking via a live dashboard
+              </li>
+              <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+                <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+                Export ready-to-send email digests and team updates
+              </li>
+              <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+                <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+                KPI extraction and auto-anonymised transcripts
+              </li>
+            </ul>
           </div>
 
           {/* 4 -- Unified Interface */}
@@ -270,11 +296,20 @@ export default function OverviewPage() {
             <h3 className="mt-4 text-sm font-semibold text-foreground">
               Unified Interface
             </h3>
-            <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
-              One platform connecting Bain{"'"}s existing tools -- CID clearance,
-              network portals, compliance lists, and enrichment data -- so
-              nothing falls through the cracks.
-            </p>
+            <ul className="mt-2 flex flex-col gap-1.5">
+              <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+                <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+                One platform connecting Bain{"'"}s existing tools
+              </li>
+              <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+                <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+                CID clearance, network portals, and compliance lists
+              </li>
+              <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+                <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+                Firmographic data -- industry, FTE counts, company descriptions
+              </li>
+            </ul>
           </div>
         </div>
       </section>
