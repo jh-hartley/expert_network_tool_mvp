@@ -223,12 +223,12 @@ export function computeStats(records: EngagementRecord[]): EngagementStats {
 
     // Compute spend
     if (r.type === "call") {
-      const hourlyRate = r.network_prices[r.network] ?? 0
+      const hourlyRate = r.network_prices?.[r.network] ?? 0
       const cost = computeCallPrice(hourlyRate, r.duration_minutes, r.is_follow_up ?? false)
       totalSpendByStatus[r.status] += cost
     } else {
       // Survey: flat fee from the selected network
-      const price = r.network_prices[r.network] ?? 0
+      const price = r.network_prices?.[r.network] ?? 0
       totalSpendByStatus[r.status] += price
     }
   }
