@@ -299,15 +299,15 @@ GLG Research Team`
 /*  Sample data: CSV (Third Bridge spreadsheet export)                 */
 /* ------------------------------------------------------------------ */
 
-const SAMPLE_CSV = `Name,Title,Company,Industry,Network,Compliance,Tags
-Raj Patel,VP of Plant Engineering,Solaris Packaging,Technology,Third Bridge,cleared,customer;multi-vendor;CPG;packaging
-Laura Fischer,Former COO,Meridian Controls,Technology,Third Bridge,pending,competitor;target-company;operations;supply-chain
-Henrik Larsson,VP Manufacturing,Beckhoff Automation,Technology,Third Bridge,cleared,competitor;PC-based-control;Europe
-Angela Moretti,Plant Manager,GreenValley Chemicals,Technology,Third Bridge,cleared,customer;process-industries;chemicals;safety
-Nathan Cross,Former VP Product,Meridian Controls,Technology,Third Bridge,pending,competitor;target-company;product-roadmap;R&D
-Yuki Tanaka,Director of Automation,Nippon Precision Components,Technology,Third Bridge,cleared,customer;automotive-tier2;Japan-NA;precision
-Derek Otieno,Head of Industrial Strategy,Turck Inc.,Technology,Third Bridge,pending,competitor;sensor-IO;fieldbus;connectivity
-Priya Chakraborty,Engineering Manager,Atlas Cement Corp,Technology,Third Bridge,cleared,customer;heavy-industry;harsh-environment;cement`
+const SAMPLE_CSV = `Name,Title,Company,Industry,Network,Compliance,Rate_USD,Tags
+Raj Patel,VP of Plant Engineering,Solaris Packaging,Technology,Third Bridge,cleared,650,customer;multi-vendor;CPG;packaging
+Laura Fischer,Former COO,Meridian Controls,Technology,Third Bridge,pending,1200,competitor;target-company;operations;supply-chain
+Henrik Larsson,VP Manufacturing,Beckhoff Automation,Technology,Third Bridge,cleared,850,competitor;PC-based-control;Europe
+Angela Moretti,Plant Manager,GreenValley Chemicals,Technology,Third Bridge,cleared,500,customer;process-industries;chemicals;safety
+Nathan Cross,Former VP Product,Meridian Controls,Technology,Third Bridge,pending,950,competitor;target-company;product-roadmap;R&D
+Yuki Tanaka,Director of Automation,Nippon Precision Components,Technology,Third Bridge,cleared,700,customer;automotive-tier2;Japan-NA;precision
+Derek Otieno,Head of Industrial Strategy,Turck Inc.,Technology,Third Bridge,pending,800,competitor;sensor-IO;fieldbus;connectivity
+Priya Chakraborty,Engineering Manager,Atlas Cement Corp,Technology,Third Bridge,cleared,550,customer;heavy-industry;harsh-environment;cement`
 
 /* ------------------------------------------------------------------ */
 /*  Pipeline steps for the rest of the guide                           */
