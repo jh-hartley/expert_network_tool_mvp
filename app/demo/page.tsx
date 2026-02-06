@@ -1046,9 +1046,11 @@ export default function DemoPage() {
         <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">
           The Transcripts page lists every uploaded call transcript, with filters
           for expert type and specific expert selection. Browse, expand, and read
-          the full text of any transcript. Two features are still under development:
-          querying transcripts from saved calls, and searching experts with
-          natural-language prompts.
+          the full text of any transcript. A natural-language query panel lets you
+          ask questions across your filtered transcripts -- the LLM is given only
+          the transcripts you have selected, with full metadata about who is
+          speaking and their expert type. One feature is still under development:
+          querying transcripts from saved calls.
         </p>
         <ul className="mt-3 flex flex-col gap-1.5 max-w-3xl">
           <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
@@ -1064,12 +1066,16 @@ export default function DemoPage() {
             Select specific experts using autocomplete to narrow the transcript list
           </li>
           <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-amber-400" />
-            Planned: query transcripts from saved calls with structured search
+            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+            Natural-language query panel with streaming responses and source attribution
+          </li>
+          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+            Query scope indicator showing exactly which transcripts the LLM sees
           </li>
           <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
             <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-amber-400" />
-            Planned: search experts using natural-language prompts
+            Planned: query transcripts from saved calls with structured search
           </li>
         </ul>
         <div className="mt-6 flex items-center gap-3">
@@ -1081,7 +1087,7 @@ export default function DemoPage() {
             Go to Transcripts page
           </Link>
           <p className="text-xs text-muted-foreground">
-            View all 3 seed transcripts and try filtering by expert type or name.
+            Try asking a question like &ldquo;Find me quotes about pricing&rdquo; across the seed transcripts.
           </p>
         </div>
       </section>
