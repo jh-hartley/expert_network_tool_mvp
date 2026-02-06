@@ -33,6 +33,8 @@ export interface EngagementRecord {
   status: EngagementStatus
   /** ISO date -- call date for calls, invite date for surveys */
   date: string
+  /** HH:mm time string for the call/survey (e.g. "14:30") */
+  call_time?: string
   /** Minutes -- calls only, 0 for surveys */
   duration_minutes: number
   /** Per-network prices for this engagement ($/hr for calls, flat EUR for surveys) */
@@ -61,9 +63,9 @@ export function generateId(): string {
 /* ------------------------------------------------------------------ */
 
 const CALLS_KEY = "helmsman_calls"
-const CALLS_SEEDED = "helmsman_calls_seeded_v3"
+const CALLS_SEEDED = "helmsman_calls_seeded_v4"
 const SURVEYS_KEY = "helmsman_surveys"
-const SURVEYS_SEEDED = "helmsman_surveys_seeded_v3"
+const SURVEYS_SEEDED = "helmsman_surveys_seeded_v4"
 
 function ensureCallsSeeded(): void {
   if (typeof window === "undefined") return
@@ -172,6 +174,7 @@ export function createEngagementFromExpert(
     expert_type: expert.expert_type,
     status: "invited",
     date: new Date().toISOString().slice(0, 10),
+    call_time: new Date().toTimeString().slice(0, 5),
     duration_minutes: 0,
     network_prices: np,
     network: expert.network ?? "",
@@ -180,6 +183,36 @@ export function createEngagementFromExpert(
     created_at: new Date().toISOString(),
     ...overrides,
   }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Auto-detect follow-ups                                             */
+/*                                                                     */
+/*  A record is a follow-up if the same expert (name+company) has an   */
+/*  earlier record on the same network, ordered by date+call_time.     */
+/* ------------------------------------------------------------------ */
+
+export function detectFollowUps(records: EngagementRecord[]): Set<string> {
+  const set = new Set<string>()
+  const groups = new Map<string, EngagementRecord[]>()
+  for (const r of records) {
+    const key = `${r.expert_name}|||${r.expert_company}|||${r.network}`
+    const arr = groups.get(key) ?? []
+    arr.push(r)
+    groups.set(key, arr)
+  }
+  for (const [, arr] of groups) {
+    if (arr.length < 2) continue
+    const sorted = [...arr].sort((a, b) => {
+      const da = `${a.date}T${a.call_time ?? "00:00"}`
+      const db = `${b.date}T${b.call_time ?? "00:00"}`
+      return da.localeCompare(db)
+    })
+    for (let i = 1; i < sorted.length; i++) {
+      set.add(sorted[i].id)
+    }
+  }
+  return set
 }
 
 /* ------------------------------------------------------------------ */
@@ -211,6 +244,9 @@ export function computeStats(records: EngagementRecord[]): EngagementStats {
     cancelled: 0,
   }
 
+  // Auto-detect follow-ups across all records
+  const followUps = detectFollowUps(records)
+
   for (const r of records) {
     // Unique experts by name+company
     const key = `${r.expert_name}|||${r.expert_company}`
@@ -221,10 +257,12 @@ export function computeStats(records: EngagementRecord[]): EngagementStats {
     // Count by status
     byStatus[r.status]++
 
-    // Compute spend
+    // Compute spend (use 60 min estimate when duration not yet set)
+    const isfu = followUps.has(r.id)
     if (r.type === "call") {
       const hourlyRate = r.network_prices?.[r.network] ?? 0
-      const cost = computeCallPrice(hourlyRate, r.duration_minutes, r.is_follow_up ?? false)
+      const dur = r.duration_minutes > 0 ? r.duration_minutes : 60
+      const cost = computeCallPrice(hourlyRate, dur, isfu)
       totalSpendByStatus[r.status] += cost
     } else {
       // Survey: flat fee from the selected network
@@ -270,6 +308,7 @@ export const SEED_CALLS: EngagementRecord[] = [
     expert_type: "customer",
     status: "completed",
     date: "2025-11-14",
+    call_time: "10:00",
     duration_minutes: 60,
     network_prices: { AlphaSights: 650, GLG: null, "Third Bridge": null },
     network: "AlphaSights",
@@ -287,6 +326,7 @@ export const SEED_CALLS: EngagementRecord[] = [
     expert_type: "competitor",
     status: "completed",
     date: "2025-11-15",
+    call_time: "14:30",
     duration_minutes: 60,
     network_prices: { AlphaSights: 950, GLG: 1000, "Third Bridge": null },
     network: "AlphaSights",
@@ -304,7 +344,8 @@ export const SEED_CALLS: EngagementRecord[] = [
     expert_type: "customer",
     status: "scheduled",
     date: "2025-12-02",
-    duration_minutes: 0,
+    call_time: "09:00",
+    duration_minutes: 60,
     network_prices: { AlphaSights: 550, GLG: 600, "Third Bridge": null },
     network: "AlphaSights",
     is_follow_up: false,
@@ -321,7 +362,8 @@ export const SEED_CALLS: EngagementRecord[] = [
     expert_type: "target",
     status: "scheduled",
     date: "2025-12-05",
-    duration_minutes: 0,
+    call_time: "11:00",
+    duration_minutes: 60,
     network_prices: { AlphaSights: null, GLG: 1200, "Third Bridge": 1150 },
     network: "GLG",
     is_follow_up: false,
@@ -338,7 +380,8 @@ export const SEED_CALLS: EngagementRecord[] = [
     expert_type: "customer",
     status: "invited",
     date: "2025-11-25",
-    duration_minutes: 0,
+    call_time: "15:00",
+    duration_minutes: 60,
     network_prices: { AlphaSights: 600, GLG: null, "Third Bridge": 575 },
     network: "AlphaSights",
     is_follow_up: false,
@@ -355,7 +398,8 @@ export const SEED_CALLS: EngagementRecord[] = [
     expert_type: "competitor",
     status: "cancelled",
     date: "2025-11-18",
-    duration_minutes: 0,
+    call_time: "16:00",
+    duration_minutes: 60,
     network_prices: { AlphaSights: 1100, GLG: null, "Third Bridge": null },
     network: "AlphaSights",
     is_follow_up: false,
@@ -372,6 +416,7 @@ export const SEED_CALLS: EngagementRecord[] = [
     expert_type: "customer",
     status: "completed",
     date: "2025-11-20",
+    call_time: "11:30",
     duration_minutes: 45,
     network_prices: { AlphaSights: null, GLG: 750, "Third Bridge": null },
     network: "GLG",
@@ -389,7 +434,8 @@ export const SEED_CALLS: EngagementRecord[] = [
     expert_type: "customer",
     status: "invited",
     date: "2025-11-28",
-    duration_minutes: 0,
+    call_time: "10:00",
+    duration_minutes: 60,
     network_prices: { AlphaSights: 650, GLG: 600, "Third Bridge": null },
     network: "GLG",
     is_follow_up: false,
@@ -413,6 +459,7 @@ export const SEED_SURVEYS: EngagementRecord[] = [
     expert_type: "customer",
     status: "completed",
     date: "2025-11-10",
+    call_time: "09:00",
     duration_minutes: 0,
     network_prices: { AlphaSights: 300, GLG: null, "Third Bridge": null },
     network: "AlphaSights",
@@ -430,6 +477,7 @@ export const SEED_SURVEYS: EngagementRecord[] = [
     expert_type: "customer",
     status: "completed",
     date: "2025-11-11",
+    call_time: "10:00",
     duration_minutes: 0,
     network_prices: { AlphaSights: 300, GLG: 300, "Third Bridge": null },
     network: "AlphaSights",
@@ -447,6 +495,7 @@ export const SEED_SURVEYS: EngagementRecord[] = [
     expert_type: "customer",
     status: "invited",
     date: "2025-11-20",
+    call_time: "14:00",
     duration_minutes: 0,
     network_prices: { AlphaSights: null, GLG: null, "Third Bridge": 300 },
     network: "Third Bridge",
@@ -464,6 +513,7 @@ export const SEED_SURVEYS: EngagementRecord[] = [
     expert_type: "customer",
     status: "invited",
     date: "2025-11-21",
+    call_time: "08:00",
     duration_minutes: 0,
     network_prices: { AlphaSights: null, GLG: null, "Third Bridge": 300 },
     network: "Third Bridge",
@@ -481,6 +531,7 @@ export const SEED_SURVEYS: EngagementRecord[] = [
     expert_type: "customer",
     status: "cancelled",
     date: "2025-11-12",
+    call_time: "11:00",
     duration_minutes: 0,
     network_prices: { AlphaSights: null, GLG: 300, "Third Bridge": 300 },
     network: "Third Bridge",

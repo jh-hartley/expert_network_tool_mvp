@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useCallback } from "react"
 import {
   Calendar,
   Phone,
@@ -20,6 +20,7 @@ import {
   getSurveys,
   computeStats,
   computeCallPrice,
+  detectFollowUps,
   type EngagementRecord,
   type EngagementStatus,
 } from "@/lib/engagements"
@@ -208,6 +209,153 @@ export default function DashboardPage() {
     return m
   }, [experts])
 
+  /* ---- dashboard export ---- */
+  const handleExport = useCallback(async () => {
+    const XLSX = await import("xlsx")
+
+    const EXPERT_TYPES = ["customer", "competitor", "target", "competitor_customer"] as const
+    const STATUSES: EngagementStatus[] = ["completed", "scheduled", "invited", "cancelled"]
+    const STATUS_HDR = ["Completed", "Scheduled", "Invited", "Cancelled"]
+
+    /* helper: auto-size columns */
+    function autoWidth(ws: ReturnType<typeof XLSX.utils.aoa_to_sheet>, data: unknown[][]) {
+      if (data.length === 0) return
+      ws["!cols"] = (data[0] as unknown[]).map((_, ci) => {
+        let max = 10
+        for (const row of data) {
+          const cell = String((row as unknown[])[ci] ?? "")
+          if (cell.length > max) max = cell.length
+        }
+        return { wch: Math.min(max + 2, 50) }
+      })
+    }
+
+    /* helper: style a sheet to look good when pasted into an email */
+    function applyTableStyle(ws: ReturnType<typeof XLSX.utils.aoa_to_sheet>, rowCount: number, colCount: number) {
+      // Set a thin border on every cell for clean copy-paste
+      for (let r = 0; r < rowCount; r++) {
+        for (let c = 0; c < colCount; c++) {
+          const addr = XLSX.utils.encode_cell({ r, c })
+          if (!ws[addr]) ws[addr] = { v: "", t: "s" }
+          const cell = ws[addr]
+          const border = { style: "thin", color: { rgb: "CCCCCC" } }
+          cell.s = {
+            border: { top: border, bottom: border, left: border, right: border },
+            alignment: { horizontal: c === 0 ? "left" : "center", vertical: "center" },
+            ...(r === 0 || r === rowCount - 1
+              ? { font: { bold: true }, fill: { fgColor: { rgb: r === 0 ? "4472C4" : "D9E2F3" } }, ...(r === 0 ? { font: { bold: true, color: { rgb: "FFFFFF" } } } : {}) }
+              : {}),
+          }
+        }
+      }
+    }
+
+    /* ------- Tab 1: Experts (unique experts by type & status) ------- */
+    const allRecords = [...calls, ...surveys]
+    const expertRows: (string | number)[][] = [["Expert Type", ...STATUS_HDR]]
+    let expertTotals = [0, 0, 0, 0]
+    for (const et of EXPERT_TYPES) {
+      const row: (string | number)[] = [TYPE_LABELS[et] ?? et]
+      STATUSES.forEach((s, i) => {
+        // Unique experts of this type across calls+surveys with this status
+        const seen = new Set<string>()
+        for (const r of allRecords) {
+          if (r.expert_type === et && r.status === s) seen.add(`${r.expert_name}|||${r.expert_company}`)
+        }
+        row.push(seen.size)
+        expertTotals[i] += seen.size
+      })
+      if (row.slice(1).some(v => v !== 0)) expertRows.push(row)
+    }
+    expertRows.push(["Total", ...expertTotals])
+
+    /* ------- Tab 2: Calls (count of calls by type & status) ------- */
+    const callRows: (string | number)[][] = [["Expert Type", ...STATUS_HDR]]
+    let callTotals = [0, 0, 0, 0]
+    for (const et of EXPERT_TYPES) {
+      const row: (string | number)[] = [TYPE_LABELS[et] ?? et]
+      STATUSES.forEach((s, i) => {
+        const count = calls.filter(c => c.expert_type === et && c.status === s).length
+        row.push(count)
+        callTotals[i] += count
+      })
+      if (row.slice(1).some(v => v !== 0)) callRows.push(row)
+    }
+    callRows.push(["Total", ...callTotals])
+
+    /* ------- Tab 3: AI Surveys (count by type & status) ------- */
+    const surveyRows: (string | number)[][] = [["Expert Type", ...STATUS_HDR]]
+    let surveyTotals = [0, 0, 0, 0]
+    for (const et of EXPERT_TYPES) {
+      const row: (string | number)[] = [TYPE_LABELS[et] ?? et]
+      STATUSES.forEach((s, i) => {
+        const count = surveys.filter(sv => sv.expert_type === et && sv.status === s).length
+        row.push(count)
+        surveyTotals[i] += count
+      })
+      if (row.slice(1).some(v => v !== 0)) surveyRows.push(row)
+    }
+    surveyRows.push(["Total", ...surveyTotals])
+
+    /* ------- Tab 4: Budget (spend by type & status) ------- */
+    const callFollowUps = detectFollowUps(calls)
+    function callSpendForTypeStatus(et: string, s: EngagementStatus) {
+      return calls
+        .filter(c => c.expert_type === et && c.status === s)
+        .reduce((sum, c) => {
+          const rate = c.network_prices?.[c.network] ?? 0
+          const dur = c.duration_minutes > 0 ? c.duration_minutes : 60
+          return sum + computeCallPrice(rate, dur, callFollowUps.has(c.id))
+        }, 0)
+    }
+    function surveySpendForTypeStatus(et: string, s: EngagementStatus) {
+      return surveys
+        .filter(sv => sv.expert_type === et && sv.status === s)
+        .reduce((sum, sv) => sum + (sv.network_prices?.[sv.network] ?? 0), 0)
+    }
+
+    const budgetRows: (string | number)[][] = [["Expert Type", ...STATUS_HDR.map(h => `${h} ($)`)]]
+    let budgetTotals = [0, 0, 0, 0]
+    for (const et of EXPERT_TYPES) {
+      const row: (string | number)[] = [TYPE_LABELS[et] ?? et]
+      STATUSES.forEach((s, i) => {
+        const spend = callSpendForTypeStatus(et, s) + surveySpendForTypeStatus(et, s)
+        row.push(spend)
+        budgetTotals[i] += spend
+      })
+      if (row.slice(1).some(v => v !== 0)) budgetRows.push(row)
+    }
+    budgetRows.push(["Total", ...budgetTotals])
+
+    /* ------- Build workbook ------- */
+    const wb = XLSX.utils.book_new()
+
+    const sheets: [string, (string | number)[][]][] = [
+      ["Experts", expertRows],
+      ["Calls", callRows],
+      ["AI Surveys", surveyRows],
+      ["Budget", budgetRows],
+    ]
+
+    for (const [name, data] of sheets) {
+      const ws = XLSX.utils.aoa_to_sheet(data)
+      autoWidth(ws, data)
+      applyTableStyle(ws, data.length, data[0].length)
+      // Format budget values as currency
+      if (name === "Budget") {
+        for (let r = 1; r < data.length; r++) {
+          for (let c = 1; c < data[0].length; c++) {
+            const addr = XLSX.utils.encode_cell({ r, c })
+            if (ws[addr]) ws[addr].z = '$#,##0'
+          }
+        }
+      }
+      XLSX.utils.book_append_sheet(wb, ws, name)
+    }
+
+    XLSX.writeFile(wb, "Helmsman_Dashboard_Summary.xlsx")
+  }, [calls, surveys])
+
   if (!loaded) {
     return (
       <div className="mx-auto max-w-[1400px] px-6 py-10">
@@ -226,9 +374,8 @@ export default function DashboardPage() {
         actions={
           <button
             type="button"
-            className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border bg-card px-3 text-xs font-medium text-foreground opacity-50 cursor-not-allowed"
-            disabled
-            title="Export coming soon"
+            onClick={handleExport}
+            className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border bg-card px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent"
           >
             <Download className="h-3.5 w-3.5" />
             Export

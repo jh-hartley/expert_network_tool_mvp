@@ -118,13 +118,6 @@ function formatDate(iso: string) {
   return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
 }
 
-function formatCallCost(r: EngagementRecord): string {
-  const hourlyRate = r.network_prices?.[r.network] ?? 0
-  if (hourlyRate <= 0) return "--"
-  const cost = computeCallPrice(hourlyRate, r.duration_minutes, r.is_follow_up ?? false)
-  return cost > 0 ? `$${cost.toLocaleString()}` : "--"
-}
-
 function formatSurveyCost(r: EngagementRecord): string {
   const price = r.network_prices?.[r.network] ?? 0
   return price > 0 ? `\u20AC${price.toLocaleString()}` : "--"
@@ -139,6 +132,7 @@ interface DraftRow {
   nameQuery: string
   expert: ExpertProfile | null
   date: string
+  callTime: string
   durationMinutes: number
   status: EngagementStatus
   network: string
@@ -151,6 +145,7 @@ function emptyDraft(): DraftRow {
     nameQuery: "",
     expert: null,
     date: new Date().toISOString().slice(0, 10),
+    callTime: new Date().toTimeString().slice(0, 5),
     durationMinutes: 60,
     status: "invited",
     network: "",
@@ -244,10 +239,38 @@ export default function EngagementTable({
       cols.push({ key: "duration", label: "Length", minWidth: "90px", align: "center" })
       cols.push({ key: "follow_up", label: "Follow-up", minWidth: "80px", align: "center" })
     }
-    cols.push({ key: "hourly_rate", label: engagementType === "call" ? "Rate ($/hr)" : "Rate (EUR)", minWidth: "100px", align: "right" })
+    cols.push({ key: "call_time", label: "Time", minWidth: "80px", align: "center" })
     cols.push({ key: "cost", label: engagementType === "call" ? "Cost" : "Cost (EUR)", minWidth: "90px", align: "right" })
     return cols
   }, [lens, engagementType])
+
+  /* ---- Auto-detect follow-ups ---- */
+  // A record is a follow-up if the same expert (name+company) has an
+  // earlier record on the same network, ordered by date+call_time.
+  const followUpSet = useMemo(() => {
+    const set = new Set<string>()
+    const groups = new Map<string, EngagementRecord[]>()
+    for (const r of records) {
+      const key = `${r.expert_name}|||${r.expert_company}|||${r.network}`
+      const arr = groups.get(key) ?? []
+      arr.push(r)
+      groups.set(key, arr)
+    }
+    for (const [, arr] of groups) {
+      if (arr.length < 2) continue
+      const sorted = [...arr].sort((a, b) => {
+        const da = `${a.date}T${a.call_time ?? "00:00"}`
+        const db = `${b.date}T${b.call_time ?? "00:00"}`
+        return da.localeCompare(db)
+      })
+      for (let i = 1; i < sorted.length; i++) {
+        set.add(sorted[i].id)
+      }
+    }
+    return set
+  }, [records])
+
+  const isFollowUp = useCallback((r: EngagementRecord) => followUpSet.has(r.id), [followUpSet])
 
   /* ---- Sorting ---- */
 
@@ -261,12 +284,14 @@ export default function EngagementTable({
       case "network": return r.network
       case "date": return r.date
       case "duration": return r.duration_minutes || null
-      case "follow_up": return r.is_follow_up ? 1 : 0
-      case "hourly_rate": return r.network_prices?.[r.network] ?? null
+      case "follow_up": return followUpSet.has(r.id) ? 1 : 0
+      case "call_time": return r.call_time ?? null
       case "cost": {
         if (engagementType === "call") {
           const rate = r.network_prices?.[r.network] ?? 0
-          return rate > 0 ? computeCallPrice(rate, r.duration_minutes, r.is_follow_up ?? false) : null
+          const dur = r.duration_minutes > 0 ? r.duration_minutes : 60
+          const fu = followUpSet.has(r.id)
+          return rate > 0 ? computeCallPrice(rate, dur, fu) : null
         }
         return r.network_prices?.[r.network] ?? null
       }
@@ -327,11 +352,6 @@ export default function EngagementTable({
   function handleDurationChange(r: EngagementRecord, mins: number) {
     const idx = findOriginalIndex(r)
     if (idx >= 0) onUpdateRecord(idx, { duration_minutes: mins })
-  }
-
-  function handleFollowUpToggle(r: EngagementRecord) {
-    const idx = findOriginalIndex(r)
-    if (idx >= 0) onUpdateRecord(idx, { is_follow_up: !r.is_follow_up })
   }
 
   function handleNotesCommit(r: EngagementRecord) {
@@ -395,6 +415,7 @@ export default function EngagementTable({
       id: draft.id,
       status: draft.status,
       date: draft.date,
+      call_time: draft.callTime,
       duration_minutes: engagementType === "call" ? draft.durationMinutes : 0,
       network: draft.network,
       is_follow_up: draft.isFollowUp,
@@ -463,16 +484,12 @@ export default function EngagementTable({
     const rate = draft.expert.network_prices?.[draft.network]
     if (rate == null || rate <= 0) return "--"
     if (engagementType === "survey") return `\u20AC${rate}`
-    const cost = computeCallPrice(rate, draft.durationMinutes, draft.isFollowUp)
+    const dur = draft.durationMinutes > 0 ? draft.durationMinutes : 60
+    const cost = computeCallPrice(rate, dur, draft.isFollowUp)
     return cost > 0 ? `$${cost.toLocaleString()}` : "--"
   }
 
-  function draftRatePreview(draft: DraftRow): string {
-    if (!draft.expert || !draft.network) return "--"
-    const rate = draft.expert.network_prices?.[draft.network]
-    if (rate == null) return "--"
-    return engagementType === "survey" ? `\u20AC${rate}` : `$${rate}`
-  }
+
 
   /* ================================================================ */
   /*  RENDER                                                           */
@@ -684,33 +701,28 @@ export default function EngagementTable({
                       )
                     }
 
-                    /* Follow-up toggle */
+                    /* Follow-up (auto-detected on commit, show N/A for drafts) */
                     if (col.key === "follow_up") {
                       return (
                         <td key={col.key} className="px-3 py-2 text-center">
-                          <button
-                            type="button"
-                            onClick={() => updateDraft(draft.id, { isFollowUp: !draft.isFollowUp })}
-                            className={[
-                              "inline-flex h-6 items-center gap-1 rounded-md border px-2 text-[10px] font-medium transition-colors",
-                              draft.isFollowUp
-                                ? "border-blue-300 bg-blue-50 text-blue-700"
-                                : "border-border bg-card text-muted-foreground hover:bg-accent",
-                            ].join(" ")}
-                            title={draft.isFollowUp ? "Follow-up (25% discount)" : "Mark as follow-up"}
-                          >
+                          <span className="inline-flex h-6 items-center gap-1 rounded-md border border-border bg-muted/30 px-2 text-[10px] font-medium text-muted-foreground">
                             <RotateCcw className="h-3 w-3" />
-                            {draft.isFollowUp ? "Yes" : "No"}
-                          </button>
+                            Auto
+                          </span>
                         </td>
                       )
                     }
 
-                    /* Hourly rate preview */
-                    if (col.key === "hourly_rate") {
+                    /* Call time input */
+                    if (col.key === "call_time") {
                       return (
-                        <td key={col.key} className="px-3 py-2 text-right tabular-nums text-muted-foreground">
-                          {draftRatePreview(draft)}
+                        <td key={col.key} className="px-3 py-2 text-center">
+                          <input
+                            type="time"
+                            value={draft.callTime}
+                            onChange={(e) => updateDraft(draft.id, { callTime: e.target.value })}
+                            className="h-7 w-[85px] rounded-md border border-border bg-card px-1.5 text-xs text-foreground text-center focus:outline-none focus:ring-1 focus:ring-ring"
+                          />
                         </td>
                       )
                     }
@@ -848,41 +860,56 @@ export default function EngagementTable({
                         )
                       }
 
-                      /* Follow-up toggle */
+                      /* Follow-up (auto-detected, display only) */
                       if (col.key === "follow_up") {
+                        const fu = isFollowUp(r)
                         return (
                           <td key={col.key} className="px-3 py-2 text-center">
-                            <button
-                              type="button"
-                              onClick={() => handleFollowUpToggle(r)}
+                            <span
                               className={[
-                                "inline-flex h-6 items-center gap-1 rounded-md border px-2 text-[10px] font-medium transition-colors",
-                                r.is_follow_up
+                                "inline-flex h-6 items-center gap-1 rounded-md border px-2 text-[10px] font-medium",
+                                fu
                                   ? "border-blue-300 bg-blue-50 text-blue-700"
-                                  : "border-border bg-card text-muted-foreground hover:bg-accent",
+                                  : "border-border bg-muted/30 text-muted-foreground",
                               ].join(" ")}
-                              title={r.is_follow_up ? "Follow-up (25% discount)" : "Mark as follow-up"}
+                              title={fu ? "Follow-up (25% discount) -- earlier call on same network detected" : "First engagement on this network"}
                             >
                               <RotateCcw className="h-3 w-3" />
-                              {r.is_follow_up ? "Yes" : "No"}
-                            </button>
+                              {fu ? "Yes" : "No"}
+                            </span>
                           </td>
                         )
                       }
 
-                      /* Hourly rate */
-                      if (col.key === "hourly_rate") {
-                        const rate = r.network_prices?.[r.network]
+                      /* Call time */
+                      if (col.key === "call_time") {
                         return (
-                          <td key={col.key} className="px-3 py-2 text-right tabular-nums">
-                            {rate != null ? (engagementType === "survey" ? `\u20AC${rate}` : `$${rate}`) : <span className="text-muted-foreground/40">--</span>}
+                          <td key={col.key} className="px-3 py-2 text-center">
+                            <input
+                              type="time"
+                              value={r.call_time ?? ""}
+                              onChange={(e) => {
+                                const idx = findOriginalIndex(r)
+                                if (idx >= 0) onUpdateRecord(idx, { call_time: e.target.value })
+                              }}
+                              className="h-7 w-[85px] rounded-md border border-border bg-card px-1.5 text-xs text-foreground text-center focus:outline-none focus:ring-1 focus:ring-ring"
+                            />
                           </td>
                         )
                       }
 
-                      /* Computed cost */
+                      /* Computed cost (uses auto-detected follow-up) */
                       if (col.key === "cost") {
-                        const costStr = engagementType === "call" ? formatCallCost(r) : formatSurveyCost(r)
+                        const fu = isFollowUp(r)
+                        const costStr = engagementType === "call"
+                          ? (() => {
+                              const hourlyRate = r.network_prices?.[r.network] ?? 0
+                              if (hourlyRate <= 0) return "--"
+                              const dur = r.duration_minutes > 0 ? r.duration_minutes : 60
+                              const cost = computeCallPrice(hourlyRate, dur, fu)
+                              return cost > 0 ? `$${cost.toLocaleString()}` : "--"
+                            })()
+                          : formatSurveyCost(r)
                         return (
                           <td key={col.key} className="px-3 py-2 text-right">
                             <span className="font-medium tabular-nums">{costStr}</span>
