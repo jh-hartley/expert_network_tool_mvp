@@ -192,9 +192,9 @@ const dataInputBuckets: {
 const status: { done: boolean; text: string }[] = [
   { done: true, text: "App shell, navigation, and Bain design system" },
   { done: true, text: "TypeScript data model and localStorage CRUD layer" },
-  { done: true, text: "CSV upload with deduplication" },
-  { done: true, text: "Data tables with sort, filter, column hiding, and pagination" },
-  { done: true, text: "Settings: export / import JSON, reset data" },
+  { done: false, text: "CSV upload with deduplication" },
+  { done: false, text: "Data tables with sort, filter, column hiding, and pagination" },
+  { done: false, text: "Settings: export / import JSON, reset data" },
   { done: false, text: "AI-powered profile parsing and enrichment" },
   { done: false, text: "Compliance cross-checks and CID clearance workflow" },
   { done: false, text: "Vector-embedded search and RAG queries" },
