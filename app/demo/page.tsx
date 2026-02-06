@@ -22,51 +22,151 @@ import {
 import WipBanner from "../components/wip-banner"
 
 /* ------------------------------------------------------------------ */
-/*  Sample data: Raw text (typical network email body)                 */
+/*  Demo scenario                                                      */
+/*                                                                     */
+/*  DD Target: "Meridian Controls" -- a mid-market industrial          */
+/*  automation company. The PE buyer is evaluating the acquisition      */
+/*  under codename "Project Atlas". Networks do NOT know the target.   */
+/*                                                                     */
+/*  Expert types:                                                      */
+/*    - Customer: companies that purchase automation / controls         */
+/*    - Competitor: companies that compete with Meridian Controls       */
+/*                                                                     */
+/*  Meridian Controls is among the competitors listed, but the         */
+/*  networks have not been told it is the target.                       */
+/*                                                                     */
+/*  Screening questions (embedded in each file):                       */
+/*    Customers -- Q1 Which vendors have you evaluated in the last     */
+/*      24 months? Q2 What drove your most recent vendor selection?    */
+/*      Q3 How would you rate your satisfaction with your current      */
+/*      vendor (1-10)? Q4 What would trigger you to switch providers?  */
+/*    Competitors -- Q1 How do you view the competitive landscape in   */
+/*      industrial controls? Q2 Which competitors are you losing       */
+/*      deals to most often? Q3 How does your pricing compare to      */
+/*      mid-market players? Q4 Where are you investing in R&D over    */
+/*      the next 2 years?                                              */
+/*                                                                     */
+/*  Overlapping experts across files:                                  */
+/*    - Raj Patel appears in File 1 (raw text) and File 3 (CSV)       */
+/*    - Laura Fischer appears in File 2 (email) and File 3 (CSV)      */
 /* ------------------------------------------------------------------ */
 
-const SAMPLE_RAW_TEXT = `Expert Network Recommendations - Project Helios
+/* ------------------------------------------------------------------ */
+/*  Sample data: Raw text (AlphaSights email body)                     */
+/* ------------------------------------------------------------------ */
+
+const SAMPLE_RAW_TEXT = `Expert Network Recommendations - Project Atlas
 
 From: AlphaSights Research Team
 Date: 15 January 2025
-Project: Competitive landscape review - industrial automation
+Project: Commercial due diligence - industrial controls & automation
 
-Below are 5 expert recommendations for your consideration:
+Below are 5 expert recommendations for your consideration. We have conducted initial screening calls and included responses to your standard questions below each profile.
 
-1. Dr. Sarah Chen
-   Current Role: Former VP of Engineering, Rockwell Automation (departed June 2024)
-   Background: 18 years in industrial automation. Led the PLC division (2019-2024) overseeing $400M revenue. Previously at Siemens Digital Industries for 8 years.
-   Relevant Expertise: Competitive positioning vs Siemens/ABB, pricing strategy for mid-market PLCs, customer switching costs
-   Compliance: No known conflicts. Never employed by target company.
-   Rate: $850/hr | Network: AlphaSights | ID: AS-2025-00142
+1. Raj Patel
+   Type: Customer
+   Current Role: VP of Plant Engineering, Solaris Packaging (CPG manufacturer)
+   Background: 16 years in plant operations. Manages automation procurement across 12 North American facilities. Annual controls spend ~$8M. Previously at Unilever manufacturing ops.
+   Relevant Expertise: Multi-vendor evaluation processes, total cost of ownership analysis, mid-market vs enterprise vendor trade-offs
+   Compliance: No known conflicts. Never employed by any automation vendor.
+   Rate: $650/hr | Network: AlphaSights | ID: AS-2025-00201
 
-2. James Okoro
-   Current Role: Director of Operations, Fanuc America
-   Background: 12 years in robotics and factory automation. Currently manages NA operations for Fanuc's CNC division. Previously at ABB Robotics (2015-2019).
-   Relevant Expertise: CNC market share dynamics, Fanuc vs Mazak competitive positioning, Japanese vs European automation vendors
-   Compliance: Currently employed at Fanuc - competitor to target. Requires clearance.
-   Rate: $1,100/hr | Network: AlphaSights | ID: AS-2025-00143
+   Screening Responses (Customer):
+   Q1 - Which vendors have you evaluated in the last 24 months?
+   "We looked at Meridian Controls, Beckhoff, and Omron for our latest line expansion. Also got proposals from Rockwell but they were out of budget."
 
-3. Maria Gonzalez
-   Current Role: Independent Consultant (formerly Chief Commercial Officer, Emerson Electric)
-   Background: 22 years across Emerson, Honeywell, and Schneider Electric. Led Emerson's $2.1B process automation commercial org until 2023.
-   Relevant Expertise: Process automation market sizing, Emerson/Honeywell duopoly dynamics, M&A integration in automation
-   Compliance: Clear - no advisory or board relationships with target.
-   Rate: $950/hr | Network: AlphaSights | ID: AS-2025-00144
+   Q2 - What drove your most recent vendor selection?
+   "Ultimately it came down to integration support and total cost. The mid-market players were much more hands-on during commissioning."
 
-4. Thomas Weber
-   Current Role: Principal Analyst, ARC Advisory Group
-   Background: 15 years covering industrial automation as an industry analyst. Publishes quarterly market share reports on PLC, DCS, and SCADA segments.
-   Relevant Expertise: Market share data, vendor rankings, technology adoption curves in automation
-   Compliance: Analyst - may have NDA restrictions with specific vendors. Needs pre-screen.
-   Rate: $700/hr | Network: AlphaSights | ID: AS-2025-00145
+   Q3 - How would you rate your satisfaction with your current vendor (1-10)?
+   "I'd give our primary vendor an 8. Good product, responsive support, though documentation could be better."
 
-5. Priya Nair
-   Current Role: Former Head of Digital Solutions, Schneider Electric (departed March 2024)
-   Background: 10 years at Schneider, most recently leading their EcoStruxure industrial IoT platform. Previously at Honeywell Connected Enterprise.
-   Relevant Expertise: Industrial IoT platforms, Schneider vs Siemens MindSphere, software attach rates in automation
-   Compliance: Non-compete expired. No target-company involvement.
-   Rate: $900/hr | Network: AlphaSights | ID: AS-2025-00146
+   Q4 - What would trigger you to switch providers?
+   "If lead times slipped consistently or if they couldn't support our move to more networked architectures. We need Ethernet/IP native, not bolted on."
+
+2. Diane Kowalski
+   Type: Competitor
+   Current Role: Former SVP Sales, Beckhoff Automation North America (departed Aug 2024)
+   Background: 19 years in industrial automation sales. Built Beckhoff's NA business from $40M to $180M revenue. Previously at B&R Automation (now ABB) and Bosch Rexroth.
+   Relevant Expertise: PC-based control market dynamics, competitive win/loss patterns, channel strategy for mid-market automation
+   Compliance: Non-compete expired. No current advisory or board roles.
+   Rate: $950/hr | Network: AlphaSights | ID: AS-2025-00202
+
+   Screening Responses (Competitor):
+   Q1 - How do you view the competitive landscape in industrial controls?
+   "The mid-market is getting crowded. You have Beckhoff, Meridian Controls, WAGO, and Omron all fighting for the same $2-10M plant budgets. Rockwell and Siemens own the top end."
+
+   Q2 - Which competitors are you losing deals to most often?
+   "When I was at Beckhoff, we lost most often to Meridian Controls in food & beverage and to Omron in automotive Tier 2. Meridian's local support model is very effective."
+
+   Q3 - How does your pricing compare to mid-market players?
+   "Beckhoff is slightly premium but justifiable on total cost. Meridian is maybe 10-15% cheaper on hardware but closes the gap on service contracts."
+
+   Q4 - Where are you investing in R&D over the next 2 years?
+   "Beckhoff is all-in on XTS linear transport and TwinCAT cloud engineering. The industry is moving toward software-defined control."
+
+3. Marcus Oyelaran
+   Type: Customer
+   Current Role: Director of Manufacturing Technology, Hartwell Brewing Co.
+   Background: 11 years in food & beverage manufacturing. Oversees automation strategy for 4 breweries. Manages $3.5M annual controls budget.
+   Relevant Expertise: F&B-specific automation requirements, hygiene/washdown considerations, vendor support expectations in continuous production
+   Compliance: Clear. No vendor relationships beyond standard procurement.
+   Rate: $550/hr | Network: AlphaSights | ID: AS-2025-00203
+
+   Screening Responses (Customer):
+   Q1 - Which vendors have you evaluated in the last 24 months?
+   "Meridian Controls and Rockwell. We also looked at Siemens but their local distributor coverage was thin in our regions."
+
+   Q2 - What drove your most recent vendor selection?
+   "Meridian won our latest project because their field engineers actually understood our washdown requirements without us having to educate them."
+
+   Q3 - How would you rate your satisfaction with your current vendor (1-10)?
+   "Meridian gets a 9 from us. Very responsive, and their PLC programming environment has gotten much better in the last two releases."
+
+   Q4 - What would trigger you to switch providers?
+   "Acquisition by a larger company that changed the support model. That hands-on approach is why we chose them."
+
+4. Sandra Voss
+   Type: Competitor
+   Current Role: Head of Strategy, Omron Industrial Automation, Americas
+   Background: 13 years at Omron. Leads corporate strategy and M&A evaluation for the Americas region. Previously at McKinsey (industrials practice).
+   Relevant Expertise: Competitive intelligence on mid-market controls, M&A landscape, Japanese vs Western automation vendor strategies
+   Compliance: Currently employed at Omron. Requires pre-screening for confidentiality.
+   Rate: $1,100/hr | Network: AlphaSights | ID: AS-2025-00204
+
+   Screening Responses (Competitor):
+   Q1 - How do you view the competitive landscape in industrial controls?
+   "The mid-market is fragmenting. Meridian Controls has built a strong regional presence in North America, while Beckhoff is pushing hard from Europe. Omron differentiates on vision and robotics integration."
+
+   Q2 - Which competitors are you losing deals to most often?
+   "In discrete manufacturing we lose to Beckhoff on innovation and to Meridian Controls on price-for-value in the $1-5M project range."
+
+   Q3 - How does your pricing compare to mid-market players?
+   "We are competitive but the Japanese yen fluctuation creates margin pressure. Meridian and Beckhoff both have domestic manufacturing advantages."
+
+   Q4 - Where are you investing in R&D over the next 2 years?
+   "AI-enabled quality inspection and tighter robotics-PLC integration. We think the control layer and the robot layer merge within 5 years."
+
+5. Chen Wei-Lin
+   Type: Customer
+   Current Role: Chief Engineer, TerraForge Metals (specialty metals fabrication)
+   Background: 14 years in metals and heavy manufacturing. Manages automation for high-temperature and hazardous environments. Previously at Nucor Steel.
+   Relevant Expertise: Harsh-environment automation requirements, vendor reliability benchmarking, maintenance cost comparisons
+   Compliance: No conflicts. Pure end-user perspective.
+   Rate: $600/hr | Network: AlphaSights | ID: AS-2025-00205
+
+   Screening Responses (Customer):
+   Q1 - Which vendors have you evaluated in the last 24 months?
+   "Rockwell, Siemens, and Meridian Controls. For our environment we need proven high-temp rated hardware so the field narrows quickly."
+
+   Q2 - What drove your most recent vendor selection?
+   "Rockwell won on installed base compatibility, but Meridian came very close. Their newer high-temp rated I/O modules impressed our maintenance team."
+
+   Q3 - How would you rate your satisfaction with your current vendor (1-10)?
+   "Rockwell is a 7 -- solid but expensive. I'd rate Meridian an 8 on the project we trialled them on."
+
+   Q4 - What would trigger you to switch providers?
+   "Significant cost savings with equivalent reliability data. We need at least 3 years of MTBF data before we commit to a new vendor at scale."
 
 Please let us know which experts you would like to schedule, and we will coordinate availability.
 
@@ -74,70 +174,140 @@ Best regards,
 AlphaSights Research Team`
 
 /* ------------------------------------------------------------------ */
-/*  Sample data: CSV (spreadsheet export)                              */
-/* ------------------------------------------------------------------ */
-
-const SAMPLE_CSV = `Name,Title,Company,Industry,Network,Compliance,Tags
-Dr. Sarah Chen,Former VP of Engineering,Rockwell Automation,Technology,AlphaSights,cleared,PLC;industrial-automation;pricing
-James Okoro,Director of Operations,Fanuc America,Technology,AlphaSights,pending,CNC;robotics;competitor
-Maria Gonzalez,Former Chief Commercial Officer,Emerson Electric,Technology,AlphaSights,cleared,process-automation;M&A;market-sizing
-Thomas Weber,Principal Analyst,ARC Advisory Group,Technology,AlphaSights,pending,market-share;analyst;NDA-check
-Priya Nair,Former Head of Digital Solutions,Schneider Electric,Technology,AlphaSights,cleared,IoT;EcoStruxure;software
-Henrik Larsson,VP Manufacturing,ABB Robotics,Technology,GLG,pending,robotics;ABB;factory-automation
-Rachel Kim,Former Director Product Management,Siemens Digital Industries,Technology,Third Bridge,cleared,MindSphere;digital-twin;Siemens
-David Okonkwo,Head of Automation Strategy,Honeywell Process Solutions,Technology,Guidepoint,pending,DCS;process-control;Honeywell
-Lisa Tanaka,Former SVP Sales,Yokogawa Electric,Technology,GLG,cleared,DCS;Japan;process-industries
-Mark Phillips,Managing Director,Industrial Automation Partners (PE),Finance,Direct,cleared,PE;buy-side;automation-M&A`
-
-/* ------------------------------------------------------------------ */
-/*  Sample data: Email (.eml format)                                   */
+/*  Sample data: Email (.eml format -- GLG)                            */
 /* ------------------------------------------------------------------ */
 
 const SAMPLE_EML = `From: research-team@glg.com
-To: project-team@bain.com
-Subject: GLG Expert Recommendations - Project Helios (Industrial Automation)
-Date: Thu, 16 Jan 2025 09:30:00 +0000
+To: project-team@deal.com
+Subject: GLG Expert Recommendations - Project Atlas (Industrial Controls)
+Date: Thu, 17 Jan 2025 10:15:00 +0000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 
 Hi team,
 
-Please find below our initial expert recommendations for Project Helios.
+Please find below our expert recommendations for Project Atlas. Each profile includes responses to your screening questions.
+
+---
 
 EXPERT 1
-Name: Henrik Larsson
-Title: VP Manufacturing, ABB Robotics
-Geography: Zurich, Switzerland
-Background: 20 years at ABB across robotics and discrete automation. Currently oversees manufacturing operations for ABB's collaborative robot (cobot) line. Previously ran the ABB Robotics R&D center in Vasteras, Sweden.
-Why relevant: Deep knowledge of ABB's cobot strategy, competitive positioning vs Universal Robots and Fanuc, and European manufacturing cost structures.
-Compliance note: Currently employed at ABB. May need CID clearance if ABB is in scope.
-Hourly rate: EUR 900
-GLG Member ID: GLG-EU-88421
+Name: Laura Fischer
+Type: Competitor
+Title: Former COO, Meridian Controls (departed November 2024)
+Geography: Milwaukee, WI
+Background: 21 years in industrial automation. Most recently COO at Meridian Controls where she oversaw manufacturing, supply chain, and field operations for 7 years. Previously held senior operations roles at Rockwell Automation and Parker Hannifin.
+Why relevant: Direct operational knowledge of the target's cost structure, manufacturing footprint, supply chain, and go-to-market model.
+Compliance note: Left Meridian Controls 2+ months ago. No active non-compete per Wisconsin law. Will need CID clearance given recency.
+Hourly rate: USD 1,200
+GLG Member ID: GLG-US-90102
+
+Screening Responses (Competitor):
+Q1 - How do you view the competitive landscape in industrial controls?
+"Meridian occupies a strong niche in the mid-market. The company competes primarily with Beckhoff, Omron, and WAGO, while trying to pull customers down from Rockwell. The value proposition is local service plus competitive pricing."
+
+Q2 - Which competitors are you losing deals to most often?
+"While I was there, Beckhoff was the toughest competitor on technology. Omron competed hard on price in automotive. Rockwell was difficult to displace in brownfield sites."
+
+Q3 - How does your pricing compare to mid-market players?
+"Meridian typically prices 10-20% below Rockwell and roughly in line with Beckhoff, but margins are protected by the service contract attach rate which runs around 65%."
+
+Q4 - Where are you investing in R&D over the next 2 years?
+"When I left, the roadmap priorities were Ethernet-APL I/O for process industries, a cloud-based engineering toolkit, and edge analytics modules. The R&D budget was growing about 15% YoY."
+
+---
 
 EXPERT 2
-Name: Rachel Kim
-Title: Former Director, Product Management - Siemens Digital Industries
-Geography: Chicago, IL
-Background: 9 years at Siemens (2014-2023). Led product management for the MindSphere industrial IoT platform and TIA Portal engineering framework. Now independent consultant.
-Why relevant: First-hand perspective on Siemens' digital strategy, MindSphere adoption challenges, and competitive dynamics with Schneider EcoStruxure and Rockwell FactoryTalk.
-Compliance note: Left Siemens 18+ months ago. No active non-compete.
-Hourly rate: USD 1,000
-GLG Member ID: GLG-US-77203
+Name: James Achebe
+Type: Customer
+Title: Global Automation Manager, FreshPath Foods (multinational food manufacturer)
+Geography: Toronto, Canada
+Background: 18 years in food manufacturing. Manages global automation standards and vendor relationships across 22 plants in North America and Europe. $15M annual automation spend.
+Why relevant: Large-scale multi-vendor customer with direct procurement experience across Meridian Controls, Rockwell, and Siemens.
+Compliance note: No conflicts. End-user only.
+Hourly rate: USD 750
+GLG Member ID: GLG-CA-88714
+
+Screening Responses (Customer):
+Q1 - Which vendors have you evaluated in the last 24 months?
+"Rockwell is our global standard but we have been piloting Meridian Controls in 3 plants for secondary lines. We also evaluated Beckhoff for a new greenfield facility in Ontario."
+
+Q2 - What drove your most recent vendor selection?
+"For the Meridian pilots, it was 30% cost savings on hardware plus their willingness to provide on-site commissioning support at no extra charge for the first year."
+
+Q3 - How would you rate your satisfaction with your current vendor (1-10)?
+"Rockwell is a 7 -- reliable but the cost keeps climbing. Meridian is an 8 so far on the pilots, but it is early days."
+
+Q4 - What would trigger you to switch providers?
+"If Meridian can demonstrate consistent performance across all 3 pilot plants over 18 months, we would consider them for our global approved vendor list."
+
+---
 
 EXPERT 3
-Name: David Okonkwo
-Title: Head of Automation Strategy, Honeywell Process Solutions
-Geography: Houston, TX
-Background: 14 years at Honeywell. Currently defines the automation strategy for Honeywell's process solutions division, covering DCS, safety systems, and advanced process control. Previously at Emerson (5 years).
-Why relevant: Understands Honeywell's competitive positioning in process automation, DCS market dynamics, and the Honeywell/Emerson competitive landscape.
-Compliance note: Current Honeywell employee. Requires pre-screening for confidentiality.
-Hourly rate: USD 1,200
-GLG Member ID: GLG-US-81057
+Name: Tomoko Sato
+Type: Competitor
+Title: Director of Business Development, WAGO Corporation (Americas)
+Geography: Germantown, WI
+Background: 10 years at WAGO. Leads BD for industrial automation products across North and South America. Previously at Phoenix Contact in product management.
+Compliance note: Currently employed at WAGO. Requires pre-screening.
+Hourly rate: USD 900
+GLG Member ID: GLG-US-91330
+
+Screening Responses (Competitor):
+Q1 - How do you view the competitive landscape in industrial controls?
+"The mid-market is the most dynamic part of the controls industry right now. WAGO, Meridian Controls, and Beckhoff are all growing faster than the large incumbents. The customer base is looking for alternatives to Rockwell's pricing."
+
+Q2 - Which competitors are you losing deals to most often?
+"Meridian Controls in food & beverage and general manufacturing. Beckhoff in high-performance machine building. We differentiate on open standards and DIN-rail I/O density."
+
+Q3 - How does your pricing compare to mid-market players?
+"WAGO is generally in line with Meridian on I/O pricing. They tend to win on the PLC/controller level where they have stronger software."
+
+Q4 - Where are you investing in R&D over the next 2 years?
+"Docker-based runtime environments on our controllers, expanded MQTT/OPC-UA connectivity, and compact safety I/O. We see the edge compute layer as key."
+
+---
+
+EXPERT 4
+Name: Roberto Garza
+Type: Customer
+Title: Maintenance & Reliability Director, Cascadia Paper Products
+Geography: Portland, OR
+Background: 15 years in pulp & paper manufacturing. Responsible for automation reliability across 3 mills. Has evaluated and deployed systems from Rockwell, Meridian Controls, and ABB.
+Compliance note: Clear. No vendor advisory roles.
+Hourly rate: USD 600
+GLG Member ID: GLG-US-92008
+
+Screening Responses (Customer):
+Q1 - Which vendors have you evaluated in the last 24 months?
+"ABB for our main DCS, Meridian Controls for discrete PLC applications on packaging lines, and Rockwell for some legacy upgrades."
+
+Q2 - What drove your most recent vendor selection?
+"Meridian was selected for the packaging line retrofit because their lead time was 6 weeks vs 14 weeks from Rockwell. In our industry, downtime costs $50K/hour so speed matters enormously."
+
+Q3 - How would you rate your satisfaction with your current vendor (1-10)?
+"Meridian is a solid 8. Their tech support response time averages under 2 hours. ABB is a 7 on the DCS side. Rockwell is a 6 -- great products but support is slow."
+
+Q4 - What would trigger you to switch providers?
+"If Meridian's support model degraded after growth or acquisition, that would be a red flag. We chose them specifically because they act like a partner, not a vendor."
 
 Please confirm which experts you'd like to proceed with and we'll send calendar invitations.
 
 Best,
 GLG Research Team`
+
+/* ------------------------------------------------------------------ */
+/*  Sample data: CSV (Third Bridge spreadsheet export)                 */
+/* ------------------------------------------------------------------ */
+
+const SAMPLE_CSV = `Name,Title,Company,Industry,Network,Compliance,Tags
+Raj Patel,VP of Plant Engineering,Solaris Packaging,Technology,Third Bridge,cleared,customer;multi-vendor;CPG;packaging
+Laura Fischer,Former COO,Meridian Controls,Technology,Third Bridge,pending,competitor;target-company;operations;supply-chain
+Henrik Larsson,VP Manufacturing,Beckhoff Automation,Technology,Third Bridge,cleared,competitor;PC-based-control;Europe
+Angela Moretti,Plant Manager,GreenValley Chemicals,Technology,Third Bridge,cleared,customer;process-industries;chemicals;safety
+Nathan Cross,Former VP Product,Meridian Controls,Technology,Third Bridge,pending,competitor;target-company;product-roadmap;R&D
+Yuki Tanaka,Director of Automation,Nippon Precision Components,Technology,Third Bridge,cleared,customer;automotive-tier2;Japan-NA;precision
+Derek Otieno,Head of Industrial Strategy,Turck Inc.,Technology,Third Bridge,pending,competitor;sensor-IO;fieldbus;connectivity
+Priya Chakraborty,Engineering Manager,Atlas Cement Corp,Technology,Third Bridge,cleared,customer;heavy-industry;harsh-environment;cement`
 
 /* ------------------------------------------------------------------ */
 /*  Pipeline steps for the rest of the guide                           */
@@ -269,9 +439,12 @@ export default function DemoPage() {
           Getting Started Guide
         </h1>
         <p className="mt-1 text-sm leading-relaxed text-muted-foreground max-w-2xl">
-          Walk through each stage of Helmsman using the sample data below. Start
-          by ingesting unstructured expert profiles, then explore how the
-          platform handles tracking, compliance, and reporting.
+          Walk through a realistic DD scenario using sample data below. The case
+          involves a PE buyer evaluating <strong className="text-foreground font-medium">Meridian Controls</strong>, a
+          mid-market industrial automation company (codename &ldquo;Project Atlas&rdquo;). Experts
+          are a mix of <strong className="text-foreground font-medium">customers</strong> and{" "}
+          <strong className="text-foreground font-medium">competitors</strong>, each with screening
+          question responses. The networks do not know Meridian is the target.
         </p>
       </div>
 
@@ -291,10 +464,11 @@ export default function DemoPage() {
           </h2>
         </div>
         <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">
-          The first step is to upload expert profile data in whatever format you
-          have it. In practice this comes as network emails, shared spreadsheets,
-          or raw text pasted from screening responses. Try each of the three
-          sample formats below to see how the parser handles them.
+          Three expert networks (AlphaSights, GLG, Third Bridge) have sent
+          recommendations for Project Atlas. Each file contains a mix of
+          customer and competitor experts with completed screening responses.
+          Two experts (Raj Patel and Laura Fischer) appear across multiple
+          files to test deduplication. Try each format below.
         </p>
 
         <div className="mt-6 grid gap-5 lg:grid-cols-3">
@@ -315,9 +489,8 @@ export default function DemoPage() {
             </div>
             <div className="flex flex-1 flex-col px-5 py-4">
               <p className="text-xs leading-relaxed text-muted-foreground">
-                A typical expert recommendation email from AlphaSights containing
-                5 expert profiles with names, roles, compliance notes, and rates.
-                Copy the text below and paste it into the{" "}
+                An AlphaSights email with 5 experts (3 customers, 2 competitors)
+                including screening question responses. Copy and paste into the{" "}
                 <Link
                   href="/upload"
                   className="font-medium text-primary underline underline-offset-2"
@@ -354,9 +527,9 @@ export default function DemoPage() {
             </div>
             <div className="flex flex-1 flex-col px-5 py-4">
               <p className="text-xs leading-relaxed text-muted-foreground">
-                A standard .eml file representing a GLG recommendation email
-                with 3 expert profiles. Download and upload it to test email
-                ingestion.
+                A GLG .eml file with 4 experts (2 customers, 2 competitors)
+                including a former Meridian Controls executive. Download and
+                upload to test email ingestion.
               </p>
               <div className="mt-3 flex-1 overflow-auto rounded-md border border-border bg-muted/20 p-3">
                 <pre className="whitespace-pre-wrap text-[11px] leading-relaxed text-foreground/80 font-mono max-h-48 overflow-y-auto">
@@ -369,7 +542,7 @@ export default function DemoPage() {
                   onClick={() =>
                     downloadTextFile(
                       SAMPLE_EML,
-                      "glg-recommendations-project-helios.eml",
+                      "glg-recommendations-project-atlas.eml",
                       "message/rfc822"
                     )
                   }
@@ -399,9 +572,9 @@ export default function DemoPage() {
             </div>
             <div className="flex flex-1 flex-col px-5 py-4">
               <p className="text-xs leading-relaxed text-muted-foreground">
-                A CSV file with 10 expert profiles across multiple networks.
-                This is the structured format that the upload page currently
-                accepts directly. Download and drag it onto the{" "}
+                A Third Bridge CSV with 8 experts (4 customers, 4 competitors)
+                including 2 overlapping with the other files. Download and
+                drag onto the{" "}
                 <Link
                   href="/upload"
                   className="font-medium text-primary underline underline-offset-2"
@@ -421,7 +594,7 @@ export default function DemoPage() {
                   onClick={() =>
                     downloadTextFile(
                       SAMPLE_CSV,
-                      "expert-recommendations-helios.csv",
+                      "third-bridge-project-atlas.csv",
                       "text/csv"
                     )
                   }
@@ -446,7 +619,7 @@ export default function DemoPage() {
             Go to Upload page
           </Link>
           <p className="text-xs text-muted-foreground">
-            Try uploading the CSV file first -- it works with the current parser.
+            Try the CSV first (direct parse), then paste the raw text or upload the .eml.
           </p>
         </div>
       </section>
