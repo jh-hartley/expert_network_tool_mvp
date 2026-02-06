@@ -379,9 +379,18 @@ export default function OverviewPage() {
             <p className="text-[11px] font-semibold uppercase tracking-widest text-primary">
               Pipeline
             </p>
-            <h2 className="mt-1 text-xl font-semibold tracking-tight text-foreground">
-              How it works
-            </h2>
+            <div className="mt-1 flex items-center gap-3">
+              <h2 className="text-xl font-semibold tracking-tight text-foreground">
+                How it works
+              </h2>
+              <Link
+                href="/demo"
+                className="inline-flex items-center gap-1.5 rounded-full bg-primary/8 px-3 py-1 text-xs font-medium text-primary ring-1 ring-primary/15 transition-colors hover:bg-primary/15"
+              >
+                Demo
+                <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
             <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-muted-foreground">
               Eight stages replacing spreadsheets, emails, and manual lookups
               with a single automated flow.
@@ -406,15 +415,7 @@ export default function OverviewPage() {
                   <h3 className="text-sm font-semibold text-foreground">
                     {step.title}
                   </h3>
-                  {step.href && (
-                    <Link
-                      href={step.href}
-                      className="ml-auto inline-flex items-center gap-1 rounded-full bg-primary/8 px-2.5 py-0.5 text-[10px] font-medium text-primary ring-1 ring-primary/15 transition-colors hover:bg-primary/15"
-                    >
-                      Demo
-                      <ArrowRight className="h-2.5 w-2.5" />
-                    </Link>
-                  )}
+
                 </div>
 
                 {/* Card body */}
