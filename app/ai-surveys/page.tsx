@@ -9,6 +9,7 @@ import {
   XCircle,
   Users,
   Euro,
+  Download,
 } from "lucide-react"
 import PageHeader from "../components/page-header"
 import StatCard from "../components/stat-card"
@@ -18,6 +19,7 @@ import {
   computeStats,
   type EngagementRecord,
 } from "@/lib/engagements"
+import { exportToExcel, type ExcelColumnDef } from "@/lib/export-excel"
 
 /* SSR-disabled to avoid localStorage hydration mismatch */
 const EngagementTable = dynamic(
@@ -80,6 +82,32 @@ export default function AiSurveysPage() {
     [],
   )
 
+  const handleExport = useCallback(() => {
+    const SURVEY_COLUMNS: ExcelColumnDef[] = [
+      { key: "expert_name", header: "Name" },
+      { key: "expert_company", header: "Company" },
+      { key: "expert_role", header: "Role" },
+      { key: "anonymised_role", header: "Anonymised Role" },
+      { key: "expert_type", header: "Type", transform: (v) => {
+        const labels: Record<string, string> = { customer: "Customer", competitor: "Competitor", target: "Target", competitor_customer: "Comp. Customer" }
+        return labels[String(v)] ?? v
+      }},
+      { key: "status", header: "Status", transform: (v) => String(v).charAt(0).toUpperCase() + String(v).slice(1) },
+      { key: "date", header: "Invite Sent" },
+      { key: "network", header: "Network" },
+      { key: "_cost", header: "Cost (EUR)", transform: (_v, row) => {
+        const prices = row.network_prices as Record<string, number | null>
+        return prices?.[row.network as string] ?? ""
+      }},
+      { key: "notes", header: "Notes" },
+    ]
+    exportToExcel({
+      fileName: "Helmsman_AI_Surveys",
+      rows: records as unknown as Record<string, unknown>[],
+      columns: SURVEY_COLUMNS,
+    })
+  }, [records])
+
   // Compute dashboard stats
   const stats = computeStats(records)
   const totalSpend = Object.values(stats.totalSpendByStatus).reduce((a, b) => a + b, 0)
@@ -113,6 +141,16 @@ export default function AiSurveysPage() {
       <PageHeader
         title="AI Surveys"
         description="Track AI survey invitations sent to experts. Prices are in EUR. Add new surveys by searching the expert database."
+        actions={
+          <button
+            type="button"
+            onClick={handleExport}
+            className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border bg-card px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent"
+          >
+            <Download className="h-3.5 w-3.5" />
+            Export
+          </button>
+        }
       />
 
       {/* Dashboard cards */}

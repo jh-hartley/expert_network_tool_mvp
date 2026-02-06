@@ -9,6 +9,7 @@ import {
   XCircle,
   DollarSign,
   Users,
+  Download,
 } from "lucide-react"
 import PageHeader from "../components/page-header"
 import StatCard from "../components/stat-card"
@@ -16,8 +17,10 @@ import {
   getCalls,
   saveCalls,
   computeStats,
+  computeCallPrice,
   type EngagementRecord,
 } from "@/lib/engagements"
+import { exportToExcel, type ExcelColumnDef } from "@/lib/export-excel"
 
 /* SSR-disabled to avoid localStorage hydration mismatch */
 const EngagementTable = dynamic(
@@ -80,6 +83,39 @@ export default function CallsPage() {
     [],
   )
 
+  const handleExport = useCallback(() => {
+    const CALL_COLUMNS: ExcelColumnDef[] = [
+      { key: "expert_name", header: "Name" },
+      { key: "expert_company", header: "Company" },
+      { key: "expert_role", header: "Role" },
+      { key: "anonymised_role", header: "Anonymised Role" },
+      { key: "expert_type", header: "Type", transform: (v) => {
+        const labels: Record<string, string> = { customer: "Customer", competitor: "Competitor", target: "Target", competitor_customer: "Comp. Customer" }
+        return labels[String(v)] ?? v
+      }},
+      { key: "status", header: "Status", transform: (v) => String(v).charAt(0).toUpperCase() + String(v).slice(1) },
+      { key: "date", header: "Call Date" },
+      { key: "duration_minutes", header: "Duration (min)" },
+      { key: "is_follow_up", header: "Follow-up", transform: (v) => v ? "Yes" : "No" },
+      { key: "network", header: "Network" },
+      { key: "_rate", header: "Rate ($/hr)", transform: (_v, row) => {
+        const prices = row.network_prices as Record<string, number | null>
+        return prices?.[row.network as string] ?? ""
+      }},
+      { key: "_cost", header: "Cost ($)", transform: (_v, row) => {
+        const prices = row.network_prices as Record<string, number | null>
+        const rate = prices?.[row.network as string] ?? 0
+        return computeCallPrice(rate ?? 0, (row.duration_minutes as number) ?? 0, (row.is_follow_up as boolean) ?? false)
+      }},
+      { key: "notes", header: "Notes" },
+    ]
+    exportToExcel({
+      fileName: "Helmsman_Calls",
+      rows: records as unknown as Record<string, unknown>[],
+      columns: CALL_COLUMNS,
+    })
+  }, [records])
+
   // Compute dashboard stats
   const stats = computeStats(records)
   const totalSpend = Object.values(stats.totalSpendByStatus).reduce((a, b) => a + b, 0)
@@ -113,6 +149,16 @@ export default function CallsPage() {
       <PageHeader
         title="Calls"
         description="Track expert calls from invitation through completion. Add new calls by searching the expert database. Status, notes, and spend persist in your browser."
+        actions={
+          <button
+            type="button"
+            onClick={handleExport}
+            className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border bg-card px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent"
+          >
+            <Download className="h-3.5 w-3.5" />
+            Export
+          </button>
+        }
       />
 
       {/* Dashboard cards */}
