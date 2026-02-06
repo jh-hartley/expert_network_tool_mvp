@@ -577,7 +577,7 @@ A: Ruggedised product lines for heavy industry and process control applications.
 /* ------------------------------------------------------------------ */
 
 const LS_KEY = "helmsman_transcripts"
-const TRANSCRIPTS_SEEDED = "helmsman_transcripts_seeded_v2"
+const TRANSCRIPTS_SEEDED = "helmsman_transcripts_seeded_v3"
 
 function ensureTranscriptsSeeded(): void {
   if (typeof window === "undefined") return
@@ -608,8 +608,11 @@ function readAll(): Transcript[] {
     const raw = localStorage.getItem(LS_KEY)
     if (!raw) return []
     const parsed = JSON.parse(raw)
-    // Defensive: ensure we always return an array even if localStorage is corrupted
-    return Array.isArray(parsed) ? parsed : []
+    if (!Array.isArray(parsed)) return []
+    // Filter out any corrupt/empty transcript records (e.g. from older seed versions)
+    return parsed.filter(
+      (t: Transcript) => t.engagement_id && t.expert_name && t.text
+    )
   } catch {
     return []
   }
