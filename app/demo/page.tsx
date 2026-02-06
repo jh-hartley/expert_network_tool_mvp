@@ -20,7 +20,7 @@ import {
   FileBarChart,
   Building2,
 } from "lucide-react"
-import WipBanner from "../components/wip-banner"
+import { Construction } from "lucide-react"
 
 /* ------------------------------------------------------------------ */
 /*  Demo scenario                                                      */
@@ -314,70 +314,55 @@ Priya Chakraborty,Engineering Manager,Atlas Cement Corp,Technology,Third Bridge,
 /*  Pipeline steps for the rest of the guide                           */
 /* ------------------------------------------------------------------ */
 
-const futureSteps: {
-  step: number
-  title: string
-  description: string
-  icon: React.ElementType
-  status: "coming-soon" | "planned"
-}[] = [
-  {
-    step: 3,
-    title: "Track & Shortlist",
-    description:
-      "Tag experts into shortlist groups (customer, competitor, target) and track their lifecycle from recommended through to call completed.",
-    icon: Users,
-    status: "coming-soon",
-  },
-  {
-    step: 4,
-    title: "Schedule Calls & Track Spend",
-    description:
-      "Move to the Calls page to log scheduled calls. The system auto-populates expert details from the central database and provides live budget roll-ups covering scheduled, completed, and cancelled calls.",
-    icon: Phone,
-    status: "coming-soon",
-  },
-  {
-    step: 5,
-    title: "Enrich & Classify",
-    description:
-      "Profiles are automatically enriched with anonymised titles for client-safe sharing, company firmographics from BI integrations, and current/former employee classification with departure-date checks.",
-    icon: Building2,
-    status: "planned",
-  },
-  {
-    step: 6,
-    title: "Compliance & Clearance",
-    description:
-      "Cross-check profiles against client advisor lists, BEN advisors, and do-not-contact lists. Mark companies or individuals as cleared for CID purposes, with auto-populated clearance request forms.",
-    icon: ShieldCheck,
-    status: "planned",
-  },
-  {
-    step: 7,
-    title: "Transcripts & KPI Extraction",
-    description:
-      "Upload call transcripts for AI-generated summaries, KPI extraction into the call tracker, and flagging of references that may need anonymising before client sharing.",
-    icon: Brain,
-    status: "planned",
-  },
-  {
-    step: 8,
-    title: "Search & Discovery",
-    description:
-      "Use expert search (database filters + natural language) and transcript search (filter by expert type, then query for supporting quotes) to surface profiles and insights faster.",
-    icon: SearchIcon,
-    status: "planned",
-  },
-  {
-    step: 9,
-    title: "Reconciliation & Reporting",
-    description:
-      "Generate structured summary tables for network reconciliation, cost verification with audit trails, and pre-formatted exports ready to paste into emails or slides.",
-    icon: FileBarChart,
-    status: "planned",
-  },
-]
+/* Future steps kept in "Next Steps" section at the bottom -- none currently, all are live or WIP */
+
+/* ------------------------------------------------------------------ */
+/*  Sample data: Transcripts (.txt -- customer calls with NPS)         */
+/* ------------------------------------------------------------------ */
+
+const SAMPLE_TRANSCRIPT_RAJ = `CALL TRANSCRIPT -- Raj Patel, VP of Plant Engineering, Solaris Packaging
+Date: 14 November 2025 | Duration: 60 min | Network: AlphaSights
+NPS Score: 8
+
+INTERVIEWER: Thank you for joining, Raj. Could you start by walking us through how Solaris first evaluated Meridian Controls?
+
+RAJ PATEL: Sure. We began our evaluation roughly eighteen months ago when we needed to replace aging Rockwell PLCs across three of our packaging lines. Meridian came onto our radar through an industry conference -- their demo of the real-time adaptive control loop was genuinely impressive compared to what we'd seen from incumbents.
+
+INTERVIEWER: What were the key selection criteria for Solaris?
+
+RAJ PATEL: Three things drove it. First, total cost of ownership -- Meridian's licensing model was roughly 30% lower over a five-year horizon compared to Rockwell and Siemens. Second, ease of integration with our existing SCADA layer. Third, and this was the clincher, their predictive maintenance module. We'd been losing about 12% of uptime annually on unplanned stoppages, and their analytics showed credible paths to cutting that by half.
+
+INTERVIEWER: How has the rollout gone so far?
+
+RAJ PATEL: We're about eight months in and we've completed two of the three lines. I'd say 80% positive. The initial integration was smoother than expected -- their API documentation is vastly better than what we experienced with Honeywell. The main friction point has been lead times on replacement IO modules. We had a six-week wait on a batch of analog input cards which held up Line 2 commissioning.
+
+INTERVIEWER: Would you recommend Meridian to a peer in your position?
+
+RAJ PATEL: With caveats, yes. If your operation is mid-scale -- say 5 to 15 lines -- and you're not locked into a long-term Rockwell enterprise agreement, Meridian is worth serious consideration. For very large plants with 50+ lines, I'd want to see more proof points on their scalability.
+
+[END OF TRANSCRIPT]`
+
+const SAMPLE_TRANSCRIPT_JAMES = `CALL TRANSCRIPT -- James Achebe, Global Automation Manager, FreshPath Foods
+Date: 20 November 2025 | Duration: 45 min | Network: GLG
+NPS Score: 7
+
+INTERVIEWER: James, could you describe FreshPath's experience evaluating Meridian Controls alongside Rockwell?
+
+JAMES ACHEBE: Of course. FreshPath operates 22 food processing facilities globally and we've been on Rockwell ControlLogix for about fifteen years. When the time came to upgrade our batch control systems we ran a formal evaluation that included Rockwell, Siemens, and Meridian.
+
+INTERVIEWER: What set Meridian apart in the evaluation?
+
+JAMES ACHEBE: Two things. First, their batch recipe management module is best-in-class for food and beverage. Our process engineers could configure new product recipes in about 40% less time during the pilot. Second, their pricing model -- Rockwell wanted roughly $2.4M annually for a global enterprise agreement, Meridian's per-site licensing came in at about $380K for four pilot sites.
+
+INTERVIEWER: Were there concerns about switching from Rockwell?
+
+JAMES ACHEBE: Absolutely. Our reliability engineering team was initially sceptical. We negotiated a 90-day proof-of-concept at our Charlotte facility running in parallel with Rockwell. System availability was 99.7% versus Rockwell's 99.8% -- well within tolerance. The Meridian system also flagged two equipment anomalies that the Rockwell predictive module missed entirely.
+
+INTERVIEWER: How is the broader rollout progressing?
+
+JAMES ACHEBE: We've approved Meridian for four pilot sites, two are fully cut over. The board has approved conditional expansion to eight additional sites pending a 12-month review.
+
+[END OF TRANSCRIPT]`
 
 /* ------------------------------------------------------------------ */
 /*  Helper: download a text string as a file                           */
@@ -440,16 +425,15 @@ export default function DemoPage() {
           Getting Started Guide
         </h1>
         <p className="mt-1 text-sm leading-relaxed text-muted-foreground max-w-2xl">
-          Walk through a realistic DD scenario using sample data below. The case
+          Walk through a realistic DD scenario using sample data. The case
           involves a PE buyer evaluating <strong className="text-foreground font-medium">Meridian Controls</strong>, a
-          mid-market industrial automation company (codename &ldquo;Project Atlas&rdquo;). Experts
-          are a mix of <strong className="text-foreground font-medium">customers</strong> and{" "}
-          <strong className="text-foreground font-medium">competitors</strong>, each with screening
-          question responses. The networks do not know Meridian is the target.
+          mid-market industrial automation company (codename &ldquo;Project Atlas&rdquo;). Follow
+          all 8 stages below -- from ingesting unstructured network data through to
+          search and reconciliation.
         </p>
       </div>
 
-      <WipBanner feature="demo" />
+      {/* Status banner removed -- demo is now comprehensive */}
 
       {/* ============================================================ */}
       {/*  STEP 1 -- Ingest & Standardise                               */}
@@ -676,60 +660,429 @@ export default function DemoPage() {
       </section>
 
       {/* ============================================================ */}
-      {/*  DIVIDER                                                       */}
+      {/*  STEP 3 -- Track & Shortlist                                   */}
+      {/* ============================================================ */}
+      <section className="mt-10">
+        <div className="flex items-center gap-3">
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
+            3
+          </span>
+          <Users className="h-4 w-4 text-primary/60" />
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
+            Track & Shortlist
+          </h2>
+        </div>
+        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+          Tag experts into shortlist groups (customer, competitor, target) and
+          track their lifecycle from recommended through to call completed. The
+          Experts table supports lens-based views, inline notes, and CID
+          clearance requests -- all auto-populated from ingestion.
+        </p>
+        <ul className="mt-3 flex flex-col gap-1.5 max-w-3xl">
+          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+            Switch between Customer, Competitor, and Target lens views to focus on a specific expert type
+          </li>
+          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+            Shortlist experts directly from the table -- shortlisted profiles carry through to calls and surveys
+          </li>
+          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+            Request CID clearance for target-company experts with one click
+          </li>
+        </ul>
+        <div className="mt-6 flex items-center gap-3">
+          <Link
+            href="/experts"
+            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            <Users className="h-3.5 w-3.5" />
+            Go to Experts page
+          </Link>
+          <p className="text-xs text-muted-foreground">
+            Try shortlisting an expert or requesting CID clearance.
+          </p>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/*  STEP 4 -- Schedule Calls & Track Spend                        */}
+      {/* ============================================================ */}
+      <section className="mt-10">
+        <div className="flex items-center gap-3">
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
+            4
+          </span>
+          <Phone className="h-4 w-4 text-primary/60" />
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
+            Schedule Calls & Track Spend
+          </h2>
+        </div>
+        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+          Move to the Calls page to log scheduled calls. The system
+          auto-populates expert details from the central database and provides
+          live budget roll-ups covering scheduled, completed, and cancelled
+          calls. Add new rows directly in the table, and costs are calculated
+          automatically from the network rate.
+        </p>
+        <ul className="mt-3 flex flex-col gap-1.5 max-w-3xl">
+          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+            Add calls by typing an expert name -- the system auto-suggests from the database and populates all fields
+          </li>
+          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+            Follow-ups are auto-detected when the same expert is contacted through the same network more than once
+          </li>
+          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+            Upload transcripts directly from the call row to link them to the engagement
+          </li>
+          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+            Export the full call log to Excel with one click
+          </li>
+        </ul>
+        <div className="mt-6 flex items-center gap-3">
+          <Link
+            href="/calls"
+            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            <Phone className="h-3.5 w-3.5" />
+            Go to Calls page
+          </Link>
+          <p className="text-xs text-muted-foreground">
+            Seed data includes 8 calls across different statuses and networks.
+          </p>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/*  STEP 5 -- AI Surveys                                          */}
+      {/* ============================================================ */}
+      <section className="mt-10">
+        <div className="flex items-center gap-3">
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
+            5
+          </span>
+          <Building2 className="h-4 w-4 text-primary/60" />
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
+            AI Surveys & Enrichment
+          </h2>
+        </div>
+        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+          AI interview surveys are tracked separately from calls, with their own
+          cost model (flat EUR-denominated fees). The AI Surveys tab mirrors
+          the calls table structure but adapts to survey-specific fields and
+          pricing. Enrichment data (anonymised titles, company details) is
+          auto-populated from the expert database.
+        </p>
+        <ul className="mt-3 flex flex-col gap-1.5 max-w-3xl">
+          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+            Separate workspace for AI interview billing with EUR-denominated flat fees
+          </li>
+          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+            Same expert auto-population and lens-based views as the Calls page
+          </li>
+          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+            All tables exportable to Excel with pre-formatted layouts
+          </li>
+        </ul>
+        <div className="mt-6 flex items-center gap-3">
+          <Link
+            href="/ai-surveys"
+            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            <Building2 className="h-3.5 w-3.5" />
+            Go to AI Surveys page
+          </Link>
+          <p className="text-xs text-muted-foreground">
+            Seed data includes 5 surveys across completed, invited, and cancelled statuses.
+          </p>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/*  STEP 6 -- Transcripts & KPI Extraction                        */}
+      {/* ============================================================ */}
+      <section className="mt-10">
+        <div className="flex items-center gap-3">
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
+            6
+          </span>
+          <Brain className="h-4 w-4 text-primary/60" />
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
+            Transcripts & KPI Extraction
+          </h2>
+        </div>
+        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+          Upload call transcripts directly from the Calls page. The system
+          stores them alongside the engagement record, and AI generates
+          summaries so users can quickly identify which transcript they need.
+          KPI scores (e.g. NPS for customer calls) are extracted automatically
+          where applicable.
+        </p>
+        <ul className="mt-3 flex flex-col gap-1.5 max-w-3xl">
+          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+            Paste or upload transcript text from any call row using the transcript button
+          </li>
+          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+            AI-generated summaries and KPI extraction into the call tracker
+          </li>
+          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+            Transcripts are linked to the engagement and accessible from the call row
+          </li>
+        </ul>
+
+        {/* ---- Sample transcript files ---- */}
+        <p className="mt-6 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Sample Transcripts
+        </p>
+        <p className="mt-1 max-w-3xl text-xs leading-relaxed text-muted-foreground">
+          Download these sample customer call transcripts, then navigate to the
+          Calls page and click {"\"Upload Transcript\""} on the matching completed
+          call row. The NPS score is included in the transcript header.
+        </p>
+
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
+          {/* ---- Raj Patel transcript ---- */}
+          <div className="flex flex-col rounded-lg border border-border bg-card overflow-hidden">
+            <div className="flex items-center gap-3 border-b border-border px-5 py-3.5 bg-muted/30">
+              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/8 ring-1 ring-primary/15">
+                <FileText className="h-4 w-4 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-foreground">
+                  Raj Patel -- Solaris Packaging
+                </h3>
+                <p className="text-[11px] text-muted-foreground">
+                  Customer call | NPS 8 | .txt format
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-1 flex-col px-5 py-4">
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                60-minute call covering Meridian evaluation criteria, rollout
+                progress, and IO module lead-time concerns.
+              </p>
+              <div className="mt-3 flex-1 overflow-auto rounded-md border border-border bg-muted/20 p-3">
+                <pre className="whitespace-pre-wrap text-[11px] leading-relaxed text-foreground/80 font-mono max-h-36 overflow-y-auto">
+                  {SAMPLE_TRANSCRIPT_RAJ.slice(0, 400)}{"..."}
+                </pre>
+              </div>
+              <div className="mt-3 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() =>
+                    downloadTextFile(
+                      SAMPLE_TRANSCRIPT_RAJ,
+                      "transcript-raj-patel-solaris-packaging.txt",
+                      "text/plain"
+                    )
+                  }
+                  className="inline-flex items-center gap-1.5 rounded-md bg-muted px-2.5 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted/80"
+                >
+                  <Download className="h-3 w-3" />
+                  Download .txt file
+                </button>
+                <CopyButton text={SAMPLE_TRANSCRIPT_RAJ} />
+              </div>
+            </div>
+          </div>
+
+          {/* ---- James Achebe transcript ---- */}
+          <div className="flex flex-col rounded-lg border border-border bg-card overflow-hidden">
+            <div className="flex items-center gap-3 border-b border-border px-5 py-3.5 bg-muted/30">
+              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/8 ring-1 ring-primary/15">
+                <FileText className="h-4 w-4 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-foreground">
+                  James Achebe -- FreshPath Foods
+                </h3>
+                <p className="text-[11px] text-muted-foreground">
+                  Customer call | NPS 7 | .txt format
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-1 flex-col px-5 py-4">
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                45-minute call covering batch recipe management, Rockwell
+                vs Meridian pricing, and pilot site rollout progress.
+              </p>
+              <div className="mt-3 flex-1 overflow-auto rounded-md border border-border bg-muted/20 p-3">
+                <pre className="whitespace-pre-wrap text-[11px] leading-relaxed text-foreground/80 font-mono max-h-36 overflow-y-auto">
+                  {SAMPLE_TRANSCRIPT_JAMES.slice(0, 400)}{"..."}
+                </pre>
+              </div>
+              <div className="mt-3 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() =>
+                    downloadTextFile(
+                      SAMPLE_TRANSCRIPT_JAMES,
+                      "transcript-james-achebe-freshpath-foods.txt",
+                      "text/plain"
+                    )
+                  }
+                  className="inline-flex items-center gap-1.5 rounded-md bg-muted px-2.5 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted/80"
+                >
+                  <Download className="h-3 w-3" />
+                  Download .txt file
+                </button>
+                <CopyButton text={SAMPLE_TRANSCRIPT_JAMES} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6 flex items-center gap-3">
+          <Link
+            href="/calls"
+            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            <Brain className="h-3.5 w-3.5" />
+            Go to Calls page
+          </Link>
+          <p className="text-xs text-muted-foreground">
+            Click {"\"Upload Transcript\""} on a completed call to paste or upload the text. Completed calls with transcripts show a green {"\"View Transcript\""} button instead.
+          </p>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/*  DIVIDER -- Work in Progress section                           */}
       {/* ============================================================ */}
       <div className="my-12 border-t border-border" />
 
-      {/* ============================================================ */}
-      {/*  STEPS 2-8 -- Coming soon                                     */}
-      {/* ============================================================ */}
-      <section>
-        <p className="text-[11px] font-semibold uppercase tracking-widest text-primary">
-          Next Steps
+      <div className="mb-6">
+        <p className="text-[11px] font-semibold uppercase tracking-widest text-amber-700">
+          Work in Progress
         </p>
         <h2 className="mt-1 text-xl font-semibold tracking-tight text-foreground">
-          The rest of the pipeline
+          Under Active Development
         </h2>
         <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-          Each stage below will be expanded with its own walkthrough and sample
-          data as the prototype progresses.
+          The following stages have initial implementations but are being
+          expanded with additional capabilities.
         </p>
+      </div>
 
-        <div className="mt-6 grid gap-3">
-          {futureSteps.map((s) => {
-            const Icon = s.icon
-            return (
-              <div
-                key={s.step}
-                className="flex items-start gap-4 rounded-lg border border-border bg-card px-5 py-4 transition-colors hover:border-primary/15"
-              >
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground text-[11px] font-bold">
-                  {s.step}
-                </span>
-                <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground/60" />
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-sm font-semibold text-foreground">
-                      {s.title}
-                    </h3>
-                    <span
-                      className={[
-                        "inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold",
-                        s.status === "coming-soon"
-                          ? "bg-amber-100 text-amber-800"
-                          : "bg-muted text-muted-foreground",
-                      ].join(" ")}
-                    >
-                      {s.status === "coming-soon" ? "Coming soon" : "Planned"}
-                    </span>
-                  </div>
-                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                    {s.description}
-                  </p>
-                </div>
-              </div>
-            )
-          })}
+      {/* ============================================================ */}
+      {/*  STEP 7 -- Search & Discovery (WIP)                            */}
+      {/* ============================================================ */}
+      <section>
+        <div className="flex items-center gap-3">
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
+            7
+          </span>
+          <SearchIcon className="h-4 w-4 text-primary/60" />
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
+            Search & Discovery
+          </h2>
+          <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-[10px] font-semibold text-amber-800">
+            <Construction className="h-3 w-3" />
+            Work in Progress
+          </span>
+        </div>
+        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+          The Search page provides a unified search across experts, transcripts,
+          and survey responses. Type and industry filters narrow results.
+          Currently, search is keyword-based across stored data. Future
+          enhancements will add vector-embedded semantic search and RAG-powered
+          transcript queries with source attribution.
+        </p>
+        <ul className="mt-3 flex flex-col gap-1.5 max-w-3xl">
+          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+            Search across experts, transcripts, and surveys from a single input
+          </li>
+          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+            Filter by type (Experts / Transcripts / Surveys) and industry
+          </li>
+          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-amber-400" />
+            Planned: vector-embedded semantic search for natural-language queries
+          </li>
+          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-amber-400" />
+            Planned: transcript search with supporting quotes linked back to source
+          </li>
+        </ul>
+        <div className="mt-6 flex items-center gap-3">
+          <Link
+            href="/search"
+            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            <SearchIcon className="h-3.5 w-3.5" />
+            Go to Search page
+          </Link>
+          <p className="text-xs text-muted-foreground">
+            Try searching for an expert name or company from the demo data.
+          </p>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/*  STEP 8 -- Reconciliation & Reporting (WIP)                    */}
+      {/* ============================================================ */}
+      <section className="mt-10">
+        <div className="flex items-center gap-3">
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
+            8
+          </span>
+          <FileBarChart className="h-4 w-4 text-primary/60" />
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
+            Reconciliation & Reporting
+          </h2>
+          <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-[10px] font-semibold text-amber-800">
+            <Construction className="h-3 w-3" />
+            Work in Progress
+          </span>
+        </div>
+        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+          The Dashboard page provides budget roll-ups, expert-type breakdowns,
+          and spend-by-status reporting. The Budget tab shows cost breakdowns
+          across scheduled, completed, and cancelled calls. Full reconciliation
+          tables for network settlement and audit-trail exports are planned.
+        </p>
+        <ul className="mt-3 flex flex-col gap-1.5 max-w-3xl">
+          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+            Dashboard with live budget roll-ups across all statuses
+          </li>
+          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+            Expert-type breakdown showing customer, competitor, and target counts
+          </li>
+          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-amber-400" />
+            Planned: structured reconciliation tables for network settlement
+          </li>
+          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-amber-400" />
+            Planned: cost verification with full audit trail and project close-out
+          </li>
+        </ul>
+        <div className="mt-6 flex items-center gap-3">
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            <FileBarChart className="h-3.5 w-3.5" />
+            Go to Dashboard
+          </Link>
+          <p className="text-xs text-muted-foreground">
+            Review budget roll-ups and explore the spend breakdown by status and type.
+          </p>
         </div>
       </section>
 

@@ -18,6 +18,7 @@ import {
   saveCalls,
   computeStats,
   computeCallPrice,
+  detectFollowUps,
   type EngagementRecord,
 } from "@/lib/engagements"
 import { exportToExcel, type ExcelColumnDef } from "@/lib/export-excel"
@@ -84,6 +85,7 @@ export default function CallsPage() {
   )
 
   const handleExport = useCallback(() => {
+    const followUps = detectFollowUps(records)
     const CALL_COLUMNS: ExcelColumnDef[] = [
       { key: "expert_name", header: "Name" },
       { key: "expert_company", header: "Company" },
@@ -95,18 +97,18 @@ export default function CallsPage() {
       }},
       { key: "status", header: "Status", transform: (v) => String(v).charAt(0).toUpperCase() + String(v).slice(1) },
       { key: "date", header: "Call Date" },
+      { key: "call_time", header: "Call Time" },
       { key: "duration_minutes", header: "Duration (min)" },
-      { key: "is_follow_up", header: "Follow-up", transform: (v) => v ? "Yes" : "No" },
+      { key: "_follow_up", header: "Follow-up", transform: (_v, row) => followUps.has(row.id as string) ? "Yes" : "No" },
       { key: "network", header: "Network" },
-      { key: "_rate", header: "Rate ($/hr)", transform: (_v, row) => {
-        const prices = row.network_prices as Record<string, number | null>
-        return prices?.[row.network as string] ?? ""
-      }},
       { key: "_cost", header: "Cost ($)", transform: (_v, row) => {
         const prices = row.network_prices as Record<string, number | null>
         const rate = prices?.[row.network as string] ?? 0
-        return computeCallPrice(rate ?? 0, (row.duration_minutes as number) ?? 0, (row.is_follow_up as boolean) ?? false)
+        const dur = (row.duration_minutes as number) > 0 ? (row.duration_minutes as number) : 60
+        const isfu = followUps.has(row.id as string)
+        return computeCallPrice(rate ?? 0, dur, isfu)
       }},
+      { key: "nps", header: "NPS", transform: (v) => v != null ? v : "" },
       { key: "notes", header: "Notes" },
     ]
     exportToExcel({

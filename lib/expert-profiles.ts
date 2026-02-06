@@ -48,7 +48,7 @@ export function getNetworks(profiles?: ExpertProfile[]): string[] {
   const set = new Set<string>(DEFAULT_NETWORKS)
   const list = profiles ?? getExpertProfiles()
   for (const p of list) {
-    for (const n of Object.keys(p.network_prices)) set.add(n)
+    for (const n of Object.keys(p.network_prices ?? {})) set.add(n)
     if (p.network) set.add(p.network)
   }
   return Array.from(set)
