@@ -577,7 +577,7 @@ A: Ruggedised product lines for heavy industry and process control applications.
 /* ------------------------------------------------------------------ */
 
 const LS_KEY = "helmsman_transcripts"
-const TRANSCRIPTS_SEEDED = "helmsman_transcripts_seeded_v3"
+const TRANSCRIPTS_SEEDED = "helmsman_transcripts_seeded_v4"
 
 function ensureTranscriptsSeeded(): void {
   if (typeof window === "undefined") return
@@ -593,11 +593,15 @@ function ensureTranscriptsSeeded(): void {
       return []
     }
   })()
-  const existingIds = new Set(existing.map((t) => t.engagement_id))
-  const toAdd = SEED_TRANSCRIPTS.filter((t) => !existingIds.has(t.engagement_id))
-  if (toAdd.length > 0) {
-    localStorage.setItem(LS_KEY, JSON.stringify([...existing, ...toAdd]))
+  const existingById = new Map(existing.map((t) => [t.engagement_id, t]))
+  // Replace any corrupt/empty seed records and add missing ones
+  for (const seed of SEED_TRANSCRIPTS) {
+    const current = existingById.get(seed.engagement_id)
+    if (!current || !current.text) {
+      existingById.set(seed.engagement_id, seed)
+    }
   }
+  localStorage.setItem(LS_KEY, JSON.stringify(Array.from(existingById.values())))
   localStorage.setItem(TRANSCRIPTS_SEEDED, "1")
 }
 
