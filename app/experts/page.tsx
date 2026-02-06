@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { Plus } from "lucide-react"
 import Link from "next/link"
 import PageHeader from "../components/page-header"
@@ -8,6 +8,7 @@ import ExpertLensTable from "../components/expert-lens-table"
 import {
   getExpertProfiles,
   saveExpertProfiles,
+  SEED_PROFILES,
   type ExpertProfile,
 } from "@/lib/expert-profiles"
 
@@ -16,12 +17,19 @@ import {
 /*                                                                     */
 /*  State is held here so shortlisting, notes, and CID updates are    */
 /*  reflected immediately. Every mutation persists to localStorage.    */
+/*                                                                     */
+/*  We initialise with SEED_PROFILES (deterministic) so server and    */
+/*  client render identically, then hydrate from localStorage in an   */
+/*  effect to pick up any user changes.                                */
 /* ------------------------------------------------------------------ */
 
 export default function ExpertsPage() {
-  const [experts, setExperts] = useState<ExpertProfile[]>(() =>
-    getExpertProfiles(),
-  )
+  const [experts, setExperts] = useState<ExpertProfile[]>(SEED_PROFILES)
+
+  // Hydrate from localStorage after mount (avoids SSR mismatch)
+  useEffect(() => {
+    setExperts(getExpertProfiles())
+  }, [])
 
   const handleUpdate = useCallback(
     (index: number, updates: Partial<ExpertProfile>) => {
