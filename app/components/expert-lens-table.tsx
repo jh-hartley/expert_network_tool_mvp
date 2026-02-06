@@ -5,8 +5,6 @@ import {
   ArrowUp,
   ArrowDown,
   ArrowUpDown,
-  ChevronLeft,
-  ChevronRight,
   Search,
   Star,
   ShieldCheck,
@@ -270,7 +268,6 @@ function generateCidJustification(expert: ExpertProfile): string {
 
 interface ExpertLensTableProps {
   experts: ExpertProfile[]
-  pageSize?: number
   onUpdateExpert: (index: number, updates: Partial<ExpertProfile>) => void
 }
 
@@ -280,13 +277,11 @@ interface ExpertLensTableProps {
 
 export default function ExpertLensTable({
   experts,
-  pageSize = 10,
   onUpdateExpert,
 }: ExpertLensTableProps) {
   const [lens, setLens] = useState<ExpertLens>("all")
   const [sortKey, setSortKey] = useState<string | null>(null)
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc")
-  const [page, setPage] = useState(0)
   const [search, setSearch] = useState("")
   const [showShortlistedOnly, setShowShortlistedOnly] = useState(false)
 
@@ -304,7 +299,6 @@ export default function ExpertLensTable({
   const notesInputRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
-    setPage(0)
     setSortKey(null)
   }, [lens])
 
@@ -377,12 +371,6 @@ export default function ExpertLensTable({
     })
   }, [filtered, sortKey, sortDir, columns])
 
-  // Pagination
-  const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize))
-  const paginatedRows = sorted.slice(page * pageSize, (page + 1) * pageSize)
-  const startRow = page * pageSize + 1
-  const endRow = Math.min((page + 1) * pageSize, sorted.length)
-
   const handleSort = useCallback(
     (key: string) => {
       if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"))
@@ -390,7 +378,6 @@ export default function ExpertLensTable({
         setSortKey(key)
         setSortDir("asc")
       }
-      setPage(0)
     },
     [sortKey],
   )
@@ -500,10 +487,9 @@ export default function ExpertLensTable({
                 type="button"
                 role="switch"
                 aria-checked={showShortlistedOnly}
-                onClick={() => {
-                  setShowShortlistedOnly((v) => !v)
-                  setPage(0)
-                }}
+                  onClick={() => {
+                    setShowShortlistedOnly((v) => !v)
+                  }}
                 className={[
                   "relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors",
                   showShortlistedOnly ? "bg-primary" : "bg-muted",
@@ -532,10 +518,9 @@ export default function ExpertLensTable({
               <input
                 type="search"
                 value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value)
-                  setPage(0)
-                }}
+                  onChange={(e) => {
+                    setSearch(e.target.value)
+                  }}
                 placeholder="Search name, company, role..."
                 className="h-8 w-full rounded-md border border-border bg-background pl-8 pr-3 text-xs text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-ring sm:w-56"
                 aria-label="Search experts"
@@ -599,7 +584,7 @@ export default function ExpertLensTable({
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {paginatedRows.length === 0 ? (
+              {sorted.length === 0 ? (
                 <tr>
                   <td
                     colSpan={columns.length + 2}
@@ -613,7 +598,7 @@ export default function ExpertLensTable({
                   </td>
                 </tr>
               ) : (
-                paginatedRows.map((expert) => {
+                sorted.map((expert) => {
                   const origIdx = findOriginalIndex(expert)
                   const isEditingNotes = editingNotesIdx === origIdx
                   return (
@@ -761,39 +746,12 @@ export default function ExpertLensTable({
           </table>
         </div>
 
-        {/* Pagination footer */}
-        {sorted.length > pageSize && (
-          <div className="flex items-center justify-between border-t border-border px-4 py-2">
-            <p className="text-[11px] text-muted-foreground">
-              {startRow}&#8211;{endRow} of {sorted.length}
-            </p>
-            <div className="flex items-center gap-1">
-              <button
-                type="button"
-                onClick={() => setPage((p) => Math.max(0, p - 1))}
-                disabled={page === 0}
-                className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border bg-card text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
-                aria-label="Previous page"
-              >
-                <ChevronLeft className="h-3.5 w-3.5" />
-              </button>
-              <span className="min-w-[3rem] text-center text-[11px] text-muted-foreground">
-                {page + 1} / {totalPages}
-              </span>
-              <button
-                type="button"
-                onClick={() =>
-                  setPage((p) => Math.min(totalPages - 1, p + 1))
-                }
-                disabled={page >= totalPages - 1}
-                className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border bg-card text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
-                aria-label="Next page"
-              >
-                <ChevronRight className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          </div>
-        )}
+        {/* Row count footer */}
+        <div className="border-t border-border px-4 py-2">
+          <p className="text-[11px] text-muted-foreground">
+            {sorted.length} expert{sorted.length === 1 ? "" : "s"}
+          </p>
+        </div>
       </div>
 
       {/* Footer stats */}

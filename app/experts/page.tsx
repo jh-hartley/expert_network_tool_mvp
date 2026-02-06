@@ -73,7 +73,6 @@ export default function ExpertsPage() {
       <div className="mt-6">
         <ExpertLensTable
           experts={experts}
-          pageSize={10}
           onUpdateExpert={handleUpdate}
         />
       </div>
