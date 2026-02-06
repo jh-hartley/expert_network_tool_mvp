@@ -3,6 +3,7 @@ import {
   SYSTEM_PROMPT,
   extractionResultSchema,
   type InputFormat,
+  type ExtractionResult,
 } from "@/lib/llm"
 
 export async function POST(req: Request) {
@@ -26,10 +27,25 @@ export async function POST(req: Request) {
       messages: [{ role: "user", content: userPreamble + content }],
     })
 
-    console.log("[v0] generateText finished. Has object:", !!result.object)
-    console.log("[v0] Raw text response:", result.text?.slice(0, 500))
+    /* ----- Try to get the structured object ----- */
+    let parsed: ExtractionResult | null =
+      (result.object as ExtractionResult | undefined) ?? null
 
-    if (!result.object) {
+    /* Fallback: if Output.object didn't populate result.object but the
+       model DID return valid JSON as text, parse & validate it manually. */
+    if (!parsed && result.text) {
+      try {
+        const raw = JSON.parse(result.text)
+        parsed = extractionResultSchema.parse(raw)
+      } catch (parseErr) {
+        console.error(
+          "[v0] Fallback JSON parse failed:",
+          parseErr instanceof Error ? parseErr.message : parseErr,
+        )
+      }
+    }
+
+    if (!parsed) {
       return Response.json(
         {
           error: "LLM did not return a valid structured response.",
@@ -42,7 +58,7 @@ export async function POST(req: Request) {
       )
     }
 
-    return Response.json(result.object)
+    return Response.json(parsed)
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err)
     const stack = err instanceof Error ? err.stack : undefined
