@@ -85,8 +85,8 @@ export default function CallsPage() {
   const totalSpend = Object.values(stats.totalSpendByStatus).reduce((a, b) => a + b, 0)
   const completedSpend = stats.totalSpendByStatus.completed
 
-  // Expert type breakdown
-  const typeBreakdown = Object.entries(stats.byType)
+  // Expert type breakdown (unique experts)
+  const typeBreakdown = Object.entries(stats.uniqueByType)
     .map(([k, v]) => {
       const labels: Record<string, string> = {
         customer: "Cust",
@@ -119,7 +119,7 @@ export default function CallsPage() {
       <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <StatCard
           label="Experts Contacted"
-          value={records.length}
+          value={stats.uniqueExperts}
           change={typeBreakdown}
           changeType="neutral"
           icon={Users}

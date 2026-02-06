@@ -39,6 +39,8 @@ export interface EngagementRecord {
   network_prices: Record<string, number | null>
   /** Primary network this was booked through */
   network: string
+  /** Whether this is a follow-up engagement (25% discount on hourly rate) */
+  is_follow_up: boolean
   /** User notes */
   notes: string
   created_at: string
@@ -59,9 +61,9 @@ export function generateId(): string {
 /* ------------------------------------------------------------------ */
 
 const CALLS_KEY = "helmsman_calls"
-const CALLS_SEEDED = "helmsman_calls_seeded"
+const CALLS_SEEDED = "helmsman_calls_seeded_v2"
 const SURVEYS_KEY = "helmsman_surveys"
-const SURVEYS_SEEDED = "helmsman_surveys_seeded"
+const SURVEYS_SEEDED = "helmsman_surveys_seeded_v2"
 
 function ensureCallsSeeded(): void {
   if (typeof window === "undefined") return
@@ -110,6 +112,43 @@ export function saveSurveys(records: EngagementRecord[]): void {
 }
 
 /* ------------------------------------------------------------------ */
+/*  Call pricing logic                                                 */
+/*                                                                     */
+/*  Hourly rate = network price for the selected network.              */
+/*  Duration must be a 15-minute interval.                             */
+/*  < 60 min → charged at 75% of the 1-hr cost.                       */
+/*  Follow-up → 25% discount on the hourly rate.                       */
+/*  Follow-up + 15 min → 50% of 1-hr cost.                            */
+/*  Survey pricing is flat (EUR per survey), no duration logic.        */
+/* ------------------------------------------------------------------ */
+
+export function computeCallPrice(
+  hourlyRate: number,
+  durationMinutes: number,
+  isFollowUp: boolean,
+): number {
+  if (hourlyRate <= 0 || durationMinutes <= 0) return 0
+
+  const effectiveRate = isFollowUp ? hourlyRate * 0.75 : hourlyRate
+
+  // Special case: follow-up + 15 min → 50% of full hourly rate
+  if (isFollowUp && durationMinutes === 15) {
+    return Math.round(hourlyRate * 0.5)
+  }
+
+  // Sub-60 min (but not the follow-up+15 case above) → 75% of 1-hr cost
+  if (durationMinutes < 60) {
+    return Math.round(effectiveRate * 0.75)
+  }
+
+  // 60+ min → pro-rata on the effective rate
+  return Math.round(effectiveRate * (durationMinutes / 60))
+}
+
+/** Duration options in 15-minute intervals */
+export const DURATION_OPTIONS = [15, 30, 45, 60, 75, 90, 105, 120]
+
+/* ------------------------------------------------------------------ */
 /*  Create a new engagement from an ExpertProfile                      */
 /* ------------------------------------------------------------------ */
 
@@ -136,6 +175,7 @@ export function createEngagementFromExpert(
     duration_minutes: 0,
     network_prices: np,
     network: expert.network ?? "",
+    is_follow_up: false,
     notes: "",
     created_at: new Date().toISOString(),
     ...overrides,
@@ -147,13 +187,17 @@ export function createEngagementFromExpert(
 /* ------------------------------------------------------------------ */
 
 export interface EngagementStats {
-  byType: Record<string, number>
+  /** Unique experts contacted, grouped by expert_type */
+  uniqueByType: Record<string, number>
+  /** Total unique experts */
+  uniqueExperts: number
   byStatus: Record<EngagementStatus, number>
   totalSpendByStatus: Record<EngagementStatus, number>
 }
 
 export function computeStats(records: EngagementRecord[]): EngagementStats {
-  const byType: Record<string, number> = {}
+  const expertSeen = new Set<string>()
+  const expertsByType: Record<string, Set<string>> = {}
   const byStatus: Record<EngagementStatus, number> = {
     invited: 0,
     scheduled: 0,
@@ -168,16 +212,33 @@ export function computeStats(records: EngagementRecord[]): EngagementStats {
   }
 
   for (const r of records) {
-    // Count by expert_type
-    byType[r.expert_type] = (byType[r.expert_type] ?? 0) + 1
+    // Unique experts by name+company
+    const key = `${r.expert_name}|||${r.expert_company}`
+    expertSeen.add(key)
+    if (!expertsByType[r.expert_type]) expertsByType[r.expert_type] = new Set()
+    expertsByType[r.expert_type].add(key)
+
     // Count by status
     byStatus[r.status]++
-    // Compute spend (primary network price)
-    const price = r.network_prices[r.network] ?? 0
-    totalSpendByStatus[r.status] += price
+
+    // Compute spend
+    if (r.type === "call") {
+      const hourlyRate = r.network_prices[r.network] ?? 0
+      const cost = computeCallPrice(hourlyRate, r.duration_minutes, r.is_follow_up ?? false)
+      totalSpendByStatus[r.status] += cost
+    } else {
+      // Survey: flat fee from the selected network
+      const price = r.network_prices[r.network] ?? 0
+      totalSpendByStatus[r.status] += price
+    }
   }
 
-  return { byType, byStatus, totalSpendByStatus }
+  const uniqueByType: Record<string, number> = {}
+  for (const [type, set] of Object.entries(expertsByType)) {
+    uniqueByType[type] = set.size
+  }
+
+  return { uniqueByType, uniqueExperts: expertSeen.size, byStatus, totalSpendByStatus }
 }
 
 /* ------------------------------------------------------------------ */
@@ -209,9 +270,10 @@ export const SEED_CALLS: EngagementRecord[] = [
     expert_type: "customer",
     status: "completed",
     date: "2025-11-14",
-    duration_minutes: 55,
+    duration_minutes: 60,
     network_prices: { AlphaSights: 650, GLG: null, "Third Bridge": null },
     network: "AlphaSights",
+    is_follow_up: false,
     notes: "Very insightful on Meridian adoption drivers. Follow up on lead times.",
     created_at: "2025-11-10T09:00:00Z",
   },
@@ -228,6 +290,7 @@ export const SEED_CALLS: EngagementRecord[] = [
     duration_minutes: 60,
     network_prices: { AlphaSights: 950, GLG: 1000, "Third Bridge": null },
     network: "AlphaSights",
+    is_follow_up: false,
     notes: "Strong views on Meridian's competitive positioning vs Beckhoff.",
     created_at: "2025-11-12T14:00:00Z",
   },
@@ -244,6 +307,7 @@ export const SEED_CALLS: EngagementRecord[] = [
     duration_minutes: 0,
     network_prices: { AlphaSights: 550, GLG: 600, "Third Bridge": null },
     network: "AlphaSights",
+    is_follow_up: false,
     notes: "",
     created_at: "2025-11-20T10:00:00Z",
   },
@@ -260,6 +324,7 @@ export const SEED_CALLS: EngagementRecord[] = [
     duration_minutes: 0,
     network_prices: { AlphaSights: null, GLG: 1200, "Third Bridge": 1150 },
     network: "GLG",
+    is_follow_up: false,
     notes: "Key target interview -- need CID clearance first.",
     created_at: "2025-11-22T11:00:00Z",
   },
@@ -276,6 +341,7 @@ export const SEED_CALLS: EngagementRecord[] = [
     duration_minutes: 0,
     network_prices: { AlphaSights: 600, GLG: null, "Third Bridge": 575 },
     network: "AlphaSights",
+    is_follow_up: false,
     notes: "",
     created_at: "2025-11-23T08:00:00Z",
   },
@@ -292,6 +358,7 @@ export const SEED_CALLS: EngagementRecord[] = [
     duration_minutes: 0,
     network_prices: { AlphaSights: 1100, GLG: null, "Third Bridge": null },
     network: "AlphaSights",
+    is_follow_up: false,
     notes: "Cancelled -- compliance concern re current employment.",
     created_at: "2025-11-14T09:00:00Z",
   },
@@ -308,6 +375,7 @@ export const SEED_CALLS: EngagementRecord[] = [
     duration_minutes: 45,
     network_prices: { AlphaSights: null, GLG: 750, "Third Bridge": null },
     network: "GLG",
+    is_follow_up: false,
     notes: "Excellent perspective on Meridian vs Rockwell evaluation process.",
     created_at: "2025-11-16T10:00:00Z",
   },
@@ -324,6 +392,7 @@ export const SEED_CALLS: EngagementRecord[] = [
     duration_minutes: 0,
     network_prices: { AlphaSights: 650, GLG: 600, "Third Bridge": null },
     network: "GLG",
+    is_follow_up: false,
     notes: "",
     created_at: "2025-11-25T09:00:00Z",
   },
@@ -347,6 +416,7 @@ export const SEED_SURVEYS: EngagementRecord[] = [
     duration_minutes: 0,
     network_prices: { AlphaSights: 300, GLG: null, "Third Bridge": null },
     network: "AlphaSights",
+    is_follow_up: false,
     notes: "NPS 8. Strong on vendor evaluation process.",
     created_at: "2025-11-08T09:00:00Z",
   },
@@ -363,6 +433,7 @@ export const SEED_SURVEYS: EngagementRecord[] = [
     duration_minutes: 0,
     network_prices: { AlphaSights: 300, GLG: 300, "Third Bridge": null },
     network: "AlphaSights",
+    is_follow_up: false,
     notes: "NPS 9. Very positive on Meridian service model.",
     created_at: "2025-11-09T10:00:00Z",
   },
@@ -379,6 +450,7 @@ export const SEED_SURVEYS: EngagementRecord[] = [
     duration_minutes: 0,
     network_prices: { AlphaSights: null, GLG: null, "Third Bridge": 300 },
     network: "Third Bridge",
+    is_follow_up: false,
     notes: "",
     created_at: "2025-11-18T14:00:00Z",
   },
@@ -395,6 +467,7 @@ export const SEED_SURVEYS: EngagementRecord[] = [
     duration_minutes: 0,
     network_prices: { AlphaSights: null, GLG: null, "Third Bridge": 300 },
     network: "Third Bridge",
+    is_follow_up: false,
     notes: "",
     created_at: "2025-11-19T08:00:00Z",
   },
@@ -411,6 +484,7 @@ export const SEED_SURVEYS: EngagementRecord[] = [
     duration_minutes: 0,
     network_prices: { AlphaSights: null, GLG: 300, "Third Bridge": 300 },
     network: "Third Bridge",
+    is_follow_up: false,
     notes: "Cancelled -- scheduling conflict.",
     created_at: "2025-11-10T11:00:00Z",
   },
