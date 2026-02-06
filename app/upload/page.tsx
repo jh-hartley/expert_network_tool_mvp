@@ -10,6 +10,8 @@ import PageHeader from "../components/page-header"
 import WipBanner from "../components/wip-banner"
 import { useStore } from "@/lib/use-store"
 import { uid } from "@/lib/storage"
+import { buildExtractionPayload } from "@/lib/llm"
+import type { InputFormat as LlmInputFormat } from "@/lib/llm"
 import type { Expert, Network, Industry, ComplianceStatus } from "@/lib/types"
 
 /* ------------------------------------------------------------------ */
@@ -77,17 +79,7 @@ function detectFormat(file: File): InputFormat {
 }
 
 function buildLlmPayload(r: IngestResult): object {
-  return {
-    model: "gpt-4o",
-    messages: [
-      {
-        role: "system",
-        content: `You are a structured data extraction assistant. Extract expert profiles from the following ${r.format === "email" ? "email" : "text"} content. Return a JSON array of objects with fields: name, title, company, industry, network, compliance (one of "cleared", "pending", "blocked"), and tags (array of strings).`,
-      },
-      { role: "user", content: r.rawContent },
-    ],
-    response_format: { type: "json_object" },
-  }
+  return buildExtractionPayload(r.rawContent, r.format as LlmInputFormat)
 }
 
 /* ------------------------------------------------------------------ */
