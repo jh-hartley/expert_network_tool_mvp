@@ -2,7 +2,7 @@
 
 import {
   Upload, FileText, CheckCircle2, ClipboardPaste, Mail, Table2, X,
-  ChevronDown, ChevronUp, Braces, ArrowRight, AlertCircle,
+  ChevronDown, ChevronUp, Braces, ArrowRight, AlertCircle, Loader2, Sparkles,
 } from "lucide-react"
 import { useState, useRef } from "react"
 import { toast } from "sonner"
@@ -10,8 +10,8 @@ import PageHeader from "../components/page-header"
 import WipBanner from "../components/wip-banner"
 import { useStore } from "@/lib/use-store"
 import { uid } from "@/lib/storage"
-import { buildExtractionPayload } from "@/lib/llm"
-import type { InputFormat as LlmInputFormat } from "@/lib/llm"
+import { extractExperts } from "@/lib/llm-client"
+import type { ExtractedExpert, ExtractionResult, InputFormat as LlmInputFormat } from "@/lib/llm"
 import type { Expert, Network, Industry, ComplianceStatus } from "@/lib/types"
 
 /* ------------------------------------------------------------------ */
@@ -78,10 +78,6 @@ function detectFormat(file: File): InputFormat {
   return "raw-text"
 }
 
-function buildLlmPayload(r: IngestResult): object {
-  return buildExtractionPayload(r.rawContent, r.format as LlmInputFormat)
-}
-
 /* ------------------------------------------------------------------ */
 /*  Page component                                                     */
 /* ------------------------------------------------------------------ */
@@ -93,6 +89,9 @@ export default function UploadPage() {
   const [pasteText, setPasteText] = useState("")
   const [showPaste, setShowPaste] = useState(false)
   const [debugOpen, setDebugOpen] = useState(true)
+  const [extracting, setExtracting] = useState(false)
+  const [extraction, setExtraction] = useState<ExtractionResult | null>(null)
+  const [extractionError, setExtractionError] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
   function handleFile(file: File) {
@@ -166,6 +165,31 @@ export default function UploadPage() {
     setResult(null)
     setPasteText("")
     setShowPaste(false)
+    setExtraction(null)
+    setExtractionError(null)
+  }
+
+  async function handleExtract() {
+    if (!result || !result.needsLlm) return
+    setExtracting(true)
+    setExtractionError(null)
+    setExtraction(null)
+    try {
+      const data = await extractExperts(
+        result.rawContent,
+        result.format as LlmInputFormat,
+      )
+      setExtraction(data)
+      toast.success(
+        `Extracted ${data.experts.length} expert${data.experts.length === 1 ? "" : "s"} from ${result.sourceName}`,
+      )
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Extraction failed"
+      setExtractionError(msg)
+      toast.error(msg)
+    } finally {
+      setExtracting(false)
+    }
   }
 
   const eml =
@@ -443,16 +467,164 @@ export default function UploadPage() {
             </div>
           </div>
 
-          <div className="mt-3 flex items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3">
-            <AlertCircle className="h-4 w-4 shrink-0 text-blue-600" />
-            <p className="text-sm leading-relaxed text-blue-800">
-              <span className="font-medium">Unstructured content</span>{" "}
-              <span className="text-blue-700">
-                -- this data will be sent to an LLM for structured extraction
-                once the parsing pipeline is connected. See the debug panel
-                below for the planned payload.
+          {/* Extract button */}
+          {!extraction && !extracting && (
+            <div className="mt-3 flex items-center gap-3">
+              <button
+                type="button"
+                onClick={handleExtract}
+                disabled={extracting}
+                className="inline-flex h-9 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <Sparkles className="h-4 w-4" />
+                Extract with LLM
+              </button>
+              <span className="text-xs text-muted-foreground">
+                Sends content to GPT-4o for structured expert extraction
               </span>
-            </p>
+            </div>
+          )}
+
+          {/* Loading state */}
+          {extracting && (
+            <div className="mt-3 flex items-center gap-3 rounded-lg border border-border bg-muted/30 px-4 py-4">
+              <div className="relative flex h-8 w-8 items-center justify-center">
+                <Loader2 className="h-5 w-5 animate-spin text-primary" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground">
+                  Extracting expert profiles...
+                </p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  Analysing {result.rawContent.length.toLocaleString()} characters with GPT-4o. This typically takes 10-30 seconds.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Error state */}
+          {extractionError && (
+            <div className="mt-3 flex items-center gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+              <AlertCircle className="h-4 w-4 shrink-0 text-destructive" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-destructive">
+                  Extraction failed
+                </p>
+                <p className="mt-0.5 text-xs text-destructive/80">
+                  {extractionError}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleExtract}
+                className="inline-flex h-7 items-center gap-1.5 rounded-md border border-destructive/30 px-2.5 text-xs font-medium text-destructive transition-colors hover:bg-destructive/10"
+              >
+                Retry
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ---- LLM Extraction Results ---- */}
+      {extraction && extraction.experts.length > 0 && (
+        <div className="mt-6">
+          <div className="mb-3 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <h2 className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                LLM Extraction Results ({extraction.experts.length} experts)
+              </h2>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setExtraction(null)
+                  setExtractionError(null)
+                }}
+                className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted"
+              >
+                Re-extract
+              </button>
+            </div>
+          </div>
+          <div className="overflow-hidden rounded-lg border border-border bg-card">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border bg-muted/40">
+                    {[
+                      "Name",
+                      "Role (Anonymised)",
+                      "Company",
+                      "Type",
+                      "Former",
+                      "Price/hr",
+                      "Network",
+                      "Industry",
+                      "FTEs",
+                    ].map((h) => (
+                      <th
+                        key={h}
+                        className="whitespace-nowrap px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"
+                      >
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {extraction.experts.map((ex, i) => (
+                    <tr
+                      key={i}
+                      className="transition-colors hover:bg-muted/30"
+                    >
+                      <td className="whitespace-nowrap px-3 py-2.5 text-sm font-medium text-foreground">
+                        {ex.name}
+                      </td>
+                      <td className="px-3 py-2.5 text-sm text-muted-foreground">
+                        {ex.role}
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-2.5 text-sm text-muted-foreground">
+                        {ex.company}
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-2.5">
+                        <ExpertTypeBadge type={ex.expert_type} />
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-2.5 text-sm text-muted-foreground">
+                        {ex.former ? (
+                          <span className="text-amber-600">
+                            Yes{ex.date_left !== "N/A" && ex.date_left !== "Unknown" ? ` (${ex.date_left})` : ""}
+                          </span>
+                        ) : (
+                          "Current"
+                        )}
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-2.5 text-sm text-muted-foreground">
+                        {ex.price != null ? `$${ex.price}` : "--"}
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-2.5 text-sm text-muted-foreground">
+                        {ex.network}
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-2.5 text-sm text-muted-foreground">
+                        {ex.industry_guess}
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-2.5 text-sm text-muted-foreground">
+                        {ex.fte_estimate}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Screener details (expandable per expert) */}
+          <div className="mt-4 space-y-3">
+            {extraction.experts.map((ex, i) => (
+              <ExpertDetailCard key={i} expert={ex} />
+            ))}
           </div>
         </div>
       )}
@@ -508,18 +680,14 @@ export default function UploadPage() {
                 </div>
               )}
 
-              {result.needsLlm && (
+              {extraction && (
                 <div className="border-t border-border p-4">
                   <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                    Planned LLM payload
+                    LLM extraction response
                   </h3>
-                  <p className="mb-3 text-[11px] leading-relaxed text-muted-foreground">
-                    The following JSON shows the API call that will be made to
-                    the LLM once the parsing pipeline is connected.
-                  </p>
                   <div className="max-h-64 overflow-auto rounded-md bg-muted/20 p-3">
                     <pre className="font-mono text-[11px] leading-relaxed text-foreground/70">
-                      {JSON.stringify(buildLlmPayload(result), null, 2)}
+                      {JSON.stringify(extraction, null, 2)}
                     </pre>
                   </div>
                 </div>
@@ -612,6 +780,117 @@ function DebugCell({ label, value }: { label: string; value: string }) {
         {label}
       </p>
       <p className="mt-0.5 text-sm font-medium text-foreground">{value}</p>
+    </div>
+  )
+}
+
+function ExpertTypeBadge({ type }: { type: string }) {
+  const styles: Record<string, string> = {
+    customer: "bg-blue-50 text-blue-700",
+    competitor: "bg-orange-50 text-orange-700",
+    target: "bg-violet-50 text-violet-700",
+    competitor_customer: "bg-teal-50 text-teal-700",
+  }
+  const labels: Record<string, string> = {
+    customer: "Customer",
+    competitor: "Competitor",
+    target: "Target",
+    competitor_customer: "Comp. Customer",
+  }
+  return (
+    <span
+      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${styles[type] || styles.customer}`}
+    >
+      {labels[type] || type}
+    </span>
+  )
+}
+
+function ExpertDetailCard({ expert }: { expert: ExtractedExpert }) {
+  const [open, setOpen] = useState(false)
+
+  const screeners: Array<{ label: string; value: string | null }> =
+    expert.expert_type === "customer"
+      ? [
+          { label: "Vendors evaluated", value: expert.screener_vendors_evaluated },
+          { label: "Selection driver", value: expert.screener_vendor_selection_driver },
+          { label: "Satisfaction", value: expert.screener_vendor_satisfaction },
+          { label: "Switch trigger", value: expert.screener_switch_trigger },
+        ]
+      : [
+          { label: "Competitive landscape", value: expert.screener_competitive_landscape },
+          { label: "Losing deals to", value: expert.screener_losing_deals_to },
+          { label: "Pricing comparison", value: expert.screener_pricing_comparison },
+          { label: "R&D investment", value: expert.screener_rd_investment },
+        ]
+
+  const hasScreeners = screeners.some((s) => s.value != null)
+
+  return (
+    <div className="overflow-hidden rounded-lg border border-border bg-card">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/30"
+      >
+        <div className="flex-1">
+          <span className="text-sm font-medium text-foreground">{expert.name}</span>
+          <span className="ml-2 text-xs text-muted-foreground">
+            {expert.role} at {expert.company}
+          </span>
+        </div>
+        <ExpertTypeBadge type={expert.expert_type} />
+        {open ? (
+          <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" />
+        ) : (
+          <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+        )}
+      </button>
+      {open && (
+        <div className="border-t border-border px-4 py-3">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                Original title (internal)
+              </p>
+              <p className="mt-0.5 text-sm text-foreground">{expert.original_role}</p>
+            </div>
+            {expert.former && expert.date_left !== "N/A" && (
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Date left
+                </p>
+                <p className="mt-0.5 text-sm text-foreground">{expert.date_left}</p>
+              </div>
+            )}
+          </div>
+          {hasScreeners && (
+            <div className="mt-3">
+              <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                Screener responses
+              </p>
+              <div className="space-y-2">
+                {screeners
+                  .filter((s) => s.value != null)
+                  .map((s) => (
+                    <div key={s.label}>
+                      <p className="text-xs font-medium text-foreground/70">{s.label}</p>
+                      <p className="mt-0.5 text-sm text-foreground">{s.value}</p>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )}
+          {expert.additional_info && (
+            <div className="mt-3">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                Additional information
+              </p>
+              <p className="mt-0.5 text-sm text-foreground">{expert.additional_info}</p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

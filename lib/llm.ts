@@ -4,8 +4,41 @@
 /*  expert extraction from unstructured text.                         */
 /* ------------------------------------------------------------------ */
 
+import { z } from "zod"
+
 /* ------------------------------------------------------------------ */
-/*  Expert extraction output schema                                    */
+/*  Expert extraction Zod schema (used by AI SDK Output.object())     */
+/* ------------------------------------------------------------------ */
+
+export const extractedExpertSchema = z.object({
+  name: z.string(),
+  role: z.string(),
+  original_role: z.string(),
+  company: z.string(),
+  expert_type: z.enum(["customer", "competitor", "target", "competitor_customer"]),
+  former: z.boolean(),
+  date_left: z.string(),
+  price: z.number().nullable(),
+  network: z.string(),
+  industry_guess: z.string(),
+  fte_estimate: z.string(),
+  screener_vendors_evaluated: z.string().nullable(),
+  screener_vendor_selection_driver: z.string().nullable(),
+  screener_vendor_satisfaction: z.string().nullable(),
+  screener_switch_trigger: z.string().nullable(),
+  screener_competitive_landscape: z.string().nullable(),
+  screener_losing_deals_to: z.string().nullable(),
+  screener_pricing_comparison: z.string().nullable(),
+  screener_rd_investment: z.string().nullable(),
+  additional_info: z.string(),
+})
+
+export const extractionResultSchema = z.object({
+  experts: z.array(extractedExpertSchema),
+})
+
+/* ------------------------------------------------------------------ */
+/*  Expert extraction TypeScript interface                             */
 /* ------------------------------------------------------------------ */
 
 export interface ExtractedExpert {
@@ -44,7 +77,7 @@ export interface ExtractionResult {
 /*  System prompt                                                      */
 /* ------------------------------------------------------------------ */
 
-const SYSTEM_PROMPT = `You are a structured data extraction assistant for an expert network management tool used by private equity deal teams.
+export const SYSTEM_PROMPT = `You are a structured data extraction assistant for an expert network management tool used by private equity deal teams.
 
 Your task: read through the provided raw text (which may be an email body, pasted notes, or any unstructured content from an expert network) and extract a list of expert profiles in a unified JSON schema.
 
