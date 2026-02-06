@@ -67,12 +67,22 @@ export default function ExpertsPage() {
         return arr && arr.length > 0 ? arr.join(", ") : ""
       }},
       { key: "notes", header: "Notes" },
+      // Customer screener columns
+      { key: "screener_vendors_evaluated", header: "Vendors Evaluated (24mo)" },
+      { key: "screener_vendor_selection_driver", header: "Vendor Selection Driver" },
+      { key: "screener_vendor_satisfaction", header: "Vendor Satisfaction (1-10)" },
+      { key: "screener_switch_trigger", header: "Switch Trigger" },
+      // Competitor screener columns
+      { key: "screener_competitive_landscape", header: "Competitive Landscape" },
+      { key: "screener_losing_deals_to", header: "Losing Deals To" },
+      { key: "screener_pricing_comparison", header: "Pricing Comparison" },
+      { key: "screener_rd_investment", header: "R&D Investment" },
       { key: "additional_info", header: "Additional Info" },
     ]
     // Add network price columns dynamically
     const networkNames = new Set<string>()
     for (const e of experts) {
-      for (const n of Object.keys(e.network_prices)) networkNames.add(n)
+      for (const n of Object.keys(e.network_prices ?? {})) networkNames.add(n)
     }
     const networkCols: ExcelColumnDef[] = [...networkNames].sort().map((n) => ({
       key: `_price_${n}`,

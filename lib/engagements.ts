@@ -61,9 +61,9 @@ export function generateId(): string {
 /* ------------------------------------------------------------------ */
 
 const CALLS_KEY = "helmsman_calls"
-const CALLS_SEEDED = "helmsman_calls_seeded_v2"
+const CALLS_SEEDED = "helmsman_calls_seeded_v3"
 const SURVEYS_KEY = "helmsman_surveys"
-const SURVEYS_SEEDED = "helmsman_surveys_seeded_v2"
+const SURVEYS_SEEDED = "helmsman_surveys_seeded_v3"
 
 function ensureCallsSeeded(): void {
   if (typeof window === "undefined") return

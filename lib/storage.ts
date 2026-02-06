@@ -4,7 +4,7 @@
 /* ------------------------------------------------------------------ */
 
 import type { EntityType, EntityMap } from "./types"
-import { seedExperts, seedCalls, seedTranscripts, seedSurveys } from "./seed"
+import { seedExperts, seedTranscripts } from "./seed"
 
 const STORAGE_PREFIX = "helmsman_"
 const SEEDED_KEY = "helmsman_seeded"
@@ -36,16 +36,11 @@ export function ensureSeeded(): void {
   if (typeof window === "undefined") return
   if (localStorage.getItem(SEEDED_KEY)) return
   write("experts", seedExperts)
-  // Calls and surveys are seeded separately by lib/engagements.ts
-  // with EngagementRecord[] format (includes network_prices).
-  // Only seed them here if engagements.ts hasn't already done so.
-  if (!localStorage.getItem("helmsman_calls_seeded_v2")) {
-    write("calls", seedCalls)
-  }
+  // Calls and surveys are seeded by lib/engagements.ts with the
+  // EngagementRecord[] format (includes network_prices, expert_name, etc.).
+  // Do NOT seed them here -- the seed.ts Call[]/AISurvey[] shape is
+  // incompatible with what the calls/surveys pages expect.
   write("transcripts", seedTranscripts)
-  if (!localStorage.getItem("helmsman_surveys_seeded_v2")) {
-    write("surveys", seedSurveys)
-  }
   localStorage.setItem(SEEDED_KEY, "1")
 }
 
