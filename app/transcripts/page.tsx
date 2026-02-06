@@ -17,10 +17,15 @@ import {
   AlertCircle,
   Copy,
   Check,
+  Phone,
+  ClipboardList,
+  TrendingUp,
+  Star,
+  Info,
 } from "lucide-react"
 import PageHeader from "../components/page-header"
 import EmptyState from "../components/empty-state"
-import { getTranscripts, type Transcript } from "@/lib/transcripts"
+import { getTranscripts, computeNPSFromTranscripts, type Transcript, type NPSResult } from "@/lib/transcripts"
 import { searchExperts } from "@/lib/engagements"
 import type { ExpertProfile } from "@/lib/expert-profiles"
 
@@ -51,15 +56,28 @@ const EXPERT_TYPES: { key: ExpertType; label: string }[] = [
 ]
 
 /* ------------------------------------------------------------------ */
+/*  Source toggle options                                               */
+/* ------------------------------------------------------------------ */
+
+type SourceFilter = "all" | "call" | "survey"
+
+const SOURCE_OPTIONS: { key: SourceFilter; label: string; icon: typeof Phone }[] = [
+  { key: "all", label: "All", icon: FileText },
+  { key: "call", label: "Calls", icon: Phone },
+  { key: "survey", label: "AI Surveys", icon: ClipboardList },
+]
+
+/* ------------------------------------------------------------------ */
 /*  Suggested queries                                                  */
 /* ------------------------------------------------------------------ */
 
 const SUGGESTED_QUERIES = [
-  "What are the main strengths and weaknesses mentioned across these calls?",
+  "What are the main strengths and weaknesses mentioned across these transcripts?",
   "Find me direct quotes about pricing or cost comparisons",
   "How do different expert types view the competitive landscape?",
   "What recurring themes appear across multiple transcripts?",
   "Summarise each expert's key takeaways in bullet points",
+  "Compare NPS scores and the reasons behind them across products",
 ]
 
 /* ------------------------------------------------------------------ */
@@ -79,6 +97,23 @@ function formatDate(iso: string) {
 function truncateText(text: string, maxLength: number) {
   if (text.length <= maxLength) return text
   return text.slice(0, maxLength).trimEnd() + "..."
+}
+
+function npsColor(score: number): string {
+  if (score >= 9) return "text-emerald-600"
+  if (score >= 7) return "text-amber-600"
+  return "text-red-600"
+}
+
+function npsBgColor(nps: number): string {
+  if (nps >= 50) return "bg-emerald-500"
+  if (nps >= 0) return "bg-amber-500"
+  return "bg-red-500"
+}
+
+function npsGaugeWidth(nps: number): string {
+  // NPS ranges from -100 to +100, map to 0-100%
+  return `${Math.max(0, Math.min(100, (nps + 100) / 2))}%`
 }
 
 /* ------------------------------------------------------------------ */
@@ -115,6 +150,48 @@ async function* parseSSEStream(response: Response) {
 }
 
 /* ------------------------------------------------------------------ */
+/*  NPS KPI Card                                                       */
+/* ------------------------------------------------------------------ */
+
+function NPSCard({ result, isTarget }: { result: NPSResult; isTarget: boolean }) {
+  return (
+    <div
+      className={`rounded-lg p-4 ${
+        isTarget
+          ? "border-2 border-primary/30 bg-primary/5"
+          : "border border-border bg-card"
+      }`}
+    >
+      <p className={`text-[10px] font-semibold uppercase tracking-widest ${isTarget ? "text-primary/70" : "text-muted-foreground"}`}>
+        {isTarget ? "Target" : "Competitor"}
+      </p>
+      <p className="mt-1 text-sm font-medium text-foreground truncate">{result.product}</p>
+      <div className="mt-2 flex items-baseline gap-2">
+        <span className={`text-2xl font-bold tracking-tight ${isTarget ? "text-primary" : "text-foreground"}`}>
+          {result.nps}
+        </span>
+        <span className="text-xs text-muted-foreground">NPS</span>
+      </div>
+      <p className="mt-1 text-[11px] text-muted-foreground">
+        {result.responses} response{result.responses !== 1 ? "s" : ""}
+        {" \u00b7 "}
+        {result.promoters}P / {result.passives}N / {result.detractors}D
+      </p>
+      {/* Gauge bar */}
+      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
+        <div
+          className={`h-full rounded-full transition-all ${isTarget ? "bg-primary" : "bg-foreground/20"}`}
+          style={{ width: npsGaugeWidth(result.nps) }}
+        />
+      </div>
+      <div className="mt-0.5 flex justify-between text-[9px] text-muted-foreground">
+        <span>-100</span><span>0</span><span>+100</span>
+      </div>
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
 /*  Page                                                               */
 /* ------------------------------------------------------------------ */
 
@@ -124,6 +201,7 @@ export default function TranscriptsPage() {
 
   /* Filters */
   const [typeFilter, setTypeFilter] = useState<string>("")
+  const [sourceFilter, setSourceFilter] = useState<SourceFilter>("all")
   const [selectedExperts, setSelectedExperts] = useState<
     { name: string; company: string }[]
   >([])
@@ -198,6 +276,7 @@ export default function TranscriptsPage() {
 
   const clearAllFilters = useCallback(() => {
     setTypeFilter("")
+    setSourceFilter("all")
     setSelectedExperts([])
     setExpertQuery("")
   }, [])
@@ -215,6 +294,9 @@ export default function TranscriptsPage() {
   /* Filtered list */
   const filtered = useMemo(() => {
     let list = transcripts
+    if (sourceFilter !== "all") {
+      list = list.filter((t) => t.engagement_type === sourceFilter)
+    }
     if (typeFilter) {
       list = list.filter((t) => t.expert_type === typeFilter)
     }
@@ -226,9 +308,16 @@ export default function TranscriptsPage() {
       )
     }
     return list
-  }, [transcripts, typeFilter, selectedExperts])
+  }, [transcripts, typeFilter, sourceFilter, selectedExperts])
 
-  const hasActiveFilters = typeFilter !== "" || selectedExperts.length > 0
+  const hasActiveFilters = typeFilter !== "" || sourceFilter !== "all" || selectedExperts.length > 0
+
+  /* NPS computed from filtered transcripts */
+  const npsResults = useMemo(() => computeNPSFromTranscripts(filtered), [filtered])
+
+  /* Identify target product (Meridian Controls) */
+  const targetNPS = npsResults.find((r) => r.product === "Meridian Controls") ?? null
+  const competitorNPS = npsResults.filter((r) => r.product !== "Meridian Controls")
 
   /* ---------------------------------------------------------------- */
   /*  Query handler                                                    */
@@ -259,6 +348,9 @@ export default function TranscriptsPage() {
               engagement_type: t.engagement_type,
               text: t.text,
               uploaded_at: t.uploaded_at,
+              product: t.product,
+              nps_score: t.nps_score,
+              key_reasons: t.key_reasons,
             })),
           }),
         })
@@ -300,7 +392,7 @@ export default function TranscriptsPage() {
 
   if (!loaded) {
     return (
-      <div className="mx-auto max-w-5xl px-6 py-10">
+      <div className="mx-auto max-w-6xl px-6 py-10">
         <div className="flex items-center justify-center py-24 text-sm text-muted-foreground">
           Loading transcripts...
         </div>
@@ -309,18 +401,82 @@ export default function TranscriptsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-6 py-10">
+    <div className="mx-auto max-w-6xl px-6 py-10">
       <PageHeader
         title="Transcripts"
-        description="Browse all call transcripts. Filter by expert type or select specific experts, then query across them with natural language."
+        description="Browse call and AI survey transcripts. Filter by source, expert type, or specific experts, then query across them with natural language."
       />
 
-      {/* Filters */}
+      {/* ============================================================ */}
+      {/*  NPS KPI Cards                                                */}
+      {/* ============================================================ */}
+      {npsResults.length > 0 && (
+        <div className="mt-6">
+          <div className="flex items-center gap-2 mb-3">
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <h2 className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+              Customer NPS Scores
+            </h2>
+            <span className="text-[10px] text-muted-foreground">
+              (computed from {sourceFilter === "all" ? "all" : sourceFilter === "survey" ? "survey" : "call"} transcripts{hasActiveFilters ? ", filtered" : ""})
+            </span>
+          </div>
+          <div className={`grid gap-3 ${
+            npsResults.length === 1
+              ? "grid-cols-1 max-w-xs"
+              : npsResults.length === 2
+              ? "grid-cols-2 max-w-lg"
+              : npsResults.length === 3
+              ? "grid-cols-3"
+              : "grid-cols-2 lg:grid-cols-4"
+          }`}>
+            {targetNPS && <NPSCard result={targetNPS} isTarget />}
+            {competitorNPS.map((r) => (
+              <NPSCard key={r.product} result={r} isTarget={false} />
+            ))}
+          </div>
+          {/* Disclaimer */}
+          <div className="mt-2 flex items-start gap-1.5">
+            <Info className="h-3 w-3 shrink-0 mt-0.5 text-muted-foreground/60" />
+            <p className="text-[10px] italic text-muted-foreground/80">
+              In a full implementation, NPS scores and key reasons are extracted automatically by an LLM when the transcript is uploaded. They are hardcoded in this demo.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/*  Filters                                                      */}
+      {/* ============================================================ */}
       <div className="mt-6 flex flex-col gap-3 rounded-lg border border-border bg-card px-4 py-3">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:flex-wrap">
           <div className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
             <SlidersHorizontal className="h-3.5 w-3.5" />
             <span>Filters</span>
+          </div>
+
+          {/* Source toggle */}
+          <div className="flex items-center rounded-md border border-border bg-muted/30 p-0.5">
+            {SOURCE_OPTIONS.map((opt) => {
+              const Icon = opt.icon
+              const active = sourceFilter === opt.key
+              return (
+                <button
+                  key={opt.key}
+                  type="button"
+                  onClick={() => setSourceFilter(opt.key)}
+                  className={`inline-flex items-center gap-1.5 rounded px-2.5 py-1.5 text-[11px] font-medium transition-colors ${
+                    active
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                  aria-pressed={active}
+                >
+                  <Icon className="h-3 w-3" />
+                  {opt.label}
+                </button>
+              )
+            })}
           </div>
 
           {/* Expert type filter */}
@@ -423,6 +579,12 @@ export default function TranscriptsPage() {
       <p className="mt-3 text-[11px] text-muted-foreground">
         {filtered.length} transcript{filtered.length === 1 ? "" : "s"}
         {hasActiveFilters ? " (filtered)" : ""}
+        {sourceFilter !== "all" && (
+          <span>
+            {" \u00b7 "}
+            {sourceFilter === "call" ? "Calls only" : "AI Surveys only"}
+          </span>
+        )}
       </p>
 
       {/* ============================================================ */}
@@ -482,7 +644,7 @@ export default function TranscriptsPage() {
                   >
                     {t.expert_name}
                     <span className="opacity-60">
-                      ({TYPE_LABELS[t.expert_type] ?? t.expert_type})
+                      ({t.engagement_type === "survey" ? "Survey" : "Call"})
                     </span>
                   </span>
                 ))}
@@ -535,7 +697,7 @@ export default function TranscriptsPage() {
                       handleQuery()
                     }
                   }}
-                  placeholder='e.g. "Find me quotes about pricing comparisons" or "What do customers think about support response times?"'
+                  placeholder='e.g. "Find me quotes about pricing comparisons" or "Compare NPS scores across products"'
                   rows={2}
                   className="w-full resize-none rounded-md border border-border bg-background py-2.5 pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                   aria-label="Query transcripts"
@@ -630,6 +792,7 @@ export default function TranscriptsPage() {
         <div className="mt-4 flex flex-col gap-3">
           {filtered.map((t) => {
             const isExpanded = expandedIds.has(t.engagement_id)
+            const hasSurveyData = t.engagement_type === "survey" && t.nps_score != null
             return (
               <div
                 key={t.engagement_id}
@@ -639,11 +802,15 @@ export default function TranscriptsPage() {
                 <button
                   type="button"
                   onClick={() => toggleExpand(t.engagement_id)}
-                  className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-accent/30"
+                  className="flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-accent/30"
                   aria-expanded={isExpanded}
                 >
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-muted">
-                    <FileText className="h-4 w-4 text-muted-foreground" />
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-muted mt-0.5">
+                    {t.engagement_type === "survey" ? (
+                      <ClipboardList className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <Phone className="h-4 w-4 text-muted-foreground" />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
@@ -657,8 +824,15 @@ export default function TranscriptsPage() {
                       >
                         {TYPE_LABELS[t.expert_type] ?? t.expert_type}
                       </span>
+                      <span className={`inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-[10px] font-medium ${
+                        t.engagement_type === "survey"
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                          : "bg-sky-50 text-sky-700 border-sky-200"
+                      }`}>
+                        {t.engagement_type === "survey" ? "Survey" : "Call"}
+                      </span>
                     </div>
-                    <div className="mt-0.5 flex items-center gap-3 text-[11px] text-muted-foreground">
+                    <div className="mt-0.5 flex items-center gap-3 text-[11px] text-muted-foreground flex-wrap">
                       <span className="inline-flex items-center gap-1">
                         <Building2 className="h-3 w-3" />
                         {t.expert_company}
@@ -667,10 +841,34 @@ export default function TranscriptsPage() {
                         <Calendar className="h-3 w-3" />
                         {formatDate(t.uploaded_at)}
                       </span>
-                      <span className="capitalize">{t.engagement_type}</span>
+                      {/* NPS columns for surveys */}
+                      {hasSurveyData && t.product && (
+                        <>
+                          <span className="inline-flex items-center gap-1">
+                            <Star className="h-3 w-3" />
+                            <span className="font-medium text-foreground">{t.product}</span>
+                          </span>
+                          <span className={`inline-flex items-center gap-1 font-semibold ${npsColor(t.nps_score!)}`}>
+                            NPS: {t.nps_score}/10
+                          </span>
+                        </>
+                      )}
                     </div>
+                    {/* Key reasons */}
+                    {hasSurveyData && t.key_reasons && t.key_reasons.length > 0 && (
+                      <div className="mt-1.5 flex flex-wrap gap-1">
+                        {t.key_reasons.map((reason, i) => (
+                          <span
+                            key={i}
+                            className="inline-flex items-center rounded border border-border bg-muted/40 px-1.5 py-0.5 text-[10px] text-muted-foreground"
+                          >
+                            {reason}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  <div className="shrink-0 text-muted-foreground">
+                  <div className="shrink-0 text-muted-foreground mt-1">
                     {isExpanded ? (
                       <ChevronUp className="h-4 w-4" />
                     ) : (

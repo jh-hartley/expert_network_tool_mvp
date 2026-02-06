@@ -21,6 +21,14 @@ export interface Transcript {
   text: string
   /** ISO date when the transcript was uploaded */
   uploaded_at: string
+
+  /* ---------- NPS fields (populated for survey transcripts) ---------- */
+  /** The product/company being rated (e.g. "Meridian Controls") */
+  product?: string | null
+  /** NPS score 0-10 */
+  nps_score?: number | null
+  /** Short reasons for the score */
+  key_reasons?: string[] | null
 }
 
 /* ------------------------------------------------------------------ */
@@ -136,6 +144,432 @@ INTERVIEWER: Excellent context, James. Thank you.
 
 [END OF TRANSCRIPT]`,
   },
+  /* ---- AI Survey Transcripts (NPS) -------------------------------- */
+  /* NOTE: In a full implementation these NPS scores and reasons would  */
+  /* be extracted automatically by an LLM when the transcript is        */
+  /* uploaded. They are hardcoded here for the demo.                    */
+
+  /* -- Meridian Controls NPS surveys (from customers) -- */
+  {
+    engagement_id: "surv_nps_mc_1",
+    expert_name: "Raj Patel",
+    expert_company: "Solaris Packaging",
+    expert_type: "customer",
+    engagement_type: "survey",
+    uploaded_at: "2025-11-10T11:00:00Z",
+    product: "Meridian Controls",
+    nps_score: 9,
+    key_reasons: ["30% lower TCO than Rockwell", "Excellent API documentation", "Predictive maintenance cut downtime from 12% to 7.5%"],
+    text: `AI SURVEY RESPONSE -- Raj Patel, Solaris Packaging
+Product evaluated: Meridian Controls
+NPS Score: 9 (Promoter)
+
+Q: How likely are you to recommend Meridian Controls to a peer? (0-10)
+A: 9
+
+Q: What are the main reasons for your score?
+A: Three things stand out. The total cost of ownership is roughly 30% lower than Rockwell over five years. Their API documentation is vastly better than what we experienced with Honeywell or Rockwell. And the predictive maintenance module has already cut our unplanned downtime from 12% to about 7.5%.
+
+Q: What could they improve?
+A: Lead times on IO modules -- we had a six-week wait on analog input cards which held up commissioning. That needs to be addressed for them to compete at scale.`,
+  },
+  {
+    engagement_id: "surv_nps_mc_2",
+    expert_name: "Marcus Oyelaran",
+    expert_company: "Hartwell Brewing Co.",
+    expert_type: "customer",
+    engagement_type: "survey",
+    uploaded_at: "2025-11-11T10:30:00Z",
+    product: "Meridian Controls",
+    nps_score: 9,
+    key_reasons: ["Field engineers understand washdown requirements", "PLC programming environment greatly improved", "Partner-like support model"],
+    text: `AI SURVEY RESPONSE -- Marcus Oyelaran, Hartwell Brewing Co.
+Product evaluated: Meridian Controls
+NPS Score: 9 (Promoter)
+
+Q: How likely are you to recommend Meridian Controls to a peer? (0-10)
+A: 9
+
+Q: What are the main reasons for your score?
+A: Their field engineers actually understand our washdown requirements without needing to be educated. The PLC programming environment has improved significantly in the last two releases. They act like a partner, not just a vendor.
+
+Q: What could they improve?
+A: Broader availability of spare parts regionally. We sometimes have to wait for shipments from their central warehouse.`,
+  },
+  {
+    engagement_id: "surv_nps_mc_3",
+    expert_name: "James Achebe",
+    expert_company: "FreshPath Foods",
+    expert_type: "customer",
+    engagement_type: "survey",
+    uploaded_at: "2025-11-15T14:00:00Z",
+    product: "Meridian Controls",
+    nps_score: 8,
+    key_reasons: ["Best-in-class batch recipe management", "40% faster recipe configuration", "Compelling per-site licensing model"],
+    text: `AI SURVEY RESPONSE -- James Achebe, FreshPath Foods
+Product evaluated: Meridian Controls
+NPS Score: 8 (Promoter)
+
+Q: How likely are you to recommend Meridian Controls to a peer? (0-10)
+A: 8
+
+Q: What are the main reasons for your score?
+A: Their batch recipe management module is genuinely best-in-class for food and beverage. Our process engineers configure new recipes in about 40% less time. The per-site licensing at $380K/year vs Rockwell's $2.4M enterprise agreement is compelling.
+
+Q: What could they improve?
+A: They need to prove performance in high-speed continuous process environments, not just batch. And their global support -- especially in Southeast Asia -- needs work.`,
+  },
+  {
+    engagement_id: "surv_nps_mc_4",
+    expert_name: "Roberto Garza",
+    expert_company: "Cascadia Paper Products",
+    expert_type: "customer",
+    engagement_type: "survey",
+    uploaded_at: "2025-11-16T09:00:00Z",
+    product: "Meridian Controls",
+    nps_score: 8,
+    key_reasons: ["Sub-2-hour tech support response", "6-week vs 14-week lead time advantage", "Speed matters when downtime costs $50K/hour"],
+    text: `AI SURVEY RESPONSE -- Roberto Garza, Cascadia Paper Products
+Product evaluated: Meridian Controls
+NPS Score: 8 (Promoter)
+
+Q: How likely are you to recommend Meridian Controls to a peer? (0-10)
+A: 8
+
+Q: What are the main reasons for your score?
+A: Tech support response averages under 2 hours. When we needed a packaging line retrofit, their lead time was 6 weeks vs 14 weeks from Rockwell. In our industry, downtime costs $50K per hour so speed matters enormously.
+
+Q: What could they improve?
+A: I worry about what happens if they get acquired. The hands-on support model is why we chose them.`,
+  },
+  {
+    engagement_id: "surv_nps_mc_5",
+    expert_name: "Chen Wei-Lin",
+    expert_company: "TerraForge Metals",
+    expert_type: "customer",
+    engagement_type: "survey",
+    uploaded_at: "2025-11-17T11:00:00Z",
+    product: "Meridian Controls",
+    nps_score: 7,
+    key_reasons: ["Impressive high-temp I/O modules", "Competitive pricing", "Need more MTBF reliability data"],
+    text: `AI SURVEY RESPONSE -- Chen Wei-Lin, TerraForge Metals
+Product evaluated: Meridian Controls
+NPS Score: 7 (Passive)
+
+Q: How likely are you to recommend Meridian Controls to a peer? (0-10)
+A: 7
+
+Q: What are the main reasons for your score?
+A: Their newer high-temp rated I/O modules impressed our maintenance team and pricing is competitive. However, we need at least 3 years of MTBF data before committing at scale. They came very close to winning our last project.
+
+Q: What could they improve?
+A: Publish more reliability data for harsh environments. Heavy industry customers need proof points.`,
+  },
+  {
+    engagement_id: "surv_nps_mc_6",
+    expert_name: "Angela Moretti",
+    expert_company: "GreenValley Chemicals",
+    expert_type: "customer",
+    engagement_type: "survey",
+    uploaded_at: "2025-11-18T15:00:00Z",
+    product: "Meridian Controls",
+    nps_score: 6,
+    key_reasons: ["Adequate process control", "Limited chemical industry references", "Prefer established DCS vendors for safety-critical"],
+    text: `AI SURVEY RESPONSE -- Angela Moretti, GreenValley Chemicals
+Product evaluated: Meridian Controls
+NPS Score: 6 (Passive)
+
+Q: How likely are you to recommend Meridian Controls to a peer? (0-10)
+A: 6
+
+Q: What are the main reasons for your score?
+A: Their process control is adequate but for safety-critical chemical operations we still prefer established DCS vendors. Limited chemical industry references make it hard to justify internally.
+
+Q: What could they improve?
+A: SIL-rated safety modules and more chemical process industry case studies.`,
+  },
+
+  /* -- Beckhoff NPS surveys (from competitor customers) -- */
+  {
+    engagement_id: "surv_nps_bk_1",
+    expert_name: "Raj Patel",
+    expert_company: "Solaris Packaging",
+    expert_type: "customer",
+    engagement_type: "survey",
+    uploaded_at: "2025-11-10T12:00:00Z",
+    product: "Beckhoff Automation",
+    nps_score: 7,
+    key_reasons: ["Strong EtherCAT hardware ecosystem", "TwinCAT software is powerful but complex", "Premium pricing"],
+    text: `AI SURVEY RESPONSE -- Raj Patel, Solaris Packaging
+Product evaluated: Beckhoff Automation
+NPS Score: 7 (Passive)
+
+Q: How likely are you to recommend Beckhoff to a peer? (0-10)
+A: 7
+
+Q: What are the main reasons for your score?
+A: The EtherCAT hardware ecosystem is excellent and the IPC platform is very capable. However, TwinCAT is powerful but has a steep learning curve. Pricing sits at a slight premium.
+
+Q: What could they improve?
+A: Simplify the programming environment for mid-market customers who don't have dedicated PLC programmers.`,
+  },
+  {
+    engagement_id: "surv_nps_bk_2",
+    expert_name: "James Achebe",
+    expert_company: "FreshPath Foods",
+    expert_type: "customer",
+    engagement_type: "survey",
+    uploaded_at: "2025-11-15T15:00:00Z",
+    product: "Beckhoff Automation",
+    nps_score: 6,
+    key_reasons: ["Good high-speed motion control", "Weak food & bev specific features", "Expensive for batch processes"],
+    text: `AI SURVEY RESPONSE -- James Achebe, FreshPath Foods
+Product evaluated: Beckhoff Automation
+NPS Score: 6 (Passive)
+
+Q: How likely are you to recommend Beckhoff to a peer? (0-10)
+A: 6
+
+Q: What are the main reasons for your score?
+A: Great for high-speed motion control but lacks food & beverage-specific batch management features. Expensive for what you get in a batch processing environment.
+
+Q: What could they improve?
+A: Industry-specific recipe management tools and better washdown-rated enclosures.`,
+  },
+  {
+    engagement_id: "surv_nps_bk_3",
+    expert_name: "Chen Wei-Lin",
+    expert_company: "TerraForge Metals",
+    expert_type: "customer",
+    engagement_type: "survey",
+    uploaded_at: "2025-11-17T12:00:00Z",
+    product: "Beckhoff Automation",
+    nps_score: 7,
+    key_reasons: ["In-house manufacturing ensures supply", "Good harsh environment options", "Limited local field support"],
+    text: `AI SURVEY RESPONSE -- Chen Wei-Lin, TerraForge Metals
+Product evaluated: Beckhoff Automation
+NPS Score: 7 (Passive)
+
+Q: How likely are you to recommend Beckhoff to a peer? (0-10)
+A: 7
+
+Q: What are the main reasons for your score?
+A: In-house manufacturing in Verl gives them tight supply chain control. They have decent options for harsh environments. But local field support is thinner than Rockwell's in our region.
+
+Q: What could they improve?
+A: Expand field engineering presence in the US Southeast and Midwest.`,
+  },
+  {
+    engagement_id: "surv_nps_bk_4",
+    expert_name: "Roberto Garza",
+    expert_company: "Cascadia Paper Products",
+    expert_type: "customer",
+    engagement_type: "survey",
+    uploaded_at: "2025-11-16T10:00:00Z",
+    product: "Beckhoff Automation",
+    nps_score: 5,
+    key_reasons: ["Considered but not selected", "Lead times acceptable but not best", "Programming model too complex for our team"],
+    text: `AI SURVEY RESPONSE -- Roberto Garza, Cascadia Paper Products
+Product evaluated: Beckhoff Automation
+NPS Score: 5 (Detractor)
+
+Q: How likely are you to recommend Beckhoff to a peer? (0-10)
+A: 5
+
+Q: What are the main reasons for your score?
+A: We evaluated them but the programming model was too complex for our maintenance team. Lead times were acceptable but Meridian was significantly faster. Not a bad product, just not the right fit for us.
+
+Q: What could they improve?
+A: A simplified programming tier for maintenance technicians who need to make basic changes without learning TwinCAT.`,
+  },
+
+  /* -- Rockwell Automation NPS surveys -- */
+  {
+    engagement_id: "surv_nps_rw_1",
+    expert_name: "Raj Patel",
+    expert_company: "Solaris Packaging",
+    expert_type: "customer",
+    engagement_type: "survey",
+    uploaded_at: "2025-11-10T13:00:00Z",
+    product: "Rockwell Automation",
+    nps_score: 5,
+    key_reasons: ["Reliable but expensive", "Locked-in ecosystem", "Costs climbing year on year"],
+    text: `AI SURVEY RESPONSE -- Raj Patel, Solaris Packaging
+Product evaluated: Rockwell Automation
+NPS Score: 5 (Detractor)
+
+Q: How likely are you to recommend Rockwell to a peer? (0-10)
+A: 5
+
+Q: What are the main reasons for your score?
+A: Reliable products but the costs keep climbing. The ecosystem feels locked-in and proprietary. We evaluated alternatives specifically because Rockwell's five-year TCO was 30% higher.
+
+Q: What could they improve?
+A: More open standards support and competitive pricing for mid-market customers.`,
+  },
+  {
+    engagement_id: "surv_nps_rw_2",
+    expert_name: "James Achebe",
+    expert_company: "FreshPath Foods",
+    expert_type: "customer",
+    engagement_type: "survey",
+    uploaded_at: "2025-11-15T16:00:00Z",
+    product: "Rockwell Automation",
+    nps_score: 6,
+    key_reasons: ["15-year track record", "Known failure modes", "Global enterprise agreement is expensive"],
+    text: `AI SURVEY RESPONSE -- James Achebe, FreshPath Foods
+Product evaluated: Rockwell Automation
+NPS Score: 6 (Passive)
+
+Q: How likely are you to recommend Rockwell to a peer? (0-10)
+A: 6
+
+Q: What are the main reasons for your score?
+A: We have a 15-year track record with Rockwell and know their failure modes intimately. Reliability is at 99.8%. But the global enterprise agreement at $2.4M annually is hard to justify when alternatives exist at a fraction of the cost.
+
+Q: What could they improve?
+A: Flexible licensing models for phased rollouts instead of all-or-nothing enterprise agreements.`,
+  },
+  {
+    engagement_id: "surv_nps_rw_3",
+    expert_name: "Chen Wei-Lin",
+    expert_company: "TerraForge Metals",
+    expert_type: "customer",
+    engagement_type: "survey",
+    uploaded_at: "2025-11-17T13:00:00Z",
+    product: "Rockwell Automation",
+    nps_score: 7,
+    key_reasons: ["Proven in harsh environments", "Extensive MTBF data", "Expensive but justified for critical processes"],
+    text: `AI SURVEY RESPONSE -- Chen Wei-Lin, TerraForge Metals
+Product evaluated: Rockwell Automation
+NPS Score: 7 (Passive)
+
+Q: How likely are you to recommend Rockwell to a peer? (0-10)
+A: 7
+
+Q: What are the main reasons for your score?
+A: Proven track record in harsh, high-temperature environments with extensive MTBF data. Expensive but justified for safety-critical processes. Won our last project on installed base compatibility.
+
+Q: What could they improve?
+A: More competitive pricing for smaller projects and better integration support for mixed-vendor environments.`,
+  },
+  {
+    engagement_id: "surv_nps_rw_4",
+    expert_name: "Roberto Garza",
+    expert_company: "Cascadia Paper Products",
+    expert_type: "customer",
+    engagement_type: "survey",
+    uploaded_at: "2025-11-16T11:00:00Z",
+    product: "Rockwell Automation",
+    nps_score: 4,
+    key_reasons: ["Great products but slow support", "14-week lead times unacceptable", "Downtime costs $50K/hour"],
+    text: `AI SURVEY RESPONSE -- Roberto Garza, Cascadia Paper Products
+Product evaluated: Rockwell Automation
+NPS Score: 4 (Detractor)
+
+Q: How likely are you to recommend Rockwell to a peer? (0-10)
+A: 4
+
+Q: What are the main reasons for your score?
+A: Great products but support is slow -- I'd rate them a 6 on support vs Meridian's 8. The 14-week lead time on our last retrofit was unacceptable. When downtime costs $50K per hour, speed matters more than brand name.
+
+Q: What could they improve?
+A: Dramatically improve lead times and support response. Match the service level of mid-market competitors.`,
+  },
+
+  /* -- Omron NPS surveys -- */
+  {
+    engagement_id: "surv_nps_om_1",
+    expert_name: "Raj Patel",
+    expert_company: "Solaris Packaging",
+    expert_type: "customer",
+    engagement_type: "survey",
+    uploaded_at: "2025-11-10T14:00:00Z",
+    product: "Omron Industrial",
+    nps_score: 6,
+    key_reasons: ["Good vision and robotics integration", "Weaker PLC offering vs specialised vendors", "Competitive on price"],
+    text: `AI SURVEY RESPONSE -- Raj Patel, Solaris Packaging
+Product evaluated: Omron Industrial
+NPS Score: 6 (Passive)
+
+Q: How likely are you to recommend Omron to a peer? (0-10)
+A: 6
+
+Q: What are the main reasons for your score?
+A: Strong on vision systems and robotics integration. But their standalone PLC offering is weaker than specialised vendors like Meridian or Beckhoff. Competitive on price though.
+
+Q: What could they improve?
+A: A more capable standalone PLC platform without requiring the full Omron robotics stack.`,
+  },
+  {
+    engagement_id: "surv_nps_om_2",
+    expert_name: "James Achebe",
+    expert_company: "FreshPath Foods",
+    expert_type: "customer",
+    engagement_type: "survey",
+    uploaded_at: "2025-11-15T17:00:00Z",
+    product: "Omron Industrial",
+    nps_score: 5,
+    key_reasons: ["Not strong in food & bev", "Better suited for automotive", "Limited batch processing features"],
+    text: `AI SURVEY RESPONSE -- James Achebe, FreshPath Foods
+Product evaluated: Omron Industrial
+NPS Score: 5 (Detractor)
+
+Q: How likely are you to recommend Omron to a peer? (0-10)
+A: 5
+
+Q: What are the main reasons for your score?
+A: Omron is better suited for automotive and electronics than food & beverage. Limited batch processing features and their local support in food manufacturing is thin.
+
+Q: What could they improve?
+A: Invest in food & beverage-specific solutions and batch recipe management.`,
+  },
+  {
+    engagement_id: "surv_nps_om_3",
+    expert_name: "Yuki Tanaka",
+    expert_company: "Nippon Precision Components",
+    expert_type: "customer",
+    engagement_type: "survey",
+    uploaded_at: "2025-11-17T09:00:00Z",
+    product: "Omron Industrial",
+    nps_score: 8,
+    key_reasons: ["Excellent for automotive precision", "Strong Japan-NA support network", "Tight robotics-PLC integration"],
+    text: `AI SURVEY RESPONSE -- Yuki Tanaka, Nippon Precision Components
+Product evaluated: Omron Industrial
+NPS Score: 8 (Promoter)
+
+Q: How likely are you to recommend Omron to a peer? (0-10)
+A: 8
+
+Q: What are the main reasons for your score?
+A: Excellent for automotive precision manufacturing. Their Japan-NA support network is seamless and the robotics-PLC integration is the tightest in the industry.
+
+Q: What could they improve?
+A: Broader industry coverage beyond automotive. Some of our non-automotive lines could benefit from their technology.`,
+  },
+  {
+    engagement_id: "surv_nps_om_4",
+    expert_name: "Priya Chakraborty",
+    expert_company: "Atlas Cement Corp",
+    expert_type: "customer",
+    engagement_type: "survey",
+    uploaded_at: "2025-11-18T08:00:00Z",
+    product: "Omron Industrial",
+    nps_score: 4,
+    key_reasons: ["Poor fit for heavy industry", "Limited harsh environment products", "Vision systems not relevant for cement"],
+    text: `AI SURVEY RESPONSE -- Priya Chakraborty, Atlas Cement Corp
+Product evaluated: Omron Industrial
+NPS Score: 4 (Detractor)
+
+Q: How likely are you to recommend Omron to a peer? (0-10)
+A: 4
+
+Q: What are the main reasons for your score?
+A: Poor fit for heavy industry. Limited harsh environment products and their strength in vision systems isn't particularly relevant for cement manufacturing.
+
+Q: What could they improve?
+A: Ruggedised product lines for heavy industry and process control applications.`,
+  },
 ]
 
 /* ------------------------------------------------------------------ */
@@ -143,7 +577,7 @@ INTERVIEWER: Excellent context, James. Thank you.
 /* ------------------------------------------------------------------ */
 
 const LS_KEY = "helmsman_transcripts"
-const TRANSCRIPTS_SEEDED = "helmsman_transcripts_seeded_v1"
+const TRANSCRIPTS_SEEDED = "helmsman_transcripts_seeded_v2"
 
 function ensureTranscriptsSeeded(): void {
   if (typeof window === "undefined") return
@@ -184,6 +618,49 @@ function writeAll(transcripts: Transcript[]): void {
 /* ------------------------------------------------------------------ */
 /*  Public API                                                         */
 /* ------------------------------------------------------------------ */
+
+/* ------------------------------------------------------------------ */
+/*  NPS computation from transcripts                                   */
+/*                                                                     */
+/*  NPS = (% promoters - % detractors) * 100                           */
+/*  Promoter: 9-10, Passive: 7-8, Detractor: 0-6                      */
+/* ------------------------------------------------------------------ */
+
+export interface NPSResult {
+  product: string
+  nps: number
+  responses: number
+  promoters: number
+  passives: number
+  detractors: number
+}
+
+/** Compute NPS scores grouped by product from all transcripts with nps_score. */
+export function computeNPSFromTranscripts(transcripts?: Transcript[]): NPSResult[] {
+  const list = transcripts ?? readAll()
+  const byProduct = new Map<string, number[]>()
+
+  for (const t of list) {
+    if (t.nps_score != null && t.product) {
+      const scores = byProduct.get(t.product) ?? []
+      scores.push(t.nps_score)
+      byProduct.set(t.product, scores)
+    }
+  }
+
+  const results: NPSResult[] = []
+  for (const [product, scores] of byProduct) {
+    const promoters = scores.filter((s) => s >= 9).length
+    const detractors = scores.filter((s) => s <= 6).length
+    const passives = scores.length - promoters - detractors
+    const nps = Math.round(((promoters - detractors) / scores.length) * 100)
+    results.push({ product, nps, responses: scores.length, promoters, passives, detractors })
+  }
+
+  // Sort by NPS descending
+  results.sort((a, b) => b.nps - a.nps)
+  return results
+}
 
 /** Get a transcript by engagement ID, or null if none exists. */
 export function getTranscript(engagementId: string): Transcript | null {

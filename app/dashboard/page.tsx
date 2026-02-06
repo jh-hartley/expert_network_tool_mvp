@@ -12,6 +12,7 @@ import {
   TrendingUp,
   BarChart3,
   AlertTriangle,
+  Info,
 } from "lucide-react"
 import PageHeader from "../components/page-header"
 import { getExpertProfiles, type ExpertProfile } from "@/lib/expert-profiles"
@@ -24,6 +25,7 @@ import {
   type EngagementRecord,
   type EngagementStatus,
 } from "@/lib/engagements"
+import { computeNPSFromTranscripts, type NPSResult } from "@/lib/transcripts"
 
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                            */
@@ -71,17 +73,10 @@ function isUpcoming(date: string): boolean {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Hardcoded KPIs                                                     */
+/*  NPS target product                                                 */
 /* ------------------------------------------------------------------ */
 
-const NPS_DATA = {
-  target: { label: "Meridian Controls", nps: 72, responses: 14, trend: "+5 vs Q3" },
-  competitors: [
-    { label: "Beckhoff Automation", nps: 65, responses: 11, trend: "+2 vs Q3" },
-    { label: "Rockwell Automation", nps: 58, responses: 18, trend: "-3 vs Q3" },
-    { label: "Omron Industrial", nps: 51, responses: 9, trend: "+1 vs Q3" },
-  ],
-}
+const TARGET_PRODUCT = "Meridian Controls"
 
 /* ------------------------------------------------------------------ */
 /*  Mini components                                                    */
@@ -208,6 +203,11 @@ export default function DashboardPage() {
     for (const e of experts) m[e.expert_type] = (m[e.expert_type] ?? 0) + 1
     return m
   }, [experts])
+
+  /* NPS computed from transcript data */
+  const npsResults = useMemo(() => computeNPSFromTranscripts(), [])
+  const targetNPS = npsResults.find((r) => r.product === TARGET_PRODUCT) ?? null
+  const competitorNPS = npsResults.filter((r) => r.product !== TARGET_PRODUCT)
 
   /* ---- dashboard export ---- */
   const handleExport = useCallback(async () => {
@@ -584,33 +584,43 @@ export default function DashboardPage() {
 
       <div className="grid gap-4 lg:grid-cols-4">
         {/* Target NPS */}
-        <div className="rounded-lg border-2 border-primary/30 bg-primary/5 p-5">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-primary/70">Target</p>
-          <p className="mt-1 text-sm font-medium text-foreground">{NPS_DATA.target.label}</p>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-3xl font-bold tracking-tight text-primary">{NPS_DATA.target.nps}</span>
-            <span className="text-xs text-muted-foreground">NPS</span>
+        {targetNPS && (
+          <div className="rounded-lg border-2 border-primary/30 bg-primary/5 p-5">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-primary/70">Target</p>
+            <p className="mt-1 text-sm font-medium text-foreground">{targetNPS.product}</p>
+            <div className="mt-3 flex items-baseline gap-2">
+              <span className="text-3xl font-bold tracking-tight text-primary">{targetNPS.nps}</span>
+              <span className="text-xs text-muted-foreground">NPS</span>
+            </div>
+            <p className="mt-1 text-[11px] text-muted-foreground">
+              {targetNPS.responses} response{targetNPS.responses !== 1 ? "s" : ""}
+              {" \u00b7 "}
+              {targetNPS.promoters}P / {targetNPS.passives}N / {targetNPS.detractors}D
+            </p>
+            {/* NPS gauge bar */}
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
+              <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${Math.max(0, Math.min(100, (targetNPS.nps + 100) / 2))}%` }} />
+            </div>
+            <div className="mt-1 flex justify-between text-[9px] text-muted-foreground">
+              <span>-100</span><span>0</span><span>+100</span>
+            </div>
           </div>
-          <p className="mt-1 text-[11px] text-muted-foreground">{NPS_DATA.target.responses} responses &middot; {NPS_DATA.target.trend}</p>
-          {/* NPS gauge bar */}
-          <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
-            <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${Math.max(0, Math.min(100, (NPS_DATA.target.nps + 100) / 2))}%` }} />
-          </div>
-          <div className="mt-1 flex justify-between text-[9px] text-muted-foreground">
-            <span>-100</span><span>0</span><span>+100</span>
-          </div>
-        </div>
+        )}
 
         {/* Competitor NPS cards */}
-        {NPS_DATA.competitors.map((comp) => (
-          <div key={comp.label} className="rounded-lg border border-border bg-card p-5">
+        {competitorNPS.map((comp) => (
+          <div key={comp.product} className="rounded-lg border border-border bg-card p-5">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Competitor</p>
-            <p className="mt-1 text-sm font-medium text-foreground">{comp.label}</p>
+            <p className="mt-1 text-sm font-medium text-foreground">{comp.product}</p>
             <div className="mt-3 flex items-baseline gap-2">
               <span className="text-3xl font-bold tracking-tight text-foreground">{comp.nps}</span>
               <span className="text-xs text-muted-foreground">NPS</span>
             </div>
-            <p className="mt-1 text-[11px] text-muted-foreground">{comp.responses} responses &middot; {comp.trend}</p>
+            <p className="mt-1 text-[11px] text-muted-foreground">
+              {comp.responses} response{comp.responses !== 1 ? "s" : ""}
+              {" \u00b7 "}
+              {comp.promoters}P / {comp.passives}N / {comp.detractors}D
+            </p>
             <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
               <div className="h-full rounded-full bg-foreground/20 transition-all" style={{ width: `${Math.max(0, Math.min(100, (comp.nps + 100) / 2))}%` }} />
             </div>
@@ -623,7 +633,7 @@ export default function DashboardPage() {
 
       {/* NPS disclaimer */}
       <p className="mt-2 text-[11px] italic text-muted-foreground">
-        NPS scores are illustrative / hardcoded for demo purposes. Integration with live survey data is planned.
+        NPS scores are computed from AI survey transcripts. In a full implementation, scores and key reasons would be extracted automatically by an LLM when the transcript is uploaded. They are hardcoded in this demo.
       </p>
 
       {/* ================================================================ */}
