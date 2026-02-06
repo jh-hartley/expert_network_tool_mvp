@@ -202,11 +202,12 @@ const dataInputBuckets: {
 
 const status: { done: boolean; text: string }[] = [
   { done: true, text: "App shell, navigation, and Bain design system" },
-  { done: true, text: "TypeScript data model and localStorage CRUD layer" },
-  { done: false, text: "CSV upload with deduplication" },
+  { done: true, text: "TypeScript data model and localStorage CRUD layer (read-only -- persistence still buggy)" },
+  { done: true, text: "Upload parsing: CSV, email (.eml), and raw text parsed correctly" },
+  { done: true, text: "AI-powered profile extraction from unstructured text (LLM pipeline functional)" },
+  { done: false, text: "Persist parsed experts to the tracker (localStorage bugs; database not permitted by company policy)" },
   { done: false, text: "Data tables with sort, filter, column hiding, and pagination" },
   { done: false, text: "Settings: export / import JSON, reset data" },
-  { done: false, text: "AI-powered profile parsing and enrichment" },
   { done: false, text: "Compliance cross-checks and CID clearance workflow" },
   { done: false, text: "Vector-embedded search and RAG queries" },
   { done: false, text: "LLM transcript extraction and summarisation" },
@@ -216,21 +217,24 @@ const status: { done: boolean; text: string }[] = [
 export default function OverviewPage() {
   return (
     <div className="mx-auto max-w-5xl px-6 py-10">
-      {/* Submission broken banner */}
-      <div className="mb-8 rounded-lg border-2 border-red-300 bg-red-50 px-5 py-4">
+      {/* Upload status banner */}
+      <div className="mb-8 rounded-lg border-2 border-amber-300 bg-amber-50 px-5 py-4">
         <div className="flex items-start gap-3">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-red-100">
-            <TriangleAlert className="h-4 w-4 text-red-600" />
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-100">
+            <TriangleAlert className="h-4 w-4 text-amber-600" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-red-900">
-              Note: the data upload feature is currently broken
+            <p className="text-sm font-semibold text-amber-900">
+              Data upload: parsing works, persistence does not
             </p>
-            <p className="mt-1 text-sm leading-relaxed text-red-700">
-              I{"'"}ve rolled back to a previous stable version and am
-              re-implementing features as quickly as possible. See the
-              prototype progress tracker at the bottom of this page for
-              current status.
+            <p className="mt-1 text-sm leading-relaxed text-amber-700">
+              The upload feature correctly parses expert data from CSV,
+              email, and pasted text. However, parsed results are not yet
+              saved to the expert tracker -- the browser storage layer is
+              still buggy and a server-side database is not permitted by
+              company policy. Uploaded figures will appear in the extraction
+              preview but will not carry over into the Experts or Calls
+              pages.
             </p>
           </div>
         </div>
@@ -244,9 +248,10 @@ export default function OverviewPage() {
             Hackathon prototype
           </p>
           <p className="mt-0.5 text-xs leading-relaxed text-amber-700">
-            Browser-only demo with synthetic seed data. All data is stored
-            locally in your browser -- changes do not persist between sessions
-            and cannot be shared between users.
+            Browser-only demo with synthetic seed data. The data parsing
+            pipeline is functional, but results cannot yet be persisted to
+            the tracker. A server-side database is not permitted by company
+            policy and the localStorage layer remains under development.
           </p>
         </div>
       </div>

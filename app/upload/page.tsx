@@ -228,7 +228,7 @@ export default function UploadPage() {
     <div className="mx-auto max-w-5xl px-6 py-10">
       <PageHeader
         title="Upload"
-        description="Import expert profiles from CSV files, network emails, or pasted text. Structured CSV is parsed directly; unstructured content is sent to an LLM for extraction."
+        description="Import expert profiles from CSV files, network emails, or pasted text. Structured CSV is parsed directly; unstructured content is sent to an LLM for extraction. Note: parsing is fully functional, but parsed experts are not yet saved to the tracker -- the browser storage layer is still buggy and a server-side database is not permitted by company policy."
       />
       <WipBanner feature="upload" />
 
