@@ -96,7 +96,8 @@ function formatDate(iso: string) {
   })
 }
 
-function truncateText(text: string, maxLength: number) {
+function truncateText(text: string | undefined | null, maxLength: number) {
+  if (!text) return ""
   if (text.length <= maxLength) return text
   return text.slice(0, maxLength).trimEnd() + "..."
 }
@@ -327,7 +328,6 @@ export default function TranscriptsPage() {
       setCopied(false)
 
       try {
-        console.log("[v0] handleQuery: starting fetch, transcripts:", filtered.length)
         const response = await fetch("/api/transcripts-query", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -348,11 +348,8 @@ export default function TranscriptsPage() {
           }),
         })
 
-        console.log("[v0] handleQuery: response status:", response.status, "ok:", response.ok)
-
         if (!response.ok) {
           const errorBody = await response.json().catch(() => null)
-          console.log("[v0] handleQuery: error body:", errorBody)
           throw new Error(
             errorBody?.error ?? `Request failed (${response.status})`
           )
@@ -361,14 +358,12 @@ export default function TranscriptsPage() {
         const finalText = await readTextStream(response, (accumulated) => {
           setQueryResult(accumulated)
         })
-        console.log("[v0] handleQuery: stream complete, length:", finalText.length)
         // Ensure final state is set even if the last onChunk was missed
         if (finalText) {
           setQueryResult(finalText)
         }
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err)
-        console.log("[v0] handleQuery: error:", message)
         setQueryError(message)
       } finally {
         setQueryLoading(false)
@@ -851,7 +846,7 @@ export default function TranscriptsPage() {
                       )}
                     </div>
                     {/* Key reasons */}
-                    {hasSurveyData && t.key_reasons && t.key_reasons.length > 0 && (
+                    {hasSurveyData && Array.isArray(t.key_reasons) && t.key_reasons.length > 0 && (
                       <div className="mt-1.5 flex flex-wrap gap-1">
                         {t.key_reasons.map((reason, i) => (
                           <span
@@ -887,7 +882,7 @@ export default function TranscriptsPage() {
                   <div className="border-t border-border px-4 py-4">
                     <div className="max-h-[500px] overflow-y-auto rounded-md border border-border bg-muted/20 p-4">
                       <pre className="whitespace-pre-wrap text-[12px] leading-relaxed text-foreground/90 font-mono">
-                        {t.text}
+                        {t.text ?? ""}
                       </pre>
                     </div>
                   </div>

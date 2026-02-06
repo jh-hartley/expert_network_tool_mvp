@@ -586,7 +586,9 @@ function ensureTranscriptsSeeded(): void {
   const existing = (() => {
     try {
       const raw = localStorage.getItem(LS_KEY)
-      return raw ? (JSON.parse(raw) as Transcript[]) : []
+      if (!raw) return []
+      const parsed = JSON.parse(raw)
+      return Array.isArray(parsed) ? parsed : []
     } catch {
       return []
     }
@@ -604,7 +606,10 @@ function readAll(): Transcript[] {
   ensureTranscriptsSeeded()
   try {
     const raw = localStorage.getItem(LS_KEY)
-    return raw ? (JSON.parse(raw) as Transcript[]) : []
+    if (!raw) return []
+    const parsed = JSON.parse(raw)
+    // Defensive: ensure we always return an array even if localStorage is corrupted
+    return Array.isArray(parsed) ? parsed : []
   } catch {
     return []
   }
