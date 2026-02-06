@@ -1,39 +1,86 @@
 /* ------------------------------------------------------------------ */
-/*  Helmsman -- ExtractedExpert seed data for the Experts table        */
+/*  Helmsman -- ExpertProfile seed data for the Experts table          */
 /*                                                                     */
+/*  ExpertProfile extends the LLM's ExtractedExpert with UI-layer      */
+/*  fields (network_prices, shortlisted, notes, cid_clearance).        */
 /*  These profiles mirror the demo scenario (Project Atlas / Meridian  */
-/*  Controls) and use the same schema the LLM returns, so when         */
-/*  localStorage persistence is wired up the transition is seamless.   */
+/*  Controls).                                                         */
 /* ------------------------------------------------------------------ */
 
 import type { ExtractedExpert } from "./llm"
 
-/**
- * Return the seed expert profiles.
- *
- * Architecture note: this is a pure function today. When localStorage
- * is fixed, replace the body with a read from storage (falling back to
- * these seeds on first visit). The rest of the app consumes the same
- * ExtractedExpert[] shape regardless of source.
- */
-export function getExpertProfiles(): ExtractedExpert[] {
+/* ------------------------------------------------------------------ */
+/*  ExpertProfile -- the shape consumed by the experts table           */
+/* ------------------------------------------------------------------ */
+
+export type ExpertLens =
+  | "all"
+  | "customer"
+  | "competitor"
+  | "target"
+  | "competitor_customer"
+
+export interface ExpertProfile extends ExtractedExpert {
+  /** Prices per network.  e.g. { AlphaSights: 650, GLG: 700 } */
+  network_prices: Record<string, number | null>
+  shortlisted: boolean
+  notes: string
+  cid_clearance_requested: boolean
+}
+
+/** All networks present in the current data set */
+export const NETWORKS = ["AlphaSights", "GLG", "Third Bridge"] as const
+
+/* ------------------------------------------------------------------ */
+/*  Read / write helpers (localStorage stubs)                          */
+/* ------------------------------------------------------------------ */
+
+export function getExpertProfiles(): ExpertProfile[] {
   // TODO: read from localStorage first, fall back to seeds
   return SEED_PROFILES
 }
 
-/**
- * Persist an array of ExtractedExpert profiles.
- * Stub for now -- will write to localStorage once the bugs are fixed.
- */
-export function saveExpertProfiles(_profiles: ExtractedExpert[]): void {
-  // TODO: localStorage.setItem("helmsman_extracted_experts", JSON.stringify(profiles))
+export function saveExpertProfiles(_profiles: ExpertProfile[]): void {
+  // TODO: localStorage.setItem("helmsman_expert_profiles", JSON.stringify(profiles))
 }
 
 /* ------------------------------------------------------------------ */
-/*  Seed profiles -- derived from the demo text files                  */
+/*  Convert a raw LLM ExtractedExpert into an ExpertProfile            */
+/*  (used when new experts come from the upload pipeline)              */
 /* ------------------------------------------------------------------ */
 
-const SEED_PROFILES: ExtractedExpert[] = [
+export function toExpertProfile(e: ExtractedExpert): ExpertProfile {
+  const network_prices: Record<string, number | null> = {}
+  for (const n of NETWORKS) {
+    network_prices[n] = n === e.network ? e.price : null
+  }
+  return {
+    ...e,
+    network_prices,
+    shortlisted: false,
+    notes: "",
+    cid_clearance_requested: false,
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Project context (for CID clearance form auto-generation)           */
+/* ------------------------------------------------------------------ */
+
+export const PROJECT_CONTEXT = {
+  projectName: "Project Atlas",
+  targetCompany: "Meridian Controls",
+  caseLeader: "[Case Leader Name]",
+  seniorManager: "[Senior Manager Name]",
+  projectDescription:
+    "Commercial due diligence on Meridian Controls, a mid-market industrial controls and automation company. Evaluating growth trajectory, competitive positioning, customer retention, and margin sustainability ahead of a potential acquisition.",
+}
+
+/* ------------------------------------------------------------------ */
+/*  Seed profiles                                                      */
+/* ------------------------------------------------------------------ */
+
+const SEED_PROFILES: ExpertProfile[] = [
   /* ---- Customers ------------------------------------------------- */
   {
     name: "Raj Patel",
@@ -45,6 +92,7 @@ const SEED_PROFILES: ExtractedExpert[] = [
     date_left: "N/A",
     price: 650,
     network: "AlphaSights",
+    network_prices: { AlphaSights: 650, GLG: null, "Third Bridge": null },
     industry_guess: "Paper & Packaging",
     fte_estimate: "1,000-5,000",
     screener_vendors_evaluated:
@@ -61,6 +109,9 @@ const SEED_PROFILES: ExtractedExpert[] = [
     screener_rd_investment: null,
     additional_info:
       "16 years in plant operations. Manages automation procurement across 12 North American facilities. Annual controls spend ~$8M. Previously at Unilever manufacturing ops.",
+    shortlisted: false,
+    notes: "",
+    cid_clearance_requested: false,
   },
   {
     name: "Marcus Oyelaran",
@@ -72,6 +123,7 @@ const SEED_PROFILES: ExtractedExpert[] = [
     date_left: "N/A",
     price: 550,
     network: "AlphaSights",
+    network_prices: { AlphaSights: 550, GLG: 600, "Third Bridge": null },
     industry_guess: "Food & Beverage Manufacturing",
     fte_estimate: "500-1,000",
     screener_vendors_evaluated:
@@ -88,6 +140,9 @@ const SEED_PROFILES: ExtractedExpert[] = [
     screener_rd_investment: null,
     additional_info:
       "11 years in food & beverage manufacturing. Oversees automation strategy for 4 breweries. Manages $3.5M annual controls budget.",
+    shortlisted: false,
+    notes: "",
+    cid_clearance_requested: false,
   },
   {
     name: "Chen Wei-Lin",
@@ -99,6 +154,7 @@ const SEED_PROFILES: ExtractedExpert[] = [
     date_left: "N/A",
     price: 600,
     network: "AlphaSights",
+    network_prices: { AlphaSights: 600, GLG: null, "Third Bridge": 575 },
     industry_guess: "Specialty Metals",
     fte_estimate: "500-1,000",
     screener_vendors_evaluated:
@@ -115,6 +171,9 @@ const SEED_PROFILES: ExtractedExpert[] = [
     screener_rd_investment: null,
     additional_info:
       "14 years in metals and heavy manufacturing. Manages automation for high-temperature and hazardous environments. Previously at Nucor Steel.",
+    shortlisted: false,
+    notes: "",
+    cid_clearance_requested: false,
   },
   {
     name: "James Achebe",
@@ -126,6 +185,7 @@ const SEED_PROFILES: ExtractedExpert[] = [
     date_left: "N/A",
     price: 750,
     network: "GLG",
+    network_prices: { AlphaSights: null, GLG: 750, "Third Bridge": null },
     industry_guess: "Food & Beverage Manufacturing",
     fte_estimate: "10,000-50,000",
     screener_vendors_evaluated:
@@ -142,6 +202,9 @@ const SEED_PROFILES: ExtractedExpert[] = [
     screener_rd_investment: null,
     additional_info:
       "18 years in food manufacturing. Manages global automation standards and vendor relationships across 22 plants in North America and Europe. $15M annual automation spend.",
+    shortlisted: false,
+    notes: "",
+    cid_clearance_requested: false,
   },
   {
     name: "Roberto Garza",
@@ -153,6 +216,7 @@ const SEED_PROFILES: ExtractedExpert[] = [
     date_left: "N/A",
     price: 600,
     network: "GLG",
+    network_prices: { AlphaSights: 650, GLG: 600, "Third Bridge": null },
     industry_guess: "Paper & Packaging",
     fte_estimate: "1,000-5,000",
     screener_vendors_evaluated:
@@ -169,6 +233,9 @@ const SEED_PROFILES: ExtractedExpert[] = [
     screener_rd_investment: null,
     additional_info:
       "15 years in pulp & paper manufacturing. Responsible for automation reliability across 3 mills. Has deployed systems from Rockwell, Meridian Controls, and ABB.",
+    shortlisted: false,
+    notes: "",
+    cid_clearance_requested: false,
   },
   {
     name: "Angela Moretti",
@@ -180,6 +247,7 @@ const SEED_PROFILES: ExtractedExpert[] = [
     date_left: "N/A",
     price: 500,
     network: "Third Bridge",
+    network_prices: { AlphaSights: null, GLG: null, "Third Bridge": 500 },
     industry_guess: "Chemicals",
     fte_estimate: "500-1,000",
     screener_vendors_evaluated: "Not answered",
@@ -192,6 +260,9 @@ const SEED_PROFILES: ExtractedExpert[] = [
     screener_rd_investment: null,
     additional_info:
       "Process industries customer. Imported from CSV -- no screening responses available.",
+    shortlisted: false,
+    notes: "",
+    cid_clearance_requested: false,
   },
   {
     name: "Yuki Tanaka",
@@ -203,6 +274,7 @@ const SEED_PROFILES: ExtractedExpert[] = [
     date_left: "N/A",
     price: 700,
     network: "Third Bridge",
+    network_prices: { AlphaSights: null, GLG: 725, "Third Bridge": 700 },
     industry_guess: "Automotive Components",
     fte_estimate: "5,000-10,000",
     screener_vendors_evaluated: "Not answered",
@@ -215,6 +287,9 @@ const SEED_PROFILES: ExtractedExpert[] = [
     screener_rd_investment: null,
     additional_info:
       "Automotive Tier 2 customer. Japan-NA operations. Imported from CSV -- no screening responses available.",
+    shortlisted: false,
+    notes: "",
+    cid_clearance_requested: false,
   },
   {
     name: "Priya Chakraborty",
@@ -226,6 +301,7 @@ const SEED_PROFILES: ExtractedExpert[] = [
     date_left: "N/A",
     price: 550,
     network: "Third Bridge",
+    network_prices: { AlphaSights: null, GLG: null, "Third Bridge": 550 },
     industry_guess: "Building Materials",
     fte_estimate: "1,000-5,000",
     screener_vendors_evaluated: "Not answered",
@@ -238,6 +314,9 @@ const SEED_PROFILES: ExtractedExpert[] = [
     screener_rd_investment: null,
     additional_info:
       "Heavy industry / harsh environment customer. Imported from CSV -- no screening responses available.",
+    shortlisted: false,
+    notes: "",
+    cid_clearance_requested: false,
   },
 
   /* ---- Competitors ----------------------------------------------- */
@@ -251,6 +330,7 @@ const SEED_PROFILES: ExtractedExpert[] = [
     date_left: "2024-08",
     price: 950,
     network: "AlphaSights",
+    network_prices: { AlphaSights: 950, GLG: 1000, "Third Bridge": null },
     industry_guess: "Industrial Automation",
     fte_estimate: "5,000-10,000",
     screener_vendors_evaluated: null,
@@ -267,6 +347,9 @@ const SEED_PROFILES: ExtractedExpert[] = [
       "Beckhoff is all-in on XTS linear transport and TwinCAT cloud engineering. The industry is moving toward software-defined control.",
     additional_info:
       "19 years in industrial automation sales. Built Beckhoff's NA business from $40M to $180M revenue. Previously at B&R Automation (now ABB) and Bosch Rexroth. Non-compete expired.",
+    shortlisted: false,
+    notes: "",
+    cid_clearance_requested: false,
   },
   {
     name: "Sandra Voss",
@@ -278,6 +361,7 @@ const SEED_PROFILES: ExtractedExpert[] = [
     date_left: "N/A",
     price: 1100,
     network: "AlphaSights",
+    network_prices: { AlphaSights: 1100, GLG: null, "Third Bridge": null },
     industry_guess: "Industrial Automation",
     fte_estimate: "10,000-50,000",
     screener_vendors_evaluated: null,
@@ -294,6 +378,9 @@ const SEED_PROFILES: ExtractedExpert[] = [
       "AI-enabled quality inspection and tighter robotics-PLC integration. We think the control layer and the robot layer merge within 5 years.",
     additional_info:
       "13 years at Omron. Leads corporate strategy and M&A evaluation for the Americas region. Previously at McKinsey (industrials practice). Currently employed -- requires pre-screening for confidentiality.",
+    shortlisted: false,
+    notes: "",
+    cid_clearance_requested: false,
   },
   {
     name: "Tomoko Sato",
@@ -305,6 +392,7 @@ const SEED_PROFILES: ExtractedExpert[] = [
     date_left: "N/A",
     price: 900,
     network: "GLG",
+    network_prices: { AlphaSights: null, GLG: 900, "Third Bridge": 875 },
     industry_guess: "Industrial Automation",
     fte_estimate: "5,000-10,000",
     screener_vendors_evaluated: null,
@@ -321,6 +409,9 @@ const SEED_PROFILES: ExtractedExpert[] = [
       "Docker-based runtime environments on our controllers, expanded MQTT/OPC-UA connectivity, and compact safety I/O. We see the edge compute layer as key.",
     additional_info:
       "10 years at WAGO. Leads BD for industrial automation products across North and South America. Previously at Phoenix Contact in product management. Currently employed -- requires pre-screening.",
+    shortlisted: false,
+    notes: "",
+    cid_clearance_requested: false,
   },
   {
     name: "Henrik Larsson",
@@ -332,6 +423,7 @@ const SEED_PROFILES: ExtractedExpert[] = [
     date_left: "N/A",
     price: 850,
     network: "Third Bridge",
+    network_prices: { AlphaSights: null, GLG: null, "Third Bridge": 850 },
     industry_guess: "Industrial Automation",
     fte_estimate: "5,000-10,000",
     screener_vendors_evaluated: null,
@@ -344,6 +436,9 @@ const SEED_PROFILES: ExtractedExpert[] = [
     screener_rd_investment: "Not answered",
     additional_info:
       "PC-based control expert. European perspective. Imported from CSV -- no screening responses available.",
+    shortlisted: false,
+    notes: "",
+    cid_clearance_requested: false,
   },
   {
     name: "Derek Otieno",
@@ -355,6 +450,7 @@ const SEED_PROFILES: ExtractedExpert[] = [
     date_left: "N/A",
     price: 800,
     network: "Third Bridge",
+    network_prices: { AlphaSights: 825, GLG: null, "Third Bridge": 800 },
     industry_guess: "Industrial Automation",
     fte_estimate: "5,000-10,000",
     screener_vendors_evaluated: null,
@@ -367,6 +463,9 @@ const SEED_PROFILES: ExtractedExpert[] = [
     screener_rd_investment: "Not answered",
     additional_info:
       "Sensor/IO and fieldbus/connectivity specialist. Imported from CSV -- no screening responses available.",
+    shortlisted: false,
+    notes: "",
+    cid_clearance_requested: false,
   },
 
   /* ---- Target (Meridian Controls insiders) ----------------------- */
@@ -380,6 +479,7 @@ const SEED_PROFILES: ExtractedExpert[] = [
     date_left: "2024-11",
     price: 1200,
     network: "GLG",
+    network_prices: { AlphaSights: null, GLG: 1200, "Third Bridge": 1150 },
     industry_guess: "Industrial Automation",
     fte_estimate: "1,000-5,000",
     screener_vendors_evaluated: null,
@@ -396,6 +496,9 @@ const SEED_PROFILES: ExtractedExpert[] = [
       "When I left, the roadmap priorities were Ethernet-APL I/O for process industries, a cloud-based engineering toolkit, and edge analytics modules. The R&D budget was growing about 15% YoY.",
     additional_info:
       "21 years in industrial automation. Most recently COO at Meridian Controls overseeing manufacturing, supply chain, and field operations for 7 years. Previously at Rockwell Automation and Parker Hannifin. Left 2+ months ago, no active non-compete. Will need CID clearance given recency.",
+    shortlisted: false,
+    notes: "",
+    cid_clearance_requested: false,
   },
   {
     name: "Nathan Cross",
@@ -407,6 +510,7 @@ const SEED_PROFILES: ExtractedExpert[] = [
     date_left: "Unknown",
     price: 950,
     network: "Third Bridge",
+    network_prices: { AlphaSights: null, GLG: null, "Third Bridge": 950 },
     industry_guess: "Industrial Automation",
     fte_estimate: "1,000-5,000",
     screener_vendors_evaluated: null,
@@ -419,5 +523,8 @@ const SEED_PROFILES: ExtractedExpert[] = [
     screener_rd_investment: "Not answered",
     additional_info:
       "Former target company insider. Product roadmap and R&D perspective. Imported from CSV -- no screening responses available. Compliance pending.",
+    shortlisted: false,
+    notes: "",
+    cid_clearance_requested: false,
   },
 ]
