@@ -69,6 +69,17 @@ export default function AiSurveysPage() {
     [],
   )
 
+  const handleRemove = useCallback(
+    (index: number) => {
+      setRecords((prev) => {
+        const next = prev.filter((_, i) => i !== index)
+        saveSurveys(next)
+        return next
+      })
+    },
+    [],
+  )
+
   // Compute dashboard stats
   const stats = computeStats(records)
   const totalSpend = Object.values(stats.totalSpendByStatus).reduce((a, b) => a + b, 0)
@@ -160,6 +171,7 @@ export default function AiSurveysPage() {
           engagementType="survey"
           onUpdateRecord={handleUpdate}
           onAddRecord={handleAdd}
+          onRemoveRecord={handleRemove}
         />
       </div>
     </div>
