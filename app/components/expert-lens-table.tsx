@@ -377,6 +377,11 @@ export default function ExpertLensTable({
     reasonForOutreach: "",
   })
 
+  // Shortlist warning modal state
+  const [warningModalOpen, setWarningModalOpen] = useState(false)
+  const [warningExpert, setWarningExpert] = useState<ExpertProfile | null>(null)
+  const [warningReasons, setWarningReasons] = useState<string[]>([])
+
   // Notes editing state
   const [editingNotesIdx, setEditingNotesIdx] = useState<number | null>(null)
   const [notesDraft, setNotesDraft] = useState("")
@@ -479,24 +484,63 @@ export default function ExpertLensTable({
     [experts],
   )
 
-  const cycleScreeningStatus = useCallback(
-  (expert: ExpertProfile) => {
-  const idx = findOriginalIndex(expert)
-  if (idx < 0) return
-  const current = expert.screening_status ?? "pending"
-  const next = current === "pending" ? "shortlisted" : current === "shortlisted" ? "discarded" : "pending"
-  onUpdateExpert(idx, { screening_status: next })
-  },
-  [findOriginalIndex, onUpdateExpert],
-  )
+  /** Collect any risk reasons that should warn before shortlisting */
+  const getShortlistWarnings = useCallback((expert: ExpertProfile): string[] => {
+    const reasons: string[] = []
+    // Compliance flags
+    for (const f of (expert.compliance_flags ?? [])) {
+      const cfg = COMPLIANCE_FLAG_CONFIG[f]
+      if (cfg) reasons.push(`${cfg.label}: ${cfg.description}`)
+    }
+    // CID declined
+    if (expert.cid_status === "declined") {
+      reasons.push("CID Declined: The account head has declined CID clearance for this expert. Do not proceed with engagement.")
+    }
+    return reasons
+  }, [])
 
   const setScreeningStatus = useCallback(
   (expert: ExpertProfile, status: "shortlisted" | "discarded" | "pending") => {
+  // If shortlisting, check for warnings first
+  if (status === "shortlisted") {
+    const warnings = getShortlistWarnings(expert)
+    if (warnings.length > 0) {
+      setWarningExpert(expert)
+      setWarningReasons(warnings)
+      setWarningModalOpen(true)
+      return
+    }
+  }
   const idx = findOriginalIndex(expert)
   if (idx >= 0) onUpdateExpert(idx, { screening_status: status })
   },
-  [findOriginalIndex, onUpdateExpert],
+  [findOriginalIndex, onUpdateExpert, getShortlistWarnings],
   )
+
+  const cycleScreeningStatus = useCallback(
+  (expert: ExpertProfile) => {
+  const current = expert.screening_status ?? "pending"
+  const next = current === "pending" ? "shortlisted" : current === "shortlisted" ? "discarded" : "pending"
+  setScreeningStatus(expert, next)
+  },
+  [setScreeningStatus],
+  )
+
+  /** Called when user confirms shortlist despite warnings */
+  const confirmShortlistOverride = useCallback(() => {
+    if (!warningExpert) return
+    const idx = findOriginalIndex(warningExpert)
+    if (idx >= 0) onUpdateExpert(idx, { screening_status: "shortlisted" })
+    setWarningModalOpen(false)
+    setWarningExpert(null)
+    setWarningReasons([])
+  }, [warningExpert, findOriginalIndex, onUpdateExpert])
+
+  const cancelShortlistWarning = useCallback(() => {
+    setWarningModalOpen(false)
+    setWarningExpert(null)
+    setWarningReasons([])
+  }, [])
 
   const openCidModal = useCallback((expert: ExpertProfile) => {
     setCidExpert(expert)
@@ -1072,6 +1116,62 @@ export default function ExpertLensTable({
             </button>
           </div>
         )}
+      </Modal>
+
+      {/* ---- Shortlist Warning Modal ---- */}
+      <Modal
+        open={warningModalOpen}
+        onClose={cancelShortlistWarning}
+        title="Shortlist Warning"
+        description={
+          warningExpert
+            ? `${warningExpert.name} -- ${warningExpert.original_role} at ${warningExpert.company}`
+            : ""
+        }
+      >
+        <div className="flex flex-col gap-4">
+          <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3">
+            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+            <div className="text-sm text-amber-900">
+              <p className="font-medium">
+                This expert has {warningReasons.length === 1 ? "an issue" : `${warningReasons.length} issues`} that may prevent engagement:
+              </p>
+            </div>
+          </div>
+
+          <ul className="flex flex-col gap-2">
+            {warningReasons.map((reason, i) => {
+              const [title, ...rest] = reason.split(": ")
+              return (
+                <li key={i} className="rounded-md border border-border bg-muted/30 px-3 py-2">
+                  <p className="text-xs font-semibold text-foreground">{title}</p>
+                  {rest.length > 0 && (
+                    <p className="mt-0.5 text-[11px] leading-relaxed text-muted-foreground">
+                      {rest.join(": ")}
+                    </p>
+                  )}
+                </li>
+              )
+            })}
+          </ul>
+
+          <div className="flex items-center justify-end gap-2 border-t border-border pt-3">
+            <button
+              type="button"
+              onClick={cancelShortlistWarning}
+              className="h-8 rounded-md border border-border bg-card px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={confirmShortlistOverride}
+              className="h-8 rounded-md border border-amber-300 bg-amber-100 px-3 text-xs font-medium text-amber-800 transition-colors hover:bg-amber-200"
+            >
+              Shortlist Anyway
+            </button>
+          </div>
+        </div>
       </Modal>
     </div>
   )
