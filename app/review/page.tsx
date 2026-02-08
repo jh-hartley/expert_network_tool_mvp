@@ -34,7 +34,7 @@ import {
 type ReviewStatus = "shortlisted" | "discarded" | "later"
 type ReviewMap = Record<string, ReviewStatus>
 
-const LS_REVIEW_KEY = "helmsman_review_status"
+const LS_REVIEW_KEY = "consensus_review_status"
 
 function getReviewMap(): ReviewMap {
   if (typeof window === "undefined") return {}
@@ -779,7 +779,7 @@ function buildWarnings(expert: ExpertProfile): ComplianceWarning[] {
       level: "warning",
       title: "CID Declined",
       detail:
-        "The compliance team has declined CID clearance for this expert. Do not proceed with engagement.",
+        "The account head has declined CID clearance for this expert. Do not proceed with engagement.",
     })
   }
 

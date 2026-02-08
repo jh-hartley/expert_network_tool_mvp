@@ -313,9 +313,9 @@ export default function TranscriptsPage() {
   /* NPS computed from ALL transcripts (unaffected by filters) */
   const npsResults = useMemo(() => computeNPSFromTranscripts(transcripts), [transcripts])
 
-  /* Identify target product (Meridian Controls) */
-  const targetNPS = npsResults.find((r) => r.product === "Meridian Controls") ?? null
-  const competitorNPS = npsResults.filter((r) => r.product !== "Meridian Controls")
+  /* Identify target product (Zephyr Controls) */
+  const targetNPS = npsResults.find((r) => r.product === "Zephyr Controls") ?? null
+  const competitorNPS = npsResults.filter((r) => r.product !== "Zephyr Controls")
 
   /* ---------------------------------------------------------------- */
   /*  Query handler                                                    */

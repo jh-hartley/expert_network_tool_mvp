@@ -276,12 +276,12 @@ interface CidConflictMatch {
 
 /** Maps expert company names (lowercased) to potential conflict matches */
 const CID_CONFLICT_DB: Record<string, CidConflictMatch[]> = {
-  "solaris packaging":            [{ company: "Solaris Packaging Inc.", relationship: "Prospective client" }],
-  "freshpath foods":              [{ company: "FreshPath Foods Group", relationship: "Active client" }, { company: "FreshPath Holdings LLC", relationship: "Former client (2023)" }],
-  "beckhoff automation":          [{ company: "Beckhoff Automation GmbH", relationship: "Prospective client" }, { company: "Beckhoff North America", relationship: "Active engagement" }],
-  "omron industrial automation":  [{ company: "Omron Corporation", relationship: "Active client" }],
-  "meridian controls":            [{ company: "Meridian Controls Inc.", relationship: "Target company (Project Atlas)" }, { company: "Meridian Industrial Group", relationship: "Former client (2022)" }],
-  "greenvalley chemicals":        [{ company: "GreenValley Chemical Corp", relationship: "Prospective client" }],
+  "orion packaging":              [{ company: "Orion Packaging Inc.", relationship: "Prospective client" }],
+  "brambleway foods":             [{ company: "Brambleway Foods Group", relationship: "Active client" }, { company: "Brambleway Holdings LLC", relationship: "Former client (2023)" }],
+  "kestrel automation":           [{ company: "Kestrel Automation GmbH", relationship: "Prospective client" }, { company: "Kestrel North America", relationship: "Active engagement" }],
+  "trilon industrial":            [{ company: "Trilon Corporation", relationship: "Active client" }],
+  "zephyr controls":              [{ company: "Zephyr Controls Inc.", relationship: "Target company (Project Atlas)" }, { company: "Zephyr Industrial Group", relationship: "Former client (2022)" }],
+  "cedarpoint chemicals":         [{ company: "Cedarpoint Chemical Corp", relationship: "Prospective client" }],
 }
 
 function findCidConflicts(company: string): CidConflictMatch[] {
@@ -1032,7 +1032,7 @@ export default function ExpertLensTable({
             <div className="text-center">
               <p className="text-sm font-medium text-foreground">CID Approval Request Sent</p>
               <p className="mt-1 text-xs text-muted-foreground">
-                The request for {cidExpert.name} has been submitted to the compliance team. Status has been updated to CID Pending.
+                The request for {cidExpert.name} has been submitted to the account head. Status has been updated to CID Pending.
               </p>
             </div>
             <button type="button" onClick={closeCidModal} className="mt-2 h-8 rounded-md bg-primary px-4 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90">

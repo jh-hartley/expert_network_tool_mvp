@@ -165,7 +165,7 @@ export default function ExpertsPage() {
       },
     }))
     exportToExcel({
-      fileName: "Helmsman_Experts",
+      fileName: "Consensus_Experts",
       rows: experts as unknown as Record<string, unknown>[],
       columns: [...EXPERT_COLUMNS, ...networkCols],
     })
@@ -410,7 +410,7 @@ export default function ExpertsPage() {
                       "Who has the most experience with vendor evaluations?",
                       "I need a competitor insider who understands pricing strategy",
                       "Find experts with harsh environment / heavy industry experience",
-                      "Who would be best for understanding Meridian's product roadmap?",
+                      "Who would be best for understanding Zephyr's product roadmap?",
                     ].map((q) => (
                       <button
                         key={q}

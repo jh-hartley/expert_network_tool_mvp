@@ -29,7 +29,7 @@ import {
 
 const SAMPLE_RAW_TEXT = `Expert Network Recommendations - Project Atlas
 
-From: AlphaSights Research Team
+From: AlphaView Research Team
 Date: 15 January 2025
 Project: Commercial due diligence - industrial controls & automation
 
@@ -41,7 +41,7 @@ Below are 5 expert recommendations for your consideration. We have conducted ini
    Background: 16 years in plant operations. Manages automation procurement across 12 North American facilities. Annual controls spend ~$8M. Previously at Unilever manufacturing ops.
    Relevant Expertise: Multi-vendor evaluation processes, total cost of ownership analysis, mid-market vs enterprise vendor trade-offs
    Compliance: No known conflicts. Never employed by any automation vendor.
-   Rate: $650/hr | Network: AlphaSights | ID: AS-2025-00201
+   Rate: $650/hr | Network: AlphaView | ID: AS-2025-00201
 
    Screening Responses (Customer):
    Q1 - Which vendors have you evaluated in the last 24 months?
@@ -62,7 +62,7 @@ Below are 5 expert recommendations for your consideration. We have conducted ini
    Background: 19 years in industrial automation sales. Built Kestrel's NA business from $40M to $180M revenue. Previously at B&R Automation (now ABB) and Bosch Rexroth.
    Relevant Expertise: PC-based control market dynamics, competitive win/loss patterns, channel strategy for mid-market automation
    Compliance: Non-compete expired. No current advisory or board roles.
-   Rate: $950/hr | Network: AlphaSights | ID: AS-2025-00202
+   Rate: $950/hr | Network: AlphaView | ID: AS-2025-00202
 
    Screening Responses (Competitor):
    Q1 - How do you view the competitive landscape in industrial controls?
@@ -83,7 +83,7 @@ Below are 5 expert recommendations for your consideration. We have conducted ini
    Background: 11 years in food & beverage manufacturing. Oversees automation strategy for 4 breweries. Manages $3.5M annual controls budget.
    Relevant Expertise: F&B-specific automation requirements, hygiene/washdown considerations, vendor support expectations in continuous production
    Compliance: Clear. No vendor relationships beyond standard procurement.
-   Rate: $550/hr | Network: AlphaSights | ID: AS-2025-00203
+   Rate: $550/hr | Network: AlphaView | ID: AS-2025-00203
 
    Screening Responses (Customer):
    Q1 - Which vendors have you evaluated in the last 24 months?
@@ -104,7 +104,7 @@ Below are 5 expert recommendations for your consideration. We have conducted ini
    Background: 13 years at Trilon. Leads corporate strategy and M&A evaluation for the Americas region. Previously at McKinsey (industrials practice).
    Relevant Expertise: Competitive intelligence on mid-market controls, M&A landscape, Japanese vs Western automation vendor strategies
    Compliance: Currently employed at Trilon. Requires pre-screening for confidentiality.
-   Rate: $1,100/hr | Network: AlphaSights | ID: AS-2025-00204
+   Rate: $1,100/hr | Network: AlphaView | ID: AS-2025-00204
 
    Screening Responses (Competitor):
    Q1 - How do you view the competitive landscape in industrial controls?
@@ -125,7 +125,7 @@ Below are 5 expert recommendations for your consideration. We have conducted ini
    Background: 14 years in metals and heavy manufacturing. Manages automation for high-temperature and hazardous environments. Previously at Nucor Steel.
    Relevant Expertise: Harsh-environment automation requirements, vendor reliability benchmarking, maintenance cost comparisons
    Compliance: No conflicts. Pure end-user perspective.
-   Rate: $600/hr | Network: AlphaSights | ID: AS-2025-00205
+   Rate: $600/hr | Network: AlphaView | ID: AS-2025-00205
 
    Screening Responses (Customer):
    Q1 - Which vendors have you evaluated in the last 24 months?
@@ -143,11 +143,11 @@ Below are 5 expert recommendations for your consideration. We have conducted ini
 Please let us know which experts you would like to schedule, and we will coordinate availability.
 
 Best regards,
-AlphaSights Research Team`
+AlphaView Research Team`
 
 const SAMPLE_EML = `From: research-team@glg.com
 To: project-team@deal.com
-Subject: GLG Expert Recommendations - Project Atlas (Industrial Controls)
+Subject: GLS Expert Recommendations - Project Atlas (Industrial Controls)
 Date: Thu, 17 Jan 2025 10:15:00 +0000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
@@ -167,7 +167,7 @@ Background: 21 years in industrial automation. Most recently COO at Zephyr Contr
 Why relevant: Direct operational knowledge of the target's cost structure, manufacturing footprint, supply chain, and go-to-market model.
 Compliance note: Left Zephyr Controls 2+ months ago. No active non-compete per Wisconsin law. Will need CID clearance given recency.
 Hourly rate: USD 1,200
-GLG Member ID: GLG-US-90102
+GLS Member ID: GLS-US-90102
 
 Screening Responses (Competitor):
 Q1 - How do you view the competitive landscape in industrial controls?
@@ -193,7 +193,7 @@ Background: 18 years in food manufacturing. Manages global automation standards 
 Why relevant: Large-scale multi-vendor customer with direct procurement experience across Zephyr Controls, Stonemill, and Siemens.
 Compliance note: No conflicts. End-user only.
 Hourly rate: USD 750
-GLG Member ID: GLG-CA-88714
+GLS Member ID: GLS-CA-88714
 
 Screening Responses (Customer):
 Q1 - Which vendors have you evaluated in the last 24 months?
@@ -218,7 +218,7 @@ Geography: Germantown, WI
 Background: 10 years at WAGO. Leads BD for industrial automation products across North and South America. Previously at Phoenix Contact in product management.
 Compliance note: Currently employed at WAGO. Requires pre-screening.
 Hourly rate: USD 900
-GLG Member ID: GLG-US-91330
+GLS Member ID: GLS-US-91330
 
 Screening Responses (Competitor):
 Q1 - How do you view the competitive landscape in industrial controls?
@@ -243,7 +243,7 @@ Geography: Portland, OR
 Background: 15 years in pulp & paper manufacturing. Responsible for automation reliability across 3 mills. Has evaluated and deployed systems from Stonemill, Zephyr Controls, and ABB.
 Compliance note: Clear. No vendor advisory roles.
 Hourly rate: USD 600
-GLG Member ID: GLG-US-92008
+GLS Member ID: GLS-US-92008
 
 Screening Responses (Customer):
 Q1 - Which vendors have you evaluated in the last 24 months?
@@ -261,20 +261,20 @@ Q4 - What would trigger you to switch providers?
 Please confirm which experts you'd like to proceed with and we'll send calendar invitations.
 
 Best,
-GLG Research Team`
+GLS Research Team`
 
 const SAMPLE_CSV = `Name,Title,Company,Industry,Network,Compliance,Rate_USD,Tags
-Raj Patel,VP of Plant Engineering,Orion Packaging,Technology,Third Bridge,cleared,650,customer;multi-vendor;CPG;packaging
-Laura Fischer,Former COO,Zephyr Controls,Technology,Third Bridge,pending,1200,competitor;target-company;operations;supply-chain
-Henrik Larsson,VP Manufacturing,Kestrel Automation,Technology,Third Bridge,cleared,850,competitor;PC-based-control;Europe
-Angela Moretti,Plant Manager,Cedarpoint Chemicals,Technology,Third Bridge,cleared,500,customer;process-industries;chemicals;safety
-Nathan Cross,Former VP Product,Zephyr Controls,Technology,Third Bridge,pending,950,competitor;target-company;product-roadmap;R&D
-Yuki Tanaka,Director of Automation,Nippon Precision Components,Technology,Third Bridge,cleared,700,customer;automotive-tier2;Japan-NA;precision
-Derek Otieno,Head of Industrial Strategy,Turck Inc.,Technology,Third Bridge,pending,800,competitor;sensor-IO;fieldbus;connectivity
-Priya Chakraborty,Engineering Manager,Atlas Cement Corp,Technology,Third Bridge,cleared,550,customer;heavy-industry;harsh-environment;cement`
+Raj Patel,VP of Plant Engineering,Orion Packaging,Technology,FifthBridge,cleared,650,customer;multi-vendor;CPG;packaging
+Laura Fischer,Former COO,Zephyr Controls,Technology,FifthBridge,pending,1200,competitor;target-company;operations;supply-chain
+Henrik Larsson,VP Manufacturing,Kestrel Automation,Technology,FifthBridge,cleared,850,competitor;PC-based-control;Europe
+Angela Moretti,Plant Manager,Cedarpoint Chemicals,Technology,FifthBridge,cleared,500,customer;process-industries;chemicals;safety
+Nathan Cross,Former VP Product,Zephyr Controls,Technology,FifthBridge,pending,950,competitor;target-company;product-roadmap;R&D
+Yuki Tanaka,Director of Automation,Nippon Precision Components,Technology,FifthBridge,cleared,700,customer;automotive-tier2;Japan-NA;precision
+Derek Otieno,Head of Industrial Strategy,Turck Inc.,Technology,FifthBridge,pending,800,competitor;sensor-IO;fieldbus;connectivity
+Priya Chakraborty,Engineering Manager,Atlas Cement Corp,Technology,FifthBridge,cleared,550,customer;heavy-industry;harsh-environment;cement`
 
 const SAMPLE_TRANSCRIPT_RAJ = `CALL TRANSCRIPT -- Raj Patel, VP of Plant Engineering, Orion Packaging
-Date: 14 November 2025 | Duration: 60 min | Network: AlphaSights
+Date: 14 November 2025 | Duration: 60 min | Network: AlphaView
 NPS Score: 8
 
 INTERVIEWER: Thank you for joining, Raj. Could you start by walking us through how Orion first evaluated Zephyr Controls?
@@ -296,7 +296,7 @@ RAJ PATEL: With caveats, yes. If your operation is mid-scale -- say 5 to 15 line
 [END OF TRANSCRIPT]`
 
 const SAMPLE_TRANSCRIPT_JAMES = `CALL TRANSCRIPT -- James Achebe, Global Automation Manager, Brambleway Foods
-Date: 20 November 2025 | Duration: 45 min | Network: GLG
+Date: 20 November 2025 | Duration: 45 min | Network: GLS
 NPS Score: 7
 
 INTERVIEWER: James, could you describe Brambleway's experience evaluating Zephyr Controls alongside Stonemill?
@@ -483,7 +483,7 @@ export default function DemoPage() {
           <ul className="flex flex-col gap-1.5">
             <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
               <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-              Three sample files below cover AlphaSights (raw text, 5 experts), GLG (email, 4 experts), and Third Bridge (CSV, 8 experts)
+              Three sample files below cover AlphaView (raw text, 5 experts), GLS (email, 4 experts), and FifthBridge (CSV, 8 experts)
             </li>
             <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
               <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
@@ -496,7 +496,7 @@ export default function DemoPage() {
           </ul>
         </Collapsible>
 
-        <Collapsible label="Sample data: Raw text (AlphaSights, 5 experts)">
+        <Collapsible label="Sample data: Raw text (AlphaView, 5 experts)">
           <pre className="whitespace-pre-wrap text-[11px] leading-relaxed text-foreground/80 font-mono max-h-48 overflow-y-auto rounded-md border border-border bg-muted/20 p-3">
             {SAMPLE_RAW_TEXT.slice(0, 500)}{"..."}
           </pre>
@@ -505,7 +505,7 @@ export default function DemoPage() {
           </div>
         </Collapsible>
 
-        <Collapsible label="Sample data: Email file (GLG, 4 experts)">
+        <Collapsible label="Sample data: Email file (GLS, 4 experts)">
           <pre className="whitespace-pre-wrap text-[11px] leading-relaxed text-foreground/80 font-mono max-h-48 overflow-y-auto rounded-md border border-border bg-muted/20 p-3">
             {SAMPLE_EML.slice(0, 400)}{"..."}
           </pre>
@@ -523,7 +523,7 @@ export default function DemoPage() {
           </div>
         </Collapsible>
 
-        <Collapsible label="Sample data: CSV spreadsheet (Third Bridge, 8 experts)">
+        <Collapsible label="Sample data: CSV spreadsheet (FifthBridge, 8 experts)">
           <pre className="whitespace-pre-wrap text-[11px] leading-relaxed text-foreground/80 font-mono max-h-48 overflow-y-auto rounded-md border border-border bg-muted/20 p-3">
             {SAMPLE_CSV}
           </pre>

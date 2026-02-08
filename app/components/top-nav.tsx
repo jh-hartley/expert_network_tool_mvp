@@ -155,7 +155,7 @@ export default function TopNav() {
             <Compass className="h-4 w-4 text-primary-foreground" />
           </div>
           <span className="text-sm font-semibold tracking-tight text-foreground">
-            Helmsman
+            Consensus
           </span>
         </Link>
 

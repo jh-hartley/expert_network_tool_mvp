@@ -50,7 +50,7 @@ export interface ExtractedExpert {
   former: boolean                  // true if the role is a past position
   date_left: string                // ISO date or "N/A" if current
   price: number | null             // USD per hour, null if not specified
-  network: string                  // e.g. AlphaSights, GLG, Third Bridge
+  network: string                  // e.g. AlphaView, GLS, FifthBridge
   industry_guess: string           // LLM-estimated industry for the company
   fte_estimate: string             // LLM-estimated headcount band e.g. "500-1000"
 

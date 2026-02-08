@@ -260,7 +260,7 @@ export default function OverviewPage() {
       {/* ============================================================ */}
       <section className="mb-16">
         <h1 className="text-2xl font-semibold tracking-tight text-foreground text-balance">
-          Helmsman
+          Consensus
         </h1>
         <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted-foreground">
           The end-to-end operating system for expert network workstreams --
@@ -466,7 +466,7 @@ export default function OverviewPage() {
           Required Input Data
         </h2>
         <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-          For full end-state functionality, Helmsman requires the following data
+          For full end-state functionality, Consensus requires the following data
           sources -- grouped by availability and implementation effort.
         </p>
 

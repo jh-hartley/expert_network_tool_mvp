@@ -103,7 +103,7 @@ export default function AiSurveysPage() {
       { key: "notes", header: "Notes" },
     ]
     exportToExcel({
-      fileName: "Helmsman_AI_Surveys",
+      fileName: "Consensus_AI_Surveys",
       rows: records as unknown as Record<string, unknown>[],
       columns: SURVEY_COLUMNS,
     })

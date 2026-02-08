@@ -79,7 +79,7 @@ function isUpcoming(date: string): boolean {
 /*  NPS target product                                                 */
 /* ------------------------------------------------------------------ */
 
-const TARGET_PRODUCT = "Meridian Controls"
+const TARGET_PRODUCT = "Zephyr Controls"
 
 /* ------------------------------------------------------------------ */
 /*  Mini components                                                    */
@@ -489,7 +489,7 @@ export default function DashboardPage() {
       XLSX.utils.book_append_sheet(wb, ws, name)
     }
 
-    XLSX.writeFile(wb, "Helmsman_Dashboard_Summary.xlsx")
+    XLSX.writeFile(wb, "Consensus_Dashboard_Summary.xlsx")
   }, [calls, surveys])
 
   if (!loaded) {

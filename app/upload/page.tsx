@@ -271,7 +271,7 @@ export default function UploadPage() {
             </p>
             <p className="mt-1 text-xs leading-relaxed text-sky-800">
               In a complete product, this system would interface directly with
-              expert networks (e.g. AlphaSights, GLG, Guidepoint) on a
+              expert networks (e.g. AlphaView, GLS, GuidePost) on a
               per-project basis. Expert profiles, availability, and pricing
               would flow into the platform automatically and be parsed in
               real-time, removing the need for manual batch uploads entirely.

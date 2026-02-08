@@ -268,14 +268,14 @@ A: Publish more reliability data for harsh environments. Heavy industry customer
   {
     engagement_id: "surv_nps_mc_6",
     expert_name: "Angela Moretti",
-    expert_company: "GreenValley Chemicals",
+    expert_company: "Cedarpoint Chemicals",
     expert_type: "customer",
     engagement_type: "survey",
     uploaded_at: "2026-02-06T15:00:00Z",
     product: "Zephyr Controls",
     nps_score: 6,
     key_reasons: ["Adequate process control", "Limited chemical industry references", "Prefer established DCS vendors for safety-critical"],
-    text: `AI SURVEY RESPONSE -- Angela Moretti, GreenValley Chemicals
+    text: `AI SURVEY RESPONSE -- Angela Moretti, Cedarpoint Chemicals
 Product evaluated: Zephyr Controls
 NPS Score: 6 (Passive)
 
