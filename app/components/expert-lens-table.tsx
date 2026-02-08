@@ -669,7 +669,7 @@ export default function ExpertLensTable({
             <thead>
               <tr className="border-b border-border bg-muted/40">
                 {/* Actions header */}
-                <th className="sticky left-0 z-10 bg-muted/40 px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground" style={{ minWidth: "130px" }}>
+                <th className="sticky left-0 z-10 bg-muted/40 px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground" style={{ minWidth: "300px" }}>
                   Actions
                 </th>
                 {/* Notes header */}
@@ -746,8 +746,8 @@ export default function ExpertLensTable({
                       ].join(" ")}
                     >
                       {/* ---- Actions cell ---- */}
-                      <td className="sticky left-0 z-10 bg-card px-3 py-2">
-                        <div className="flex items-center gap-1.5">
+                      <td className="sticky left-0 z-10 bg-card px-3 py-2" style={{ minWidth: "300px" }}>
+                        <div className="flex flex-nowrap items-center gap-1.5">
                           {/* Screening status: shortlist / discard / reset */}
                           {(() => {
                             const ss = expert.screening_status ?? "pending"
@@ -758,13 +758,13 @@ export default function ExpertLensTable({
                                   onClick={() => setScreeningStatus(expert, ss === "shortlisted" ? "pending" : "shortlisted")}
                                   title={ss === "shortlisted" ? "Remove from shortlist" : "Shortlist"}
                                   className={[
-                                    "inline-flex h-7 items-center gap-1 px-2 text-[11px] font-medium transition-colors",
+                                    "inline-flex h-7 items-center gap-1 whitespace-nowrap px-2 text-[11px] font-medium transition-colors",
                                     ss === "shortlisted"
                                       ? "bg-emerald-100 text-emerald-700"
                                       : "bg-card text-muted-foreground hover:bg-emerald-50 hover:text-emerald-700",
                                   ].join(" ")}
                                 >
-                                  <Star className={`h-3 w-3 ${ss === "shortlisted" ? "fill-emerald-600" : ""}`} />
+                                  <Star className={`h-3 w-3 shrink-0 ${ss === "shortlisted" ? "fill-emerald-600" : ""}`} />
                                   <span className="sr-only sm:not-sr-only">
                                     {ss === "shortlisted" ? "Listed" : "List"}
                                   </span>
@@ -775,13 +775,13 @@ export default function ExpertLensTable({
                                   onClick={() => setScreeningStatus(expert, ss === "discarded" ? "pending" : "discarded")}
                                   title={ss === "discarded" ? "Restore to pending" : "Discard"}
                                   className={[
-                                    "inline-flex h-7 items-center gap-1 px-2 text-[11px] font-medium transition-colors",
+                                    "inline-flex h-7 items-center gap-1 whitespace-nowrap px-2 text-[11px] font-medium transition-colors",
                                     ss === "discarded"
                                       ? "bg-rose-100 text-rose-700"
                                       : "bg-card text-muted-foreground hover:bg-rose-50 hover:text-rose-700",
                                   ].join(" ")}
                                 >
-                                  <X className={`h-3 w-3 ${ss === "discarded" ? "text-rose-600" : ""}`} />
+                                  <X className={`h-3 w-3 shrink-0 ${ss === "discarded" ? "text-rose-600" : ""}`} />
                                   <span className="sr-only sm:not-sr-only">
                                     {ss === "discarded" ? "Nope" : "Drop"}
                                   </span>
@@ -801,9 +801,9 @@ export default function ExpertLensTable({
                               <Tag
                                 {...(isClickable ? { type: "button" as const, onClick: () => openCidModal(expert) } : {})}
                                 title={cfg.label}
-                                className={`inline-flex h-7 items-center gap-1 rounded-md border px-2 text-[11px] font-medium transition-colors ${cfg.color}`}
+                                className={`inline-flex h-7 items-center gap-1 whitespace-nowrap rounded-md border px-2 text-[11px] font-medium transition-colors ${cfg.color}`}
                               >
-                                <CidIcon className="h-3 w-3" />
+                                <CidIcon className="h-3 w-3 shrink-0" />
                                 <span className="sr-only sm:not-sr-only">{cfg.label}</span>
                               </Tag>
                             )
