@@ -654,6 +654,9 @@ export default function ReviewPage() {
             </div>
           </div>
 
+          {/* Compliance warnings */}
+          <ComplianceWarnings expert={current} />
+
           {/* Action buttons */}
           <div className="mt-6 flex items-center gap-4">
             <button
@@ -813,6 +816,176 @@ function ScreenerRow({
       <p className="mt-0.5 text-xs leading-relaxed text-foreground/80">
         {value}
       </p>
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/*  Compliance Warnings                                                */
+/* ------------------------------------------------------------------ */
+
+type WarningLevel = "critical" | "warning" | "info"
+
+interface ComplianceWarning {
+  level: WarningLevel
+  title: string
+  detail: string
+}
+
+function buildWarnings(expert: ExpertProfile): ComplianceWarning[] {
+  const warnings: ComplianceWarning[] = []
+
+  /* Client advisor -- cannot contact */
+  if (expert.compliance_flags.includes("client_advisor")) {
+    warnings.push({
+      level: "critical",
+      title: "Client Advisor",
+      detail:
+        "This expert is a current client advisor. Contact is restricted -- do not book calls without explicit clearance from the engagement manager.",
+    })
+  }
+
+  /* Compliance flagged (e.g. fraud) */
+  if (expert.compliance_flags.includes("compliance_flagged")) {
+    warnings.push({
+      level: "critical",
+      title: "Compliance Flagged",
+      detail:
+        "This expert has been flagged by Compliance (e.g. potential fraud or policy violation). Do not proceed without Compliance approval.",
+    })
+  }
+
+  /* BAN advisor */
+  if (expert.compliance_flags.includes("ben_advisor")) {
+    warnings.push({
+      level: "warning",
+      title: "BAN Advisor",
+      detail:
+        "This expert is a Bain Advisor Network (BAN) member. Ensure the project engagement terms allow BAN advisor participation before scheduling.",
+    })
+  }
+
+  /* Target-company expert who left less than 12 months ago */
+  if (
+    expert.expert_type === "target" &&
+    expert.former &&
+    expert.date_left &&
+    expert.date_left !== "N/A" &&
+    expert.date_left !== "Unknown"
+  ) {
+    const [yearStr, monthStr] = expert.date_left.split("-")
+    const leftDate = new Date(Number(yearStr), Number(monthStr) - 1, 1)
+    const twelveMonthsAgo = new Date()
+    twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12)
+
+    if (leftDate > twelveMonthsAgo) {
+      warnings.push({
+        level: "warning",
+        title: "Recent Departure (Target)",
+        detail: `This expert left ${expert.company} in ${expert.date_left}, which is less than 12 months ago. Recent departures from target companies may carry non-compete or NDA restrictions -- confirm eligibility before booking.`,
+      })
+    }
+  }
+
+  /* Target-company expert without CID clearance */
+  if (
+    expert.expert_type === "target" &&
+    !expert.compliance_flags.includes("cid_cleared") &&
+    !expert.cid_clearance_requested
+  ) {
+    warnings.push({
+      level: "info",
+      title: "CID Not Requested",
+      detail:
+        "This is a target-company expert with no CID clearance request on file. Consider requesting CID clearance before scheduling a call.",
+    })
+  }
+
+  /* Currently employed at the target company (not former) */
+  if (expert.expert_type === "target" && !expert.former) {
+    warnings.push({
+      level: "warning",
+      title: "Current Employee (Target)",
+      detail:
+        "This expert is currently employed at the target company. Extra diligence is required -- ensure there are no insider-trading, confidentiality, or anti-tipping concerns before proceeding.",
+    })
+  }
+
+  return warnings
+}
+
+const LEVEL_STYLES: Record<
+  WarningLevel,
+  { border: string; bg: string; icon: string; title: string; badge: string }
+> = {
+  critical: {
+    border: "border-red-300",
+    bg: "bg-red-50",
+    icon: "text-red-600",
+    title: "text-red-900",
+    badge: "bg-red-100 text-red-700",
+  },
+  warning: {
+    border: "border-amber-300",
+    bg: "bg-amber-50",
+    icon: "text-amber-600",
+    title: "text-amber-900",
+    badge: "bg-amber-100 text-amber-700",
+  },
+  info: {
+    border: "border-sky-200",
+    bg: "bg-sky-50",
+    icon: "text-sky-600",
+    title: "text-sky-900",
+    badge: "bg-sky-100 text-sky-700",
+  },
+}
+
+function ComplianceWarnings({ expert }: { expert: ExpertProfile }) {
+  const warnings = buildWarnings(expert)
+  if (warnings.length === 0) return null
+
+  return (
+    <div className="mt-4 w-full max-w-lg">
+      <div className="rounded-lg border border-border bg-card shadow-sm overflow-hidden">
+        <div className="flex items-center gap-2 border-b border-border px-4 py-2.5 bg-muted/30">
+          <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-foreground">
+            Compliance Concerns
+          </span>
+          <span className="ml-auto inline-flex min-w-[18px] items-center justify-center rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold leading-none text-amber-700">
+            {warnings.length}
+          </span>
+        </div>
+        <div className="flex flex-col gap-2 p-3">
+          {warnings.map((w, i) => {
+            const s = LEVEL_STYLES[w.level]
+            return (
+              <div
+                key={i}
+                className={`flex items-start gap-2.5 rounded-md border ${s.border} ${s.bg} px-3 py-2.5`}
+              >
+                <AlertTriangle className={`mt-0.5 h-3.5 w-3.5 shrink-0 ${s.icon}`} />
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className={`text-xs font-semibold ${s.title}`}>
+                      {w.title}
+                    </span>
+                    <span
+                      className={`inline-flex rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase leading-none ${s.badge}`}
+                    >
+                      {w.level}
+                    </span>
+                  </div>
+                  <p className="mt-0.5 text-[11px] leading-relaxed text-foreground/70">
+                    {w.detail}
+                  </p>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
     </div>
   )
 }
