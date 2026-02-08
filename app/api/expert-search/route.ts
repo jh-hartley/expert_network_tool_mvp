@@ -135,5 +135,18 @@ export async function POST(req: Request) {
     ],
   })
 
-  return result.toTextStreamResponse()
+  // AI SDK 6: stream textStream as plain UTF-8 response
+  const encoder = new TextEncoder()
+  const readable = new ReadableStream({
+    async start(controller) {
+      for await (const chunk of result.textStream) {
+        controller.enqueue(encoder.encode(chunk))
+      }
+      controller.close()
+    },
+  })
+
+  return new Response(readable, {
+    headers: { "Content-Type": "text/plain; charset=utf-8" },
+  })
 }

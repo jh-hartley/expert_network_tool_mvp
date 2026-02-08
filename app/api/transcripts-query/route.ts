@@ -89,7 +89,21 @@ export async function POST(req: Request) {
       ],
     })
 
-    return result.toTextStreamResponse()
+    // AI SDK 6: toTextStreamResponse() no longer exists.
+    // Stream the textStream as a plain UTF-8 response.
+    const encoder = new TextEncoder()
+    const readable = new ReadableStream({
+      async start(controller) {
+        for await (const chunk of result.textStream) {
+          controller.enqueue(encoder.encode(chunk))
+        }
+        controller.close()
+      },
+    })
+
+    return new Response(readable, {
+      headers: { "Content-Type": "text/plain; charset=utf-8" },
+    })
   } catch (err) {
     return Response.json(
       { error: err instanceof Error ? err.message : "LLM streaming failed" },
