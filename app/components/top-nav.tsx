@@ -22,6 +22,7 @@ import {
 
 type NavLink = {
   kind: "link"
+  id: string
   href: string
   label: string
   icon: LucideIcon
@@ -29,6 +30,7 @@ type NavLink = {
 
 type NavGroup = {
   kind: "group"
+  id: string
   label: string
   icon: LucideIcon
   /** Highlight the group trigger when any of these paths match */
@@ -39,10 +41,11 @@ type NavGroup = {
 type NavItem = NavLink | NavGroup
 
 const NAV_ITEMS: NavItem[] = [
-  { kind: "link", href: "/demo",       label: "Demo",        icon: Compass },
-  { kind: "link", href: "/dashboard",  label: "Dashboard",   icon: LayoutDashboard },
+  { kind: "link", id: "demo",        href: "/demo",       label: "Demo",        icon: Compass },
+  { kind: "link", id: "dashboard",   href: "/dashboard",  label: "Dashboard",   icon: LayoutDashboard },
   {
     kind: "group",
+    id: "experts-group",
     label: "Experts",
     icon: Users,
     activePaths: ["/upload", "/review", "/experts"],
@@ -54,6 +57,7 @@ const NAV_ITEMS: NavItem[] = [
   },
   {
     kind: "group",
+    id: "engagements-group",
     label: "Engagements",
     icon: Phone,
     activePaths: ["/calls", "/ai-surveys"],
@@ -62,8 +66,8 @@ const NAV_ITEMS: NavItem[] = [
       { href: "/ai-surveys", label: "AI Surveys",  icon: ClipboardList, description: "Manage AI interview surveys" },
     ],
   },
-  { kind: "link", href: "/transcripts", label: "Transcripts", icon: FileText },
-  { kind: "link", href: "/settings",    label: "Settings",    icon: Settings },
+  { kind: "link", id: "transcripts",  href: "/transcripts", label: "Transcripts", icon: FileText },
+  { kind: "link", id: "settings",     href: "/settings",    label: "Settings",    icon: Settings },
 ]
 
 /* ------------------------------------------------------------------ */
@@ -154,17 +158,17 @@ export default function TopNav() {
         </Link>
 
         {/* Navigation */}
-        <nav className="flex items-center gap-1 overflow-x-visible" aria-label="Main navigation">
+        <nav className="flex items-center gap-1 overflow-x-visible" aria-label="Main navigation" suppressHydrationWarning>
           {NAV_ITEMS.map((item) => {
             if (item.kind === "group") {
-              return <NavDropdown key={item.label} item={item} pathname={pathname} />
+              return <NavDropdown key={item.id} item={item} pathname={pathname} />
             }
 
             const isActive =
               pathname === item.href || pathname.startsWith(item.href + "/")
             return (
               <Link
-                key={item.href}
+                key={item.id}
                 href={item.href}
                 className={[
                   "flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors whitespace-nowrap",
