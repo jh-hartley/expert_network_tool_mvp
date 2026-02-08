@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { ScrollReveal } from "./components/scroll-reveal"
 import {
   TriangleAlert,
   ArrowRight,
@@ -361,44 +362,51 @@ export default function OverviewPage() {
           </div>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          {pipeline.map((step) => {
+        {/* Timeline */}
+        <div className="relative flex flex-col">
+          {/* Vertical line */}
+          <div className="absolute left-[15px] top-0 bottom-0 w-px bg-border" />
+
+          {pipeline.map((step, i) => {
             const Icon = step.icon
             return (
-              <div
-                key={step.stage}
-                className="group flex flex-col rounded-lg border border-border bg-card transition-colors hover:border-primary/20"
-              >
-                {/* Card header */}
-                <div className="flex items-center gap-3 border-b border-border px-5 py-3.5">
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
-                    {step.stage}
-                  </span>
-                  <Icon className="h-4 w-4 shrink-0 text-primary/60" />
-                  <h3 className="text-sm font-semibold text-foreground">
-                    {step.title}
-                  </h3>
+              <ScrollReveal key={step.stage} delay={i * 60}>
+                <div className="relative flex gap-5 pb-10 last:pb-0">
+                  {/* Timeline node */}
+                  <div className="relative z-10 flex shrink-0 flex-col items-center">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold shadow-sm">
+                      {step.stage}
+                    </span>
+                  </div>
 
-                </div>
+                  {/* Content card */}
+                  <div className="group flex-1 rounded-lg border border-border bg-card transition-colors hover:border-primary/20 hover:bg-primary/[0.02]">
+                    <div className="flex items-center gap-2.5 px-5 py-3.5">
+                      <Icon className="h-4 w-4 shrink-0 text-primary/60" />
+                      <h3 className="text-sm font-semibold text-foreground">
+                        {step.title}
+                      </h3>
+                    </div>
 
-                {/* Card body */}
-                <div className="flex flex-1 flex-col px-5 py-4">
-                  <p className="text-xs leading-relaxed text-muted-foreground">
-                    {step.subtitle}
-                  </p>
-                  <ul className="mt-3 flex flex-1 flex-col gap-1.5">
-                    {step.capabilities.map((cap, j) => (
-                      <li
-                        key={j}
-                        className="flex items-start gap-2 text-xs leading-relaxed text-foreground/80"
-                      >
-                        <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-                        {cap}
-                      </li>
-                    ))}
-                  </ul>
+                    <div className="border-t border-border px-5 py-4">
+                      <p className="text-xs leading-relaxed text-muted-foreground">
+                        {step.subtitle}
+                      </p>
+                      <ul className="mt-3 flex flex-col gap-1.5">
+                        {step.capabilities.map((cap, j) => (
+                          <li
+                            key={j}
+                            className="flex items-start gap-2 text-xs leading-relaxed text-foreground/80"
+                          >
+                            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+                            {cap}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              </ScrollReveal>
             )
           })}
         </div>
