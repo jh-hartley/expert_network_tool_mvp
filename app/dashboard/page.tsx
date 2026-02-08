@@ -13,6 +13,8 @@ import {
   BarChart3,
   AlertTriangle,
   Info,
+  Copy,
+  Check,
 } from "lucide-react"
 import PageHeader from "../components/page-header"
 import { getExpertProfiles, type ExpertProfile } from "@/lib/expert-profiles"
@@ -123,6 +125,109 @@ function StatusBar({ counts }: { counts: Record<EngagementStatus, number> }) {
         if (pct === 0) return null
         return <div key={s} className={`${STATUS_COLORS[s]}`} style={{ width: `${pct}%` }} />
       })}
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/*  Schedule card with copy-to-clipboard                               */
+/* ------------------------------------------------------------------ */
+
+function ScheduleCard({
+  icon: Icon,
+  title,
+  items,
+}: {
+  icon: typeof Phone
+  title: string
+  items: EngagementRecord[]
+}) {
+  const [copied, setCopied] = useState(false)
+
+  function buildClipboardText() {
+    if (items.length === 0) return ""
+    const lines = items.map((r) => {
+      const date = formatDate(r.date)
+      return `- ${date} | ${r.expert_name}, ${r.expert_role} @ ${r.expert_company} (${r.network}, ${STATUS_LABELS[r.status]})`
+    })
+    return `${title} (${items.length})\n${lines.join("\n")}`
+  }
+
+  async function handleCopy() {
+    const text = buildClipboardText()
+    if (!text) return
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      /* fallback */
+    }
+  }
+
+  return (
+    <div className="rounded-lg border border-border bg-card">
+      <div className="flex items-center gap-2 border-b border-border px-4 py-3">
+        <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+        <h3 className="text-xs font-semibold text-foreground">
+          {title}
+          <span className="ml-1.5 text-muted-foreground font-normal">({items.length})</span>
+        </h3>
+        {items.length > 0 && (
+          <button
+            type="button"
+            onClick={handleCopy}
+            className="ml-auto inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            title="Copy schedule to clipboard as a bullet-point list"
+          >
+            {copied ? (
+              <>
+                <Check className="h-3 w-3 text-emerald-500" />
+                Copied
+              </>
+            ) : (
+              <>
+                <Copy className="h-3 w-3" />
+                Copy list
+              </>
+            )}
+          </button>
+        )}
+      </div>
+      {items.length === 0 ? (
+        <p className="px-4 py-6 text-center text-xs text-muted-foreground">
+          No {title.toLowerCase()}
+        </p>
+      ) : (
+        <div className="divide-y divide-border">
+          {items.map((r) => (
+            <div key={r.id} className="flex items-start gap-3 px-4 py-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border bg-muted/30 text-center">
+                <div>
+                  <p className="text-[10px] font-semibold leading-none text-foreground">
+                    {new Date(r.date + "T00:00:00").getDate()}
+                  </p>
+                  <p className="text-[9px] uppercase text-muted-foreground">
+                    {new Date(r.date + "T00:00:00").toLocaleDateString("en-GB", { month: "short" })}
+                  </p>
+                </div>
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-medium text-foreground">{r.expert_name}</p>
+                <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground">
+                  {r.expert_role}
+                </p>
+                <p className="mt-0.5 text-[11px] text-muted-foreground/70">
+                  {r.expert_company} &middot; {r.network}
+                </p>
+              </div>
+              <span className={`mt-0.5 shrink-0 inline-flex h-5 items-center rounded-full px-2 text-[10px] font-medium ${r.status === "scheduled" ? "border border-sky-200 bg-sky-50 text-sky-700" : "border border-amber-200 bg-amber-50 text-amber-700"}`}>
+                {STATUS_LABELS[r.status]}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
@@ -391,80 +496,18 @@ export default function DashboardPage() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Upcoming calls */}
-        <div className="rounded-lg border border-border bg-card">
-          <div className="flex items-center gap-2 border-b border-border px-4 py-3">
-            <Phone className="h-3.5 w-3.5 text-muted-foreground" />
-            <h3 className="text-xs font-semibold text-foreground">
-              Upcoming Calls
-              <span className="ml-1.5 text-muted-foreground font-normal">({upcomingCalls.length})</span>
-            </h3>
-          </div>
-          {upcomingCalls.length === 0 ? (
-            <p className="px-4 py-6 text-center text-xs text-muted-foreground">No upcoming calls</p>
-          ) : (
-            <div className="divide-y divide-border">
-              {upcomingCalls.map((c) => (
-                <div key={c.id} className="flex items-center gap-3 px-4 py-2.5">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border bg-muted/30 text-center">
-                    <div>
-                      <p className="text-[10px] font-semibold leading-none text-foreground">
-                        {new Date(c.date + "T00:00:00").getDate()}
-                      </p>
-                      <p className="text-[9px] uppercase text-muted-foreground">
-                        {new Date(c.date + "T00:00:00").toLocaleDateString("en-GB", { month: "short" })}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-xs font-medium text-foreground">{c.expert_name}</p>
-                    <p className="truncate text-[11px] text-muted-foreground">{c.expert_company} &middot; {c.network}</p>
-                  </div>
-                  <span className={`shrink-0 inline-flex h-5 items-center rounded-full px-2 text-[10px] font-medium ${c.status === "scheduled" ? "border border-sky-200 bg-sky-50 text-sky-700" : "border border-amber-200 bg-amber-50 text-amber-700"}`}>
-                    {STATUS_LABELS[c.status]}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        <ScheduleCard
+          icon={Phone}
+          title="Upcoming Calls"
+          items={upcomingCalls}
+        />
 
         {/* Upcoming / pending surveys */}
-        <div className="rounded-lg border border-border bg-card">
-          <div className="flex items-center gap-2 border-b border-border px-4 py-3">
-            <ClipboardList className="h-3.5 w-3.5 text-muted-foreground" />
-            <h3 className="text-xs font-semibold text-foreground">
-              Pending Surveys
-              <span className="ml-1.5 text-muted-foreground font-normal">({upcomingSurveys.length})</span>
-            </h3>
-          </div>
-          {upcomingSurveys.length === 0 ? (
-            <p className="px-4 py-6 text-center text-xs text-muted-foreground">No pending surveys</p>
-          ) : (
-            <div className="divide-y divide-border">
-              {upcomingSurveys.map((s) => (
-                <div key={s.id} className="flex items-center gap-3 px-4 py-2.5">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border bg-muted/30 text-center">
-                    <div>
-                      <p className="text-[10px] font-semibold leading-none text-foreground">
-                        {new Date(s.date + "T00:00:00").getDate()}
-                      </p>
-                      <p className="text-[9px] uppercase text-muted-foreground">
-                        {new Date(s.date + "T00:00:00").toLocaleDateString("en-GB", { month: "short" })}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-xs font-medium text-foreground">{s.expert_name}</p>
-                    <p className="truncate text-[11px] text-muted-foreground">{s.expert_company} &middot; {s.network}</p>
-                  </div>
-                  <span className={`shrink-0 inline-flex h-5 items-center rounded-full px-2 text-[10px] font-medium ${s.status === "scheduled" ? "border border-sky-200 bg-sky-50 text-sky-700" : "border border-amber-200 bg-amber-50 text-amber-700"}`}>
-                    {STATUS_LABELS[s.status]}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        <ScheduleCard
+          icon={ClipboardList}
+          title="Pending Surveys"
+          items={upcomingSurveys}
+        />
       </div>
 
       {/* Cancelled reminders */}
