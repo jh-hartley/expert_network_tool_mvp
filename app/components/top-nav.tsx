@@ -41,15 +41,15 @@ type NavItem = NavLink | NavGroup
 const NAV_ITEMS: NavItem[] = [
   { kind: "link", href: "/demo",       label: "Demo",        icon: Compass },
   { kind: "link", href: "/dashboard",  label: "Dashboard",   icon: LayoutDashboard },
-  { kind: "link", href: "/upload",     label: "Upload",      icon: Upload },
   {
     kind: "group",
     label: "Experts",
     icon: Users,
-    activePaths: ["/review", "/experts"],
+    activePaths: ["/upload", "/review", "/experts"],
     children: [
-      { href: "/review",  label: "Review Profiles",  icon: Heart, description: "Swipe through experts one at a time" },
-      { href: "/experts", label: "All Experts",       icon: Users, description: "View and search the full expert table" },
+      { href: "/upload",   label: "Upload Data",      icon: Upload, description: "Ingest expert profiles from networks" },
+      { href: "/review",   label: "Review Profiles",  icon: Heart,  description: "Swipe through experts one at a time" },
+      { href: "/experts",  label: "All Experts",       icon: Users,  description: "View and search the full expert table" },
     ],
   },
   {
