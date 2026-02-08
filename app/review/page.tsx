@@ -13,8 +13,6 @@ import {
   ThumbsUp,
   ThumbsDown,
   Clock,
-  ChevronDown,
-  ChevronUp,
   Linkedin,
   Info,
   CheckCircle2,
@@ -123,7 +121,6 @@ export default function ReviewPage() {
   const [reviewMap, setReviewMap] = useState<ReviewMap>({})
   const [loaded, setLoaded] = useState(false)
   const [swipe, setSwipe] = useState<SwipeDir>(null)
-  const [expandedSection, setExpandedSection] = useState<string | null>(null)
   const [showStats, setShowStats] = useState(false)
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("all")
 
@@ -193,7 +190,6 @@ export default function ReviewPage() {
         setReviewMap(next)
         saveReviewMap(next)
         setSwipe(null)
-        setExpandedSection(null)
       }, 350)
     },
     [current, reviewMap, profiles]
@@ -243,7 +239,7 @@ export default function ReviewPage() {
           : "translate-x-0 translate-y-0 rotate-0 opacity-100"
 
   return (
-    <div className="mx-auto max-w-5xl px-6 py-10">
+    <div className="mx-auto max-w-7xl px-6 py-10">
       {/* Integration banner */}
       <div className="mb-6 flex items-start gap-3 rounded-lg border border-sky-200 bg-sky-50 px-4 py-3">
         <Linkedin className="mt-0.5 h-4 w-4 shrink-0 text-sky-600" />
@@ -318,10 +314,7 @@ export default function ReviewPage() {
           return (
             <button
               key={opt.value}
-              onClick={() => {
-                setTypeFilter(opt.value)
-                setExpandedSection(null)
-              }}
+              onClick={() => setTypeFilter(opt.value)}
               className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
                 active
                   ? "bg-primary text-primary-foreground shadow-sm"
@@ -405,257 +398,167 @@ export default function ReviewPage() {
             </div>
           )}
 
-          {/* The swipe card */}
+          {/* The swipe card -- landscape */}
           <div
-            className={`w-full max-w-lg transition-all duration-300 ease-out ${swipeClass}`}
+            className={`w-full transition-all duration-300 ease-out ${swipeClass}`}
           >
             <div className="overflow-hidden rounded-xl border border-border bg-card shadow-lg">
-              {/* Card header with avatar */}
-              <div className={`relative flex flex-col items-center px-6 pt-8 pb-5 bg-gradient-to-br ${AVATAR_GRADIENT[current.expert_type] ?? "from-gray-400 to-gray-500"} bg-opacity-10`}>
-                {/* Avatar */}
-                <div
-                  className={`flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br ${AVATAR_GRADIENT[current.expert_type] ?? "from-gray-400 to-gray-500"} text-2xl font-bold text-white shadow-md`}
-                >
-                  {getInitials(current.name)}
-                </div>
-
-                {/* Name & role */}
-                <h2 className="mt-4 text-lg font-semibold text-foreground text-center">
-                  {current.name}
-                </h2>
-                <p className="mt-0.5 text-sm text-muted-foreground text-center">
-                  {current.role}
-                </p>
-                {current.original_role !== current.role && (
-                  <p className="mt-0.5 text-xs text-muted-foreground/70 text-center italic">
-                    {current.original_role}
-                  </p>
-                )}
-
-                {/* Type badge */}
-                <div className="mt-3 flex flex-wrap items-center justify-center gap-1.5">
-                  {(() => {
-                    const c = TYPE_COLORS[current.expert_type] ?? TYPE_COLORS.customer
-                    return (
-                      <span
-                        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ring-1 ${c.bg} ${c.text} ${c.ring}`}
-                      >
-                        {current.expert_type === "competitor_customer"
-                          ? "Competitor Customer"
-                          : current.expert_type.charAt(0).toUpperCase() +
-                            current.expert_type.slice(1)}
-                      </span>
-                    )
-                  })()}
-                  {current.former && (
-                    <span className="inline-flex rounded-full bg-gray-100 px-2.5 py-0.5 text-[11px] font-semibold text-gray-700 ring-1 ring-gray-200">
-                      Former
-                      {current.date_left !== "N/A" && current.date_left !== "Unknown"
-                        ? ` (left ${current.date_left})`
-                        : ""}
-                    </span>
-                  )}
-                  {current.compliance_flags.map((f) => (
-                    <span
-                      key={f}
-                      className={`inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${FLAG_META[f]?.color ?? "bg-gray-100 text-gray-700"}`}
+              <div className="flex flex-col lg:flex-row">
+                {/* ---- LEFT: Profile panel ---- */}
+                <div className="flex flex-col lg:w-[340px] shrink-0 border-b lg:border-b-0 lg:border-r border-border">
+                  {/* Avatar header */}
+                  <div className={`relative flex flex-col items-center px-6 pt-7 pb-5 bg-gradient-to-br ${AVATAR_GRADIENT[current.expert_type] ?? "from-gray-400 to-gray-500"} bg-opacity-10`}>
+                    <div
+                      className={`flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br ${AVATAR_GRADIENT[current.expert_type] ?? "from-gray-400 to-gray-500"} text-xl font-bold text-white shadow-md`}
                     >
-                      {FLAG_META[f]?.label ?? f}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              {/* Key info grid */}
-              <div className="grid grid-cols-2 gap-px border-t border-border bg-border">
-                <InfoCell
-                  icon={Building2}
-                  label="Company"
-                  value={current.company}
-                />
-                <InfoCell
-                  icon={Factory}
-                  label="Industry"
-                  value={current.industry_guess}
-                />
-                <InfoCell
-                  icon={Users}
-                  label="Employees"
-                  value={current.fte_estimate}
-                />
-                <InfoCell
-                  icon={DollarSign}
-                  label="Price"
-                  value={
-                    current.price
-                      ? `$${current.price}/hr`
-                      : "Not specified"
-                  }
-                />
-                <InfoCell
-                  icon={Briefcase}
-                  label="Network"
-                  value={current.network}
-                />
-                <InfoCell
-                  icon={ShieldCheck}
-                  label="CID Status"
-                  value={
-                    current.compliance_flags.includes("cid_cleared")
-                      ? "Cleared"
-                      : current.cid_clearance_requested
-                        ? "Requested"
-                        : "Not requested"
-                  }
-                />
-              </div>
-
-              {/* Network prices */}
-              {Object.keys(current.network_prices).length > 0 && (
-                <div className="border-t border-border px-5 py-3">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-                    Network Prices
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {Object.entries(current.network_prices).map(([net, price]) => (
-                      <span
-                        key={net}
-                        className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium ${
-                          price != null
-                            ? "bg-primary/8 text-foreground ring-1 ring-primary/15"
-                            : "bg-muted text-muted-foreground"
-                        }`}
-                      >
-                        {net}: {price != null ? `$${price}` : "--"}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Expandable screener sections */}
-              <div className="border-t border-border">
-                {/* Customer screener */}
-                {current.expert_type === "customer" && (
-                  <ExpandableSection
-                    id="screener"
-                    title="Screener Responses"
-                    expanded={expandedSection === "screener"}
-                    onToggle={() =>
-                      setExpandedSection(
-                        expandedSection === "screener" ? null : "screener"
-                      )
-                    }
-                  >
-                    <ScreenerRow
-                      label="Vendors Evaluated"
-                      value={current.screener_vendors_evaluated}
-                    />
-                    <ScreenerRow
-                      label="Selection Driver"
-                      value={current.screener_vendor_selection_driver}
-                    />
-                    <ScreenerRow
-                      label="Satisfaction"
-                      value={current.screener_vendor_satisfaction}
-                    />
-                    <ScreenerRow
-                      label="Switch Trigger"
-                      value={current.screener_switch_trigger}
-                    />
-                  </ExpandableSection>
-                )}
-
-                {/* Competitor screener */}
-                {(current.expert_type === "competitor" ||
-                  current.expert_type === "competitor_customer") && (
-                  <ExpandableSection
-                    id="comp-screener"
-                    title="Competitor Screener"
-                    expanded={expandedSection === "comp-screener"}
-                    onToggle={() =>
-                      setExpandedSection(
-                        expandedSection === "comp-screener"
-                          ? null
-                          : "comp-screener"
-                      )
-                    }
-                  >
-                    <ScreenerRow
-                      label="Competitive Landscape"
-                      value={current.screener_competitive_landscape}
-                    />
-                    <ScreenerRow
-                      label="Losing Deals To"
-                      value={current.screener_losing_deals_to}
-                    />
-                    <ScreenerRow
-                      label="Pricing Comparison"
-                      value={current.screener_pricing_comparison}
-                    />
-                    <ScreenerRow
-                      label="R&D Investment"
-                      value={current.screener_rd_investment}
-                    />
-                  </ExpandableSection>
-                )}
-
-                {/* Target screener -- show both sets if present */}
-                {current.expert_type === "target" && (
-                  <ExpandableSection
-                    id="target-screener"
-                    title="Insider Insights"
-                    expanded={expandedSection === "target-screener"}
-                    onToggle={() =>
-                      setExpandedSection(
-                        expandedSection === "target-screener"
-                          ? null
-                          : "target-screener"
-                      )
-                    }
-                  >
-                    <ScreenerRow
-                      label="Competitive Landscape"
-                      value={current.screener_competitive_landscape}
-                    />
-                    <ScreenerRow
-                      label="Losing Deals To"
-                      value={current.screener_losing_deals_to}
-                    />
-                    <ScreenerRow
-                      label="Pricing Comparison"
-                      value={current.screener_pricing_comparison}
-                    />
-                    <ScreenerRow
-                      label="R&D Investment"
-                      value={current.screener_rd_investment}
-                    />
-                  </ExpandableSection>
-                )}
-
-                {/* Additional info */}
-                {current.additional_info && (
-                  <ExpandableSection
-                    id="additional"
-                    title="Additional Info"
-                    expanded={expandedSection === "additional"}
-                    onToggle={() =>
-                      setExpandedSection(
-                        expandedSection === "additional" ? null : "additional"
-                      )
-                    }
-                  >
-                    <p className="text-xs leading-relaxed text-foreground/80">
-                      {current.additional_info}
+                      {getInitials(current.name)}
+                    </div>
+                    <h2 className="mt-3 text-base font-semibold text-foreground text-center">
+                      {current.name}
+                    </h2>
+                    <p className="mt-0.5 text-sm text-muted-foreground text-center">
+                      {current.role}
                     </p>
-                  </ExpandableSection>
-                )}
+                    {current.original_role !== current.role && (
+                      <p className="mt-0.5 text-[11px] text-muted-foreground/70 text-center italic">
+                        {current.original_role}
+                      </p>
+                    )}
+                    {/* Badges */}
+                    <div className="mt-2.5 flex flex-wrap items-center justify-center gap-1.5">
+                      {(() => {
+                        const c = TYPE_COLORS[current.expert_type] ?? TYPE_COLORS.customer
+                        return (
+                          <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ring-1 ${c.bg} ${c.text} ${c.ring}`}>
+                            {current.expert_type === "competitor_customer"
+                              ? "Competitor Customer"
+                              : current.expert_type.charAt(0).toUpperCase() + current.expert_type.slice(1)}
+                          </span>
+                        )
+                      })()}
+                      {current.former && (
+                        <span className="inline-flex rounded-full bg-gray-100 px-2.5 py-0.5 text-[11px] font-semibold text-gray-700 ring-1 ring-gray-200">
+                          Former{current.date_left !== "N/A" && current.date_left !== "Unknown" ? ` (left ${current.date_left})` : ""}
+                        </span>
+                      )}
+                      {current.compliance_flags.map((f) => (
+                        <span key={f} className={`inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${FLAG_META[f]?.color ?? "bg-gray-100 text-gray-700"}`}>
+                          {FLAG_META[f]?.label ?? f}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Key info grid */}
+                  <div className="grid grid-cols-2 gap-px bg-border flex-1">
+                    <InfoCell icon={Building2} label="Company" value={current.company} />
+                    <InfoCell icon={Factory} label="Industry" value={current.industry_guess} />
+                    <InfoCell icon={Users} label="Employees" value={current.fte_estimate} />
+                    <InfoCell icon={DollarSign} label="Price" value={current.price ? `$${current.price}/hr` : "Not specified"} />
+                    <InfoCell icon={Briefcase} label="Network" value={current.network} />
+                    <InfoCell icon={ShieldCheck} label="CID Status" value={current.compliance_flags.includes("cid_cleared") ? "Cleared" : current.cid_clearance_requested ? "Requested" : "Not requested"} />
+                  </div>
+
+                  {/* Network prices */}
+                  {Object.keys(current.network_prices).length > 0 && (
+                    <div className="border-t border-border px-4 py-3">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
+                        Network Prices
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {Object.entries(current.network_prices).map(([net, price]) => (
+                          <span
+                            key={net}
+                            className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-medium ${
+                              price != null
+                                ? "bg-primary/8 text-foreground ring-1 ring-primary/15"
+                                : "bg-muted text-muted-foreground"
+                            }`}
+                          >
+                            {net}: {price != null ? `$${price}` : "--"}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* ---- RIGHT: Screeners, additional info, compliance ---- */}
+                <div className="flex-1 flex flex-col min-w-0">
+                  {/* Screener responses -- always visible */}
+                  {current.expert_type === "customer" && (
+                    <div className="border-b border-border px-5 py-4">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+                        Screener Responses
+                      </p>
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <ScreenerRow label="Vendors Evaluated" value={current.screener_vendors_evaluated} />
+                        <ScreenerRow label="Selection Driver" value={current.screener_vendor_selection_driver} />
+                        <ScreenerRow label="Satisfaction" value={current.screener_vendor_satisfaction} />
+                        <ScreenerRow label="Switch Trigger" value={current.screener_switch_trigger} />
+                      </div>
+                    </div>
+                  )}
+
+                  {(current.expert_type === "competitor" || current.expert_type === "competitor_customer") && (
+                    <div className="border-b border-border px-5 py-4">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+                        Competitor Screener
+                      </p>
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <ScreenerRow label="Competitive Landscape" value={current.screener_competitive_landscape} />
+                        <ScreenerRow label="Losing Deals To" value={current.screener_losing_deals_to} />
+                        <ScreenerRow label="Pricing Comparison" value={current.screener_pricing_comparison} />
+                        <ScreenerRow label="R&D Investment" value={current.screener_rd_investment} />
+                      </div>
+                    </div>
+                  )}
+
+                  {current.expert_type === "target" && (
+                    <div className="border-b border-border px-5 py-4">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+                        Insider Insights
+                      </p>
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <ScreenerRow label="Competitive Landscape" value={current.screener_competitive_landscape} />
+                        <ScreenerRow label="Losing Deals To" value={current.screener_losing_deals_to} />
+                        <ScreenerRow label="Pricing Comparison" value={current.screener_pricing_comparison} />
+                        <ScreenerRow label="R&D Investment" value={current.screener_rd_investment} />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Additional info -- always visible */}
+                  {current.additional_info && (
+                    <div className="border-b border-border px-5 py-4">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                        Additional Info
+                      </p>
+                      <p className="text-xs leading-relaxed text-foreground/80">
+                        {current.additional_info}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Compliance warnings inline */}
+                  <ComplianceWarningsInline expert={current} />
+
+                  {/* No screeners / no additional info fallback */}
+                  {!current.additional_info &&
+                    current.expert_type !== "customer" &&
+                    current.expert_type !== "competitor" &&
+                    current.expert_type !== "competitor_customer" &&
+                    current.expert_type !== "target" && (
+                    <div className="flex flex-1 items-center justify-center px-5 py-8">
+                      <p className="text-sm text-muted-foreground">
+                        No screener data or additional info available for this expert.
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
-
-          {/* Compliance warnings */}
-          <ComplianceWarnings expert={current} />
 
           {/* Action buttons */}
           <div className="mt-6 flex items-center gap-4">
@@ -759,43 +662,6 @@ function InfoCell({
           {value}
         </p>
       </div>
-    </div>
-  )
-}
-
-function ExpandableSection({
-  id,
-  title,
-  expanded,
-  onToggle,
-  children,
-}: {
-  id: string
-  title: string
-  expanded: boolean
-  onToggle: () => void
-  children: React.ReactNode
-}) {
-  return (
-    <div className="border-t border-border">
-      <button
-        onClick={onToggle}
-        className="flex w-full items-center justify-between px-5 py-3 text-xs font-semibold text-foreground transition-colors hover:bg-accent/50"
-        aria-expanded={expanded}
-        aria-controls={`section-${id}`}
-      >
-        {title}
-        {expanded ? (
-          <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" />
-        ) : (
-          <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-        )}
-      </button>
-      {expanded && (
-        <div id={`section-${id}`} className="px-5 pb-4 flex flex-col gap-3">
-          {children}
-        </div>
-      )}
     </div>
   )
 }
@@ -941,50 +807,55 @@ const LEVEL_STYLES: Record<
   },
 }
 
-function ComplianceWarnings({ expert }: { expert: ExpertProfile }) {
+function ComplianceWarningsInline({ expert }: { expert: ExpertProfile }) {
   const warnings = buildWarnings(expert)
-  if (warnings.length === 0) return null
+  if (warnings.length === 0) {
+    return (
+      <div className="flex-1 flex items-center px-5 py-4">
+        <div className="flex items-center gap-2 text-xs text-emerald-700">
+          <ShieldCheck className="h-3.5 w-3.5" />
+          <span className="font-medium">No compliance concerns detected</span>
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className="mt-4 w-full max-w-lg">
-      <div className="rounded-lg border border-border bg-card shadow-sm overflow-hidden">
-        <div className="flex items-center gap-2 border-b border-border px-4 py-2.5 bg-muted/30">
-          <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-foreground">
-            Compliance Concerns
-          </span>
-          <span className="ml-auto inline-flex min-w-[18px] items-center justify-center rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold leading-none text-amber-700">
-            {warnings.length}
-          </span>
-        </div>
-        <div className="flex flex-col gap-2 p-3">
-          {warnings.map((w, i) => {
-            const s = LEVEL_STYLES[w.level]
-            return (
-              <div
-                key={i}
-                className={`flex items-start gap-2.5 rounded-md border ${s.border} ${s.bg} px-3 py-2.5`}
-              >
-                <AlertTriangle className={`mt-0.5 h-3.5 w-3.5 shrink-0 ${s.icon}`} />
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className={`text-xs font-semibold ${s.title}`}>
-                      {w.title}
-                    </span>
-                    <span
-                      className={`inline-flex rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase leading-none ${s.badge}`}
-                    >
-                      {w.level}
-                    </span>
-                  </div>
-                  <p className="mt-0.5 text-[11px] leading-relaxed text-foreground/70">
-                    {w.detail}
-                  </p>
+    <div className="px-5 py-4 flex-1">
+      <div className="flex items-center gap-2 mb-3">
+        <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-foreground">
+          Compliance Concerns
+        </p>
+        <span className="inline-flex min-w-[18px] items-center justify-center rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold leading-none text-amber-700">
+          {warnings.length}
+        </span>
+      </div>
+      <div className="flex flex-col gap-2">
+        {warnings.map((w, i) => {
+          const s = LEVEL_STYLES[w.level]
+          return (
+            <div
+              key={i}
+              className={`flex items-start gap-2.5 rounded-md border ${s.border} ${s.bg} px-3 py-2`}
+            >
+              <AlertTriangle className={`mt-0.5 h-3.5 w-3.5 shrink-0 ${s.icon}`} />
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className={`text-xs font-semibold ${s.title}`}>
+                    {w.title}
+                  </span>
+                  <span className={`inline-flex rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase leading-none ${s.badge}`}>
+                    {w.level}
+                  </span>
                 </div>
+                <p className="mt-0.5 text-[11px] leading-relaxed text-foreground/70">
+                  {w.detail}
+                </p>
               </div>
-            )
-          })}
-        </div>
+            </div>
+          )
+        })}
       </div>
     </div>
   )
