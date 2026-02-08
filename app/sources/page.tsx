@@ -1,23 +1,27 @@
 "use client"
 
-import { useState, useMemo, useCallback } from "react"
+import { useState, useMemo, useCallback, useRef, useEffect } from "react"
 import PageHeader from "@/app/components/page-header"
 import {
   ArrowRight,
   Copy,
   Check,
-  Filter,
   Download,
+  Pencil,
+  X,
 } from "lucide-react"
 import { getCalls, getSurveys } from "@/lib/engagements"
 import type { EngagementRecord } from "@/lib/engagements"
-import type { ExpertLens } from "@/lib/expert-profiles"
+import { getExpertProfiles, saveExpertProfiles } from "@/lib/expert-profiles"
+import type { ExpertProfile, ExpertLens } from "@/lib/expert-profiles"
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
 /* ------------------------------------------------------------------ */
 
 interface AnonymisedSource {
+  /** Lowercase key for matching back to ExpertProfile */
+  nameKey: string
   /** Original values */
   realName: string
   realRole: string
@@ -100,6 +104,7 @@ function buildAnonymisedSources(
       : eng.anonymised_role
 
     sources.push({
+      nameKey: eng.expert_name.toLowerCase(),
       realName: eng.expert_name,
       realRole: eng.expert_role,
       realCompany: eng.expert_company,
@@ -139,11 +144,71 @@ export default function SourcesPage() {
   const [filter, setFilter] = useState<FilterLens>("all")
   const [copied, setCopied] = useState<"all" | "filtered" | null>(null)
 
+  // Role editing state
+  const [editingKey, setEditingKey] = useState<string | null>(null)
+  const [roleDraft, setRoleDraft] = useState("")
+  const roleInputRef = useRef<HTMLInputElement>(null)
+  const [version, setVersion] = useState(0) // bump to force re-derive sources
+
+  useEffect(() => {
+    if (editingKey !== null) {
+      roleInputRef.current?.focus()
+      roleInputRef.current?.select()
+    }
+  }, [editingKey])
+
+  const startEditing = useCallback((source: AnonymisedSource) => {
+    setEditingKey(source.nameKey)
+    setRoleDraft(source.anonRole)
+  }, [])
+
+  const cancelEditing = useCallback(() => {
+    setEditingKey(null)
+    setRoleDraft("")
+  }, [])
+
+  const saveEditing = useCallback(() => {
+    if (editingKey === null || !roleDraft.trim()) {
+      cancelEditing()
+      return
+    }
+    // Update the ExpertProfile.role in localStorage
+    const profiles = getExpertProfiles()
+    const idx = profiles.findIndex((p) => p.name.toLowerCase() === editingKey)
+    if (idx >= 0) {
+      profiles[idx] = { ...profiles[idx], role: roleDraft.trim() }
+      saveExpertProfiles(profiles)
+    }
+    setEditingKey(null)
+    setRoleDraft("")
+    setVersion((v) => v + 1) // force re-derive
+  }, [editingKey, roleDraft, cancelEditing])
+
   const sources = useMemo(() => {
+    void version // dependency to force re-derive after edits
     const calls = getCalls()
     const surveys = getSurveys()
-    return buildAnonymisedSources(calls, surveys)
-  }, [])
+
+    // Also pull the latest expert profiles so we pick up role edits
+    const profiles = getExpertProfiles()
+    const profileRoleMap = new Map<string, string>()
+    for (const p of profiles) {
+      profileRoleMap.set(p.name.toLowerCase(), p.role)
+    }
+
+    const raw = buildAnonymisedSources(calls, surveys)
+
+    // Overlay latest profile roles onto the derived sources
+    for (const s of raw) {
+      const latestRole = profileRoleMap.get(s.nameKey)
+      if (latestRole && latestRole !== s.anonRole) {
+        s.anonRole = latestRole
+        s.anonLine = `${latestRole}, ${s.anonCompany}`
+      }
+    }
+
+    return raw
+  }, [version])
 
   const filtered = useMemo(() => {
     if (filter === "all") return sources
@@ -270,7 +335,7 @@ export default function SourcesPage() {
                 <th className="px-3 py-2 text-left text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Role</th>
                 <th className="px-3 py-2 text-left text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Company</th>
                 <th className="w-8 px-1 py-2" />
-                <th className="px-3 py-2 text-left text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Anonymised Title</th>
+                <th className="px-3 py-2 text-left text-[10px] font-medium uppercase tracking-wider text-muted-foreground" style={{ minWidth: "240px" }}>Anonymised Title</th>
                 <th className="px-3 py-2 text-left text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Anonymised Company</th>
               </tr>
             </thead>
@@ -305,8 +370,50 @@ export default function SourcesPage() {
                       <ArrowRight className="mx-auto h-3.5 w-3.5 text-muted-foreground/50" />
                     </td>
 
-                    {/* Anonymised */}
-                    <td className="px-3 py-2.5 font-medium text-foreground">{s.anonRole}</td>
+                    {/* Anonymised (editable) */}
+                    <td className="px-3 py-2.5 font-medium text-foreground" style={{ minWidth: "240px" }}>
+                      {editingKey === s.nameKey ? (
+                        <div className="flex items-center gap-1">
+                          <input
+                            ref={roleInputRef}
+                            type="text"
+                            value={roleDraft}
+                            onChange={(e) => setRoleDraft(e.target.value)}
+                            className="h-7 w-full min-w-[200px] rounded border border-ring bg-background px-2 text-xs text-foreground outline-none"
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") saveEditing()
+                              if (e.key === "Escape") cancelEditing()
+                            }}
+                          />
+                          <button
+                            type="button"
+                            onClick={saveEditing}
+                            className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded bg-primary text-primary-foreground"
+                            aria-label="Save"
+                          >
+                            <Check className="h-3 w-3" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={cancelEditing}
+                            className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded bg-muted text-muted-foreground"
+                            aria-label="Cancel"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => startEditing(s)}
+                          className="group flex w-full items-center gap-1.5 rounded px-1 py-0.5 text-left text-xs transition-colors hover:bg-muted/50"
+                          title="Click to edit anonymised title"
+                        >
+                          <span>{s.anonRole}</span>
+                          <Pencil className="h-3 w-3 shrink-0 text-muted-foreground/0 transition-colors group-hover:text-muted-foreground" />
+                        </button>
+                      )}
+                    </td>
                     <td className="px-3 py-2.5">
                       <span className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[11px] font-medium ${typeBadgeColor}`}>
                         {s.anonCompany}

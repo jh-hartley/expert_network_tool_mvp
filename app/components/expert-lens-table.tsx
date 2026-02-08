@@ -20,6 +20,7 @@ import {
   Ban,
   CircleCheck,
   Send,
+  Pencil,
 } from "lucide-react"
 import type { ExpertProfile, ExpertLens, ComplianceFlag, CidStatus } from "@/lib/expert-profiles"
 import { getNetworks, PROJECT_CONTEXT } from "@/lib/expert-profiles"
@@ -74,7 +75,7 @@ const SHARED_COLS: ColDef[] = [
     key: "role",
     label: "Anonymised Role",
     accessor: (e) => e.role,
-    minWidth: "170px",
+    minWidth: "240px",
   },
   {
     key: "company",
@@ -280,7 +281,7 @@ const CID_CONFLICT_DB: Record<string, CidConflictMatch[]> = {
   "brambleway foods":             [{ company: "Brambleway Foods Group", relationship: "Active client" }, { company: "Brambleway Holdings LLC", relationship: "Former client (2023)" }],
   "kestrel automation":           [{ company: "Kestrel Automation GmbH", relationship: "Prospective client" }, { company: "Kestrel North America", relationship: "Active engagement" }],
   "trilon industrial":            [{ company: "Trilon Corporation", relationship: "Active client" }],
-  "zephyr controls":              [{ company: "Zephyr Controls Inc.", relationship: "Target company (Project Atlas)" }, { company: "Zephyr Industrial Group", relationship: "Former client (2022)" }],
+  "zephyr controls":              [{ company: "Zephyr Controls Inc.", relationship: "Target company" }, { company: "Zephyr Industrial Group", relationship: "Former client (2022)" }],
   "cedarpoint chemicals":         [{ company: "Cedarpoint Chemical Corp", relationship: "Prospective client" }],
 }
 
@@ -382,6 +383,11 @@ export default function ExpertLensTable({
   const [warningExpert, setWarningExpert] = useState<ExpertProfile | null>(null)
   const [warningReasons, setWarningReasons] = useState<string[]>([])
 
+  // Anonymised role editing state
+  const [editingRoleIdx, setEditingRoleIdx] = useState<number | null>(null)
+  const [roleDraft, setRoleDraft] = useState("")
+  const roleInputRef = useRef<HTMLInputElement>(null)
+
   // Notes editing state
   const [editingNotesIdx, setEditingNotesIdx] = useState<number | null>(null)
   const [notesDraft, setNotesDraft] = useState("")
@@ -392,9 +398,16 @@ export default function ExpertLensTable({
   }, [lens])
 
   useEffect(() => {
-    if (editingNotesIdx !== null) {
-      notesInputRef.current?.focus()
-    }
+  if (editingRoleIdx !== null) {
+  roleInputRef.current?.focus()
+  roleInputRef.current?.select()
+  }
+  }, [editingRoleIdx])
+
+  useEffect(() => {
+  if (editingNotesIdx !== null) {
+  notesInputRef.current?.focus()
+  }
   }, [editingNotesIdx])
 
   const columns = useMemo(() => getColumnsForLens(lens, experts), [lens, experts])
@@ -612,6 +625,27 @@ export default function ExpertLensTable({
     setNotesDraft("")
   }, [])
 
+  // ---- Anonymised role editing ----
+  const startEditingRole = useCallback((expert: ExpertProfile) => {
+    const idx = findOriginalIndex(expert)
+    if (idx < 0) return
+    setEditingRoleIdx(idx)
+    setRoleDraft(expert.role)
+  }, [findOriginalIndex])
+
+  const saveRole = useCallback(() => {
+    if (editingRoleIdx !== null && roleDraft.trim()) {
+      onUpdateExpert(editingRoleIdx, { role: roleDraft.trim() })
+    }
+    setEditingRoleIdx(null)
+    setRoleDraft("")
+  }, [editingRoleIdx, roleDraft, onUpdateExpert])
+
+  const cancelRole = useCallback(() => {
+    setEditingRoleIdx(null)
+    setRoleDraft("")
+  }, [])
+
   return (
     <div>
       {/* ---- Top bar: lens tabs + shortlist toggle + search ---- */}
@@ -783,8 +817,9 @@ export default function ExpertLensTable({
                 </tr>
               ) : (
                 sorted.map((expert) => {
-                  const origIdx = findOriginalIndex(expert)
-                  const isEditingNotes = editingNotesIdx === origIdx
+  const origIdx = findOriginalIndex(expert)
+  const isEditingNotes = editingNotesIdx === origIdx
+  const isEditingRole = editingRoleIdx === origIdx
                   return (
                     <tr
                       key={`${expert.name}-${expert.company}`}
@@ -975,6 +1010,60 @@ export default function ExpertLensTable({
                       {/* ---- Data cells ---- */}
                       {columns.map((col) => {
                         const value = col.accessor(expert)
+
+                        /* Editable anonymised role cell */
+                        if (col.key === "role") {
+                          return (
+                            <td
+                              key={col.key}
+                              className="px-4 py-2.5 text-sm text-foreground"
+                              style={{ minWidth: col.minWidth }}
+                            >
+                              {isEditingRole ? (
+                                <div className="flex items-center gap-1">
+                                  <input
+                                    ref={roleInputRef}
+                                    type="text"
+                                    value={roleDraft}
+                                    onChange={(e) => setRoleDraft(e.target.value)}
+                                    className="h-7 w-full min-w-[140px] rounded border border-ring bg-background px-2 text-xs text-foreground outline-none"
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter") saveRole()
+                                      if (e.key === "Escape") cancelRole()
+                                    }}
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={saveRole}
+                                    className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded bg-primary text-primary-foreground"
+                                    aria-label="Save role"
+                                  >
+                                    <Check className="h-3 w-3" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={cancelRole}
+                                    className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded bg-muted text-muted-foreground"
+                                    aria-label="Cancel editing"
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </button>
+                                </div>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => startEditingRole(expert)}
+                                  className="group flex w-full items-center gap-1.5 rounded px-1 py-0.5 text-left text-xs transition-colors hover:bg-muted/50"
+                                  title="Click to edit anonymised role"
+                                >
+                                  <span>{String(value)}</span>
+                                  <Pencil className="h-3 w-3 shrink-0 text-muted-foreground/0 transition-colors group-hover:text-muted-foreground" />
+                                </button>
+                              )}
+                            </td>
+                          )
+                        }
+
                         return (
                           <td
                             key={col.key}
