@@ -230,6 +230,32 @@ export default function OverviewPage() {
       </div>
 
       {/* ============================================================ */}
+      {/*  TRY IT NOW -- prominent CTA                                   */}
+      {/* ============================================================ */}
+      <div className="mb-10 rounded-xl border-2 border-primary/20 bg-primary/[0.03] px-6 py-6">
+        <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left">
+          <div className="flex-1">
+            <h2 className="text-lg font-semibold tracking-tight text-foreground">
+              Try it now
+            </h2>
+            <p className="mt-1 max-w-xl text-sm leading-relaxed text-muted-foreground">
+              Walk through a realistic DD scenario end-to-end -- from uploading
+              unstructured expert data through to anonymised sources slides and
+              budget reconciliation. Pre-loaded seed data means you can start
+              clicking immediately.
+            </p>
+          </div>
+          <Link
+            href="/demo"
+            className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
+          >
+            Launch Interactive Demo
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+      </div>
+
+      {/* ============================================================ */}
       {/*  SECTION 1 -- Hero + Value Propositions                        */}
       {/* ============================================================ */}
       <section className="mb-16">

@@ -1,8 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, type ReactNode } from "react"
 import Link from "next/link"
-import { ScrollReveal } from "../components/scroll-reveal"
 import {
   Upload,
   FileText,
@@ -16,46 +15,16 @@ import {
   Heart,
   Users,
   Phone,
-  ShieldCheck,
   Brain,
   Search as SearchIcon,
   FileBarChart,
   Building2,
+  ChevronDown,
+  EyeOff,
 } from "lucide-react"
 
-
 /* ------------------------------------------------------------------ */
-/*  Demo scenario                                                      */
-/*                                                                     */
-/*  DD Target: "Meridian Controls" -- a mid-market industrial          */
-/*  automation company. The PE buyer is evaluating the acquisition      */
-/*  under codename "Project Atlas". Networks do NOT know the target.   */
-/*                                                                     */
-/*  Expert types:                                                      */
-/*    - Customer: companies that purchase automation / controls         */
-/*    - Competitor: companies that compete with Meridian Controls       */
-/*                                                                     */
-/*  Meridian Controls is among the competitors listed, but the         */
-/*  networks have not been told it is the target.                       */
-/*                                                                     */
-/*  Screening questions (embedded in each file):                       */
-/*    Customers -- Q1 Which vendors have you evaluated in the last     */
-/*      24 months? Q2 What drove your most recent vendor selection?    */
-/*      Q3 How would you rate your satisfaction with your current      */
-/*      vendor (1-10)? Q4 What would trigger you to switch providers?  */
-/*    Competitors -- Q1 How do you view the competitive landscape in   */
-/*      industrial controls? Q2 Which competitors are you losing       */
-/*      deals to most often? Q3 How does your pricing compare to      */
-/*      mid-market players? Q4 Where are you investing in R&D over    */
-/*      the next 2 years?                                              */
-/*                                                                     */
-/*  Overlapping experts across files:                                  */
-/*    - Raj Patel appears in File 1 (raw text) and File 3 (CSV)       */
-/*    - Laura Fischer appears in File 2 (email) and File 3 (CSV)      */
-/* ------------------------------------------------------------------ */
-
-/* ------------------------------------------------------------------ */
-/*  Sample data: Raw text (AlphaSights email body)                     */
+/*  Demo scenario data (unchanged)                                     */
 /* ------------------------------------------------------------------ */
 
 const SAMPLE_RAW_TEXT = `Expert Network Recommendations - Project Atlas
@@ -176,10 +145,6 @@ Please let us know which experts you would like to schedule, and we will coordin
 Best regards,
 AlphaSights Research Team`
 
-/* ------------------------------------------------------------------ */
-/*  Sample data: Email (.eml format -- GLG)                            */
-/* ------------------------------------------------------------------ */
-
 const SAMPLE_EML = `From: research-team@glg.com
 To: project-team@deal.com
 Subject: GLG Expert Recommendations - Project Atlas (Industrial Controls)
@@ -298,10 +263,6 @@ Please confirm which experts you'd like to proceed with and we'll send calendar 
 Best,
 GLG Research Team`
 
-/* ------------------------------------------------------------------ */
-/*  Sample data: CSV (Third Bridge spreadsheet export)                 */
-/* ------------------------------------------------------------------ */
-
 const SAMPLE_CSV = `Name,Title,Company,Industry,Network,Compliance,Rate_USD,Tags
 Raj Patel,VP of Plant Engineering,Solaris Packaging,Technology,Third Bridge,cleared,650,customer;multi-vendor;CPG;packaging
 Laura Fischer,Former COO,Meridian Controls,Technology,Third Bridge,pending,1200,competitor;target-company;operations;supply-chain
@@ -311,16 +272,6 @@ Nathan Cross,Former VP Product,Meridian Controls,Technology,Third Bridge,pending
 Yuki Tanaka,Director of Automation,Nippon Precision Components,Technology,Third Bridge,cleared,700,customer;automotive-tier2;Japan-NA;precision
 Derek Otieno,Head of Industrial Strategy,Turck Inc.,Technology,Third Bridge,pending,800,competitor;sensor-IO;fieldbus;connectivity
 Priya Chakraborty,Engineering Manager,Atlas Cement Corp,Technology,Third Bridge,cleared,550,customer;heavy-industry;harsh-environment;cement`
-
-/* ------------------------------------------------------------------ */
-/*  Pipeline steps for the rest of the guide                           */
-/* ------------------------------------------------------------------ */
-
-/* All stages are live */
-
-/* ------------------------------------------------------------------ */
-/*  Sample data: Transcripts (.txt -- customer calls with NPS)         */
-/* ------------------------------------------------------------------ */
 
 const SAMPLE_TRANSCRIPT_RAJ = `CALL TRANSCRIPT -- Raj Patel, VP of Plant Engineering, Solaris Packaging
 Date: 14 November 2025 | Duration: 60 min | Network: AlphaSights
@@ -367,7 +318,7 @@ JAMES ACHEBE: We've approved Meridian for four pilot sites, two are fully cut ov
 [END OF TRANSCRIPT]`
 
 /* ------------------------------------------------------------------ */
-/*  Helper: download a text string as a file                           */
+/*  Helpers                                                            */
 /* ------------------------------------------------------------------ */
 
 function downloadTextFile(content: string, filename: string, mimeType: string) {
@@ -382,13 +333,8 @@ function downloadTextFile(content: string, filename: string, mimeType: string) {
   URL.revokeObjectURL(url)
 }
 
-/* ------------------------------------------------------------------ */
-/*  Component: CopyButton                                              */
-/* ------------------------------------------------------------------ */
-
-function CopyButton({ text }: { text: string }) {
+function CopyButton({ text, label = "Copy to clipboard" }: { text: string; label?: string }) {
   const [copied, setCopied] = useState(false)
-
   return (
     <button
       type="button"
@@ -407,10 +353,88 @@ function CopyButton({ text }: { text: string }) {
       ) : (
         <>
           <Copy className="h-3 w-3" />
-          Copy to clipboard
+          {label}
         </>
       )}
     </button>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/*  Collapsible section                                                */
+/* ------------------------------------------------------------------ */
+
+function Collapsible({
+  label,
+  defaultOpen = false,
+  children,
+}: {
+  label: string
+  defaultOpen?: boolean
+  children: ReactNode
+}) {
+  const [open, setOpen] = useState(defaultOpen)
+  return (
+    <div className="mt-3 rounded-lg border border-border bg-card overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-xs font-medium text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
+      >
+        <ChevronDown
+          className={`h-3.5 w-3.5 shrink-0 transition-transform ${open ? "rotate-0" : "-rotate-90"}`}
+        />
+        {label}
+      </button>
+      {open && <div className="border-t border-border px-4 py-3">{children}</div>}
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/*  Step shell                                                         */
+/* ------------------------------------------------------------------ */
+
+function DemoStep({
+  step,
+  icon: Icon,
+  title,
+  summary,
+  href,
+  hrefLabel,
+  children,
+}: {
+  step: number
+  icon: typeof Upload
+  title: string
+  summary: string
+  href: string
+  hrefLabel: string
+  children?: ReactNode
+}) {
+  return (
+    <section className="mt-6">
+      <div className="flex items-center gap-3">
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
+          {step}
+        </span>
+        <Icon className="h-4 w-4 text-primary/60" />
+        <h2 className="text-sm font-semibold tracking-tight text-foreground">
+          {title}
+        </h2>
+        <Link
+          href={href}
+          className="ml-auto inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-[11px] font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+        >
+          {hrefLabel}
+          <ArrowRight className="h-3 w-3" />
+        </Link>
+      </div>
+      <p className="mt-2 max-w-3xl text-xs leading-relaxed text-muted-foreground">
+        {summary}
+      </p>
+      {children}
+    </section>
   )
 }
 
@@ -420,682 +444,393 @@ function CopyButton({ text }: { text: string }) {
 
 export default function DemoPage() {
   return (
-    <div className="mx-auto max-w-5xl px-6 py-10">
+    <div className="mx-auto max-w-4xl px-6 py-10">
       {/* Header */}
       <div className="pb-6 border-b border-border">
         <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          Getting Started Guide
+          Interactive Demo
         </h1>
-        <p className="mt-1 text-sm leading-relaxed text-muted-foreground max-w-2xl">
-          Walk through a realistic DD scenario using sample data. The case
-          involves a PE buyer evaluating <strong className="text-foreground font-medium">Meridian Controls</strong>, a
-          mid-market industrial automation company (codename &ldquo;Project Atlas&rdquo;). Follow
-          all stages below -- from ingesting unstructured network data through to
-          search and reconciliation.
+        <p className="mt-1 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+          Walk through a DD scenario evaluating{" "}
+          <strong className="text-foreground font-medium">Meridian Controls</strong>{" "}
+          (codename &ldquo;Project Atlas&rdquo;). Each step links to a live page
+          -- expand sections below for detailed instructions and sample data.
+        </p>
+      </div>
+
+      {/* Persistence note */}
+      <div className="mt-6 flex items-start gap-3 rounded-lg border border-sky-200 bg-sky-50 px-4 py-3">
+        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-sky-600" />
+        <p className="text-xs leading-relaxed text-sky-800">
+          <span className="font-medium">Browser-only prototype.</span> Seed data
+          is pre-loaded. Your changes persist in localStorage and survive
+          reloads but will be lost if you clear site data.
         </p>
       </div>
 
       {/* ============================================================ */}
-      {/*  STEP 1 -- Ingest & Standardise                               */}
+      {/*  STEP 1 -- Upload                                              */}
       {/* ============================================================ */}
-      <ScrollReveal delay={0}>
-      <section className="mt-10">
-        <div className="flex items-center gap-3">
-          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
-            1
-          </span>
-          <Upload className="h-4 w-4 text-primary/60" />
-          <h2 className="text-lg font-semibold tracking-tight text-foreground">
-            Ingest Unstructured Data
-          </h2>
-        </div>
-        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">
-          Three expert networks (AlphaSights, GLG, Third Bridge) have sent
-          recommendations for Project Atlas. Each file contains a mix of
-          customer and competitor experts with completed screening responses.
-          Two experts (Raj Patel and Laura Fischer) appear across multiple
-          files to test deduplication. Try each format below.
-        </p>
+      <DemoStep
+        step={1}
+        icon={Upload}
+        title="Upload Expert Data"
+        summary="Paste or upload unstructured expert profiles from any network (email body, .eml, or CSV) and the AI will parse, deduplicate, and standardise them."
+        href="/upload"
+        hrefLabel="Upload page"
+      >
+        <Collapsible label="Detailed instructions">
+          <ul className="flex flex-col gap-1.5">
+            <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+              <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+              Three sample files below cover AlphaSights (raw text, 5 experts), GLG (email, 4 experts), and Third Bridge (CSV, 8 experts)
+            </li>
+            <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+              <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+              Two experts (Raj Patel, Laura Fischer) appear across multiple files to test deduplication
+            </li>
+            <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+              <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+              Try the CSV first (instant parse), then paste the raw text or upload the .eml
+            </li>
+          </ul>
+        </Collapsible>
 
-        <div className="mt-6 grid gap-5 lg:grid-cols-3">
-          {/* ---- Raw text ---- */}
-          <div className="flex flex-col rounded-lg border border-border bg-card overflow-hidden">
-            <div className="flex items-center gap-3 border-b border-border px-5 py-3.5 bg-muted/30">
-              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/8 ring-1 ring-primary/15">
-                <FileText className="h-4 w-4 text-primary" />
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold text-foreground">
-                  Raw Text
-                </h3>
-                <p className="text-[11px] text-muted-foreground">
-                  Network email body
-                </p>
-              </div>
-            </div>
-            <div className="flex flex-1 flex-col px-5 py-4">
-              <p className="text-xs leading-relaxed text-muted-foreground">
-                An AlphaSights email with 5 experts (3 customers, 2 competitors)
-                including screening question responses. Copy and paste into the{" "}
-                <Link
-                  href="/upload"
-                  className="font-medium text-primary underline underline-offset-2"
-                >
-                  Upload page
-                </Link>
-                .
-              </p>
-              <div className="mt-3 flex-1 overflow-auto rounded-md border border-border bg-muted/20 p-3">
-                <pre className="whitespace-pre-wrap text-[11px] leading-relaxed text-foreground/80 font-mono max-h-48 overflow-y-auto">
-                  {SAMPLE_RAW_TEXT.slice(0, 600)}{"..."}
-                </pre>
-              </div>
-              <div className="mt-3">
-                <CopyButton text={SAMPLE_RAW_TEXT} />
-              </div>
-            </div>
+        <Collapsible label="Sample data: Raw text (AlphaSights, 5 experts)">
+          <pre className="whitespace-pre-wrap text-[11px] leading-relaxed text-foreground/80 font-mono max-h-48 overflow-y-auto rounded-md border border-border bg-muted/20 p-3">
+            {SAMPLE_RAW_TEXT.slice(0, 500)}{"..."}
+          </pre>
+          <div className="mt-2">
+            <CopyButton text={SAMPLE_RAW_TEXT} label="Copy full text" />
           </div>
+        </Collapsible>
 
-          {/* ---- Email (.eml) ---- */}
-          <div className="flex flex-col rounded-lg border border-border bg-card overflow-hidden">
-            <div className="flex items-center gap-3 border-b border-border px-5 py-3.5 bg-muted/30">
-              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/8 ring-1 ring-primary/15">
-                <Mail className="h-4 w-4 text-primary" />
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold text-foreground">
-                  Email File
-                </h3>
-                <p className="text-[11px] text-muted-foreground">
-                  .eml format
-                </p>
-              </div>
-            </div>
-            <div className="flex flex-1 flex-col px-5 py-4">
-              <p className="text-xs leading-relaxed text-muted-foreground">
-                A GLG .eml file with 4 experts (2 customers, 2 competitors)
-                including a former Meridian Controls executive. Download and
-                upload to test email ingestion.
-              </p>
-              <div className="mt-3 flex-1 overflow-auto rounded-md border border-border bg-muted/20 p-3">
-                <pre className="whitespace-pre-wrap text-[11px] leading-relaxed text-foreground/80 font-mono max-h-48 overflow-y-auto">
-                  {SAMPLE_EML.slice(0, 500)}{"..."}
-                </pre>
-              </div>
-              <div className="mt-3">
-                <button
-                  type="button"
-                  onClick={() =>
-                    downloadTextFile(
-                      SAMPLE_EML,
-                      "glg-recommendations-project-atlas.eml",
-                      "message/rfc822"
-                    )
-                  }
-                  className="inline-flex items-center gap-1.5 rounded-md bg-muted px-2.5 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted/80"
-                >
-                  <Download className="h-3 w-3" />
-                  Download .eml file
-                </button>
-              </div>
-            </div>
+        <Collapsible label="Sample data: Email file (GLG, 4 experts)">
+          <pre className="whitespace-pre-wrap text-[11px] leading-relaxed text-foreground/80 font-mono max-h-48 overflow-y-auto rounded-md border border-border bg-muted/20 p-3">
+            {SAMPLE_EML.slice(0, 400)}{"..."}
+          </pre>
+          <div className="mt-2">
+            <button
+              type="button"
+              onClick={() =>
+                downloadTextFile(SAMPLE_EML, "glg-recommendations-project-atlas.eml", "message/rfc822")
+              }
+              className="inline-flex items-center gap-1.5 rounded-md bg-muted px-2.5 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted/80"
+            >
+              <Download className="h-3 w-3" />
+              Download .eml
+            </button>
           </div>
+        </Collapsible>
 
-          {/* ---- CSV (spreadsheet) ---- */}
-          <div className="flex flex-col rounded-lg border border-border bg-card overflow-hidden">
-            <div className="flex items-center gap-3 border-b border-border px-5 py-3.5 bg-muted/30">
-              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/8 ring-1 ring-primary/15">
-                <Table2 className="h-4 w-4 text-primary" />
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold text-foreground">
-                  Spreadsheet
-                </h3>
-                <p className="text-[11px] text-muted-foreground">
-                  .csv format
-                </p>
-              </div>
-            </div>
-            <div className="flex flex-1 flex-col px-5 py-4">
-              <p className="text-xs leading-relaxed text-muted-foreground">
-                A Third Bridge CSV with 8 experts (4 customers, 4 competitors)
-                including 2 overlapping with the other files. Download and
-                drag onto the{" "}
-                <Link
-                  href="/upload"
-                  className="font-medium text-primary underline underline-offset-2"
-                >
-                  Upload page
-                </Link>
-                .
-              </p>
-              <div className="mt-3 flex-1 overflow-auto rounded-md border border-border bg-muted/20 p-3">
-                <pre className="whitespace-pre-wrap text-[11px] leading-relaxed text-foreground/80 font-mono max-h-48 overflow-y-auto">
-                  {SAMPLE_CSV.slice(0, 400)}{"..."}
-                </pre>
-              </div>
-              <div className="mt-3 flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() =>
-                    downloadTextFile(
-                      SAMPLE_CSV,
-                      "third-bridge-project-atlas.csv",
-                      "text/csv"
-                    )
-                  }
-                  className="inline-flex items-center gap-1.5 rounded-md bg-muted px-2.5 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted/80"
-                >
-                  <Download className="h-3 w-3" />
-                  Download .csv file
-                </button>
-                <CopyButton text={SAMPLE_CSV} />
-              </div>
-            </div>
+        <Collapsible label="Sample data: CSV spreadsheet (Third Bridge, 8 experts)">
+          <pre className="whitespace-pre-wrap text-[11px] leading-relaxed text-foreground/80 font-mono max-h-48 overflow-y-auto rounded-md border border-border bg-muted/20 p-3">
+            {SAMPLE_CSV}
+          </pre>
+          <div className="mt-2 flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() =>
+                downloadTextFile(SAMPLE_CSV, "third-bridge-project-atlas.csv", "text/csv")
+              }
+              className="inline-flex items-center gap-1.5 rounded-md bg-muted px-2.5 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted/80"
+            >
+              <Download className="h-3 w-3" />
+              Download .csv
+            </button>
+            <CopyButton text={SAMPLE_CSV} label="Copy CSV" />
           </div>
-        </div>
+        </Collapsible>
+      </DemoStep>
 
-        {/* CTA to upload page */}
-        <div className="mt-6 flex items-center gap-3">
-          <Link
-            href="/upload"
-            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            <Upload className="h-3.5 w-3.5" />
-            Go to Upload page
-          </Link>
-          <p className="text-xs text-muted-foreground">
-            Try the CSV first (direct parse), then paste the raw text or upload the .eml.
-          </p>
-        </div>
-
-        {/* Persistence note */}
-        <div className="mt-4 flex items-start gap-3 rounded-lg border border-sky-200 bg-sky-50 px-4 py-3">
-          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-sky-600" />
-          <p className="text-xs leading-relaxed text-sky-800">
-            <span className="font-medium">Persistence active.</span> New experts extracted from uploads are
-            automatically merged into the Experts table. Duplicates are detected by fuzzy name + company
-            matching; if an existing expert appears via a new network, the new price is merged in. Data is
-            stored in your browser only.
-          </p>
-        </div>
-      </section>
-      </ScrollReveal>
+      <div className="mt-6 border-t border-border" />
 
       {/* ============================================================ */}
-      {/*  STEP 2 -- Review Experts                                      */}
+      {/*  STEP 2 -- Review                                              */}
       {/* ============================================================ */}
-      <ScrollReveal delay={60}>
-      <section className="mt-10">
-        <div className="flex items-center gap-3">
-          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
-            2
-          </span>
-          <Heart className="h-4 w-4 text-primary/60" />
-          <h2 className="text-lg font-semibold tracking-tight text-foreground">
-            Review Experts
-          </h2>
-        </div>
-        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">
-          A focused, card-based review flow that presents expert profiles one
-          at a time. Swipe through candidates to shortlist, discard, or defer
-          -- giving every profile proper attention without the noise of a full
-          spreadsheet. Unreviewed experts are surfaced first in the order they
-          were ingested (FIFO), so nothing slips through the cracks.
-        </p>
-        <ul className="mt-3 flex flex-col gap-1.5 max-w-3xl">
-          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-            Tinder-style card interface: shortlist, discard, or review later with one click or keyboard shortcut
-          </li>
-          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-            Full profile detail on each card -- background, screener answers, compliance flags, network pricing
-          </li>
-          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-            Review decisions sync back to the main expert database and carry through to the Experts table
-          </li>
-        </ul>
-        <div className="mt-6 flex items-center gap-3">
-          <Link
-            href="/review"
-            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            <Heart className="h-3.5 w-3.5" />
-            Go to Review page
-          </Link>
-          <p className="text-xs text-muted-foreground">
-            Swipe through expert cards or use keyboard shortcuts (arrow keys).
-          </p>
-        </div>
-      </section>
-      </ScrollReveal>
+      <DemoStep
+        step={2}
+        icon={Heart}
+        title="Review Expert Profiles"
+        summary="Swipe through experts one at a time to shortlist, discard, or defer -- a focused review flow so nothing slips through the cracks."
+        href="/review"
+        hrefLabel="Review page"
+      >
+        <Collapsible label="Detailed instructions">
+          <ul className="flex flex-col gap-1.5">
+            <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+              <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+              Card-based interface: shortlist, discard, or review later with one click or keyboard shortcut
+            </li>
+            <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+              <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+              Full profile detail on each card -- background, screener answers, compliance flags, network pricing
+            </li>
+            <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+              <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+              Decisions sync back to the main expert database and carry through to the Experts table
+            </li>
+          </ul>
+        </Collapsible>
+      </DemoStep>
+
+      <div className="mt-6 border-t border-border" />
 
       {/* ============================================================ */}
-      {/*  STEP 3 -- View & Search Experts                               */}
+      {/*  STEP 3 -- All Experts                                         */}
       {/* ============================================================ */}
-      <ScrollReveal delay={120}>
-      <section className="mt-10">
-        <div className="flex items-center gap-3">
-          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
-            3
-          </span>
-          <Users className="h-4 w-4 text-primary/60" />
-          <h2 className="text-lg font-semibold tracking-tight text-foreground">
-            View & Search Experts
-          </h2>
-        </div>
-        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">
-          The unified expert table -- your single source of truth across the
-          project. All profiles land here after ingestion, with review
-          decisions already applied. Lens-based views let you slice by
-          customer, competitor, or target, and natural-language search surfaces
-          the best matches from your database. Toggle between searching your
-          external expert database and the Bain Advisor Network (BAN) advisor
-          pool.
-        </p>
-        <ul className="mt-3 flex flex-col gap-1.5 max-w-3xl">
-          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-            Lens-based views (Customer / Competitor / Target) with sortable columns
-          </li>
-          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-            Natural-language expert search with LLM-powered ranking and streaming results
-          </li>
-          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-            Shortlist experts directly from the table -- shortlisted profiles carry through to calls and surveys
-          </li>
-          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-            Request CID clearance for target-company experts with one click
-          </li>
-        </ul>
-        <div className="mt-6 flex items-center gap-3">
-          <Link
-            href="/experts"
-            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            <Users className="h-3.5 w-3.5" />
-            Go to Experts page
-          </Link>
-          <p className="text-xs text-muted-foreground">
-            Try the {"\u201C"}Find Expert{"\u201D"} button and describe what you need in plain English.
-          </p>
-        </div>
-      </section>
-      </ScrollReveal>
+      <DemoStep
+        step={3}
+        icon={Users}
+        title="View & Search Experts"
+        summary="Browse the full expert table with lens-based views (Customer / Competitor / Target), or use the AI-powered natural-language search to find the right profile."
+        href="/experts"
+        hrefLabel="Experts table"
+      >
+        <Collapsible label="Detailed instructions">
+          <ul className="flex flex-col gap-1.5">
+            <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+              <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+              Try the &ldquo;Find Expert&rdquo; button and describe what you need in plain English
+            </li>
+            <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+              <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+              Run a CID check on target-company experts -- the system searches a mock conflict database and lets you submit an approval request
+            </li>
+            <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+              <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+              Toggle between external experts and the Bain Advisor Network (BAN) advisor pool
+            </li>
+          </ul>
+        </Collapsible>
+      </DemoStep>
+
+      <div className="mt-6 border-t border-border" />
 
       {/* ============================================================ */}
-      {/*  STEP 4 -- Schedule Calls & Track Spend                        */}
+      {/*  STEP 4 -- Calls                                               */}
       {/* ============================================================ */}
-      <ScrollReveal delay={180}>
-      <section className="mt-10">
-        <div className="flex items-center gap-3">
-          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
-            4
-          </span>
-          <Phone className="h-4 w-4 text-primary/60" />
-          <h2 className="text-lg font-semibold tracking-tight text-foreground">
-            Schedule Calls & Track Spend
-          </h2>
-        </div>
-        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">
-          Move to the Calls page to log scheduled calls. The system
-          auto-populates expert details from the central database and provides
-          live budget roll-ups covering scheduled, completed, and cancelled
-          calls. Add new rows directly in the table, and costs are calculated
-          automatically from the network rate.
-        </p>
-        <ul className="mt-3 flex flex-col gap-1.5 max-w-3xl">
-          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-            Add calls by typing an expert name -- the system auto-suggests from the database and populates all fields
-          </li>
-          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-            Follow-ups are auto-detected when the same expert is contacted through the same network more than once
-          </li>
-          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-            Upload transcripts directly from the call row to link them to the engagement
-          </li>
-          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-            Export the full call log to Excel with one click
-          </li>
-        </ul>
-        <div className="mt-6 flex items-center gap-3">
-          <Link
-            href="/calls"
-            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            <Phone className="h-3.5 w-3.5" />
-            Go to Calls page
-          </Link>
-          <p className="text-xs text-muted-foreground">
-            Seed data includes 8 calls across different statuses and networks.
-          </p>
-        </div>
-      </section>
-      </ScrollReveal>
+      <DemoStep
+        step={4}
+        icon={Phone}
+        title="Schedule Calls & Track Spend"
+        summary="Log scheduled calls -- expert details auto-populate from the database, and live budget roll-ups cover scheduled, completed, and cancelled engagements."
+        href="/calls"
+        hrefLabel="Calls page"
+      >
+        <Collapsible label="Detailed instructions">
+          <ul className="flex flex-col gap-1.5">
+            <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+              <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+              Add calls by typing an expert name -- the system auto-suggests and populates all fields
+            </li>
+            <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+              <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+              Follow-ups are auto-detected when the same expert is contacted through the same network more than once
+            </li>
+            <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+              <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+              Seed data includes 8 calls across different statuses and networks
+            </li>
+          </ul>
+        </Collapsible>
+      </DemoStep>
+
+      <div className="mt-6 border-t border-border" />
 
       {/* ============================================================ */}
       {/*  STEP 5 -- AI Surveys                                          */}
       {/* ============================================================ */}
-      <ScrollReveal delay={240}>
-      <section className="mt-10">
-        <div className="flex items-center gap-3">
-          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
-            5
-          </span>
-          <Building2 className="h-4 w-4 text-primary/60" />
-          <h2 className="text-lg font-semibold tracking-tight text-foreground">
-            AI Surveys & Enrichment
-          </h2>
-        </div>
-        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">
-          AI interview surveys are tracked separately from calls, with their own
-          cost model (flat EUR-denominated fees). The AI Surveys tab mirrors
-          the calls table structure but adapts to survey-specific fields and
-          pricing. Enrichment data (anonymised titles, company details) is
-          auto-populated from the expert database.
-        </p>
-        <ul className="mt-3 flex flex-col gap-1.5 max-w-3xl">
-          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-            Separate workspace for AI interview billing with EUR-denominated flat fees
-          </li>
-          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-            Same expert auto-population and lens-based views as the Calls page
-          </li>
-          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-            All tables exportable to Excel with pre-formatted layouts
-          </li>
-        </ul>
-        <div className="mt-6 flex items-center gap-3">
-          <Link
-            href="/ai-surveys"
-            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            <Building2 className="h-3.5 w-3.5" />
-            Go to AI Surveys page
-          </Link>
-          <p className="text-xs text-muted-foreground">
-            Seed data includes 5 surveys across completed, invited, and cancelled statuses.
-          </p>
-        </div>
-      </section>
-      </ScrollReveal>
+      <DemoStep
+        step={5}
+        icon={Building2}
+        title="AI Surveys"
+        summary="AI interview surveys tracked separately from calls with EUR-denominated flat fees -- same auto-population and lens views, adapted for survey-specific fields."
+        href="/ai-surveys"
+        hrefLabel="Surveys page"
+      >
+        <Collapsible label="Detailed instructions">
+          <ul className="flex flex-col gap-1.5">
+            <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+              <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+              Separate workspace for AI interview billing with flat fees
+            </li>
+            <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+              <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+              Seed data includes 5 surveys across completed, invited, and cancelled statuses
+            </li>
+          </ul>
+        </Collapsible>
+      </DemoStep>
+
+      <div className="mt-6 border-t border-border" />
 
       {/* ============================================================ */}
-      {/*  STEP 6 -- Transcripts & KPI Extraction                        */}
+      {/*  STEP 6 -- Transcripts                                         */}
       {/* ============================================================ */}
-      <ScrollReveal delay={300}>
-      <section className="mt-10">
-        <div className="flex items-center gap-3">
-          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
-            6
-          </span>
-          <Brain className="h-4 w-4 text-primary/60" />
-          <h2 className="text-lg font-semibold tracking-tight text-foreground">
-            Transcripts & KPI Extraction
-          </h2>
-        </div>
-        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">
-          Upload call transcripts directly from the Calls page. The system
-          stores them alongside the engagement record, and AI generates
-          summaries so users can quickly identify which transcript they need.
-          KPI scores (e.g. NPS for customer calls) are extracted automatically
-          where applicable.
-        </p>
-        <ul className="mt-3 flex flex-col gap-1.5 max-w-3xl">
-          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-            Paste or upload transcript text from any call row using the transcript button
-          </li>
-          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-            AI-generated summaries and KPI extraction into the call tracker
-          </li>
-          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-            Transcripts are linked to the engagement and accessible from the call row
-          </li>
-        </ul>
+      <DemoStep
+        step={6}
+        icon={Brain}
+        title="Upload Transcripts & Extract KPIs"
+        summary="Upload call transcripts from the Calls page -- AI generates summaries and extracts KPIs (e.g. NPS scores) that flow into the dashboard automatically."
+        href="/calls"
+        hrefLabel="Calls page"
+      >
+        <Collapsible label="Detailed instructions">
+          <ul className="flex flex-col gap-1.5">
+            <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+              <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+              Click &ldquo;Upload Transcript&rdquo; on a completed call to paste or upload the text
+            </li>
+            <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+              <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+              Completed calls with transcripts show a green &ldquo;View Transcript&rdquo; button instead
+            </li>
+            <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+              <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+              NPS score in the header is extracted and linked to the engagement record
+            </li>
+          </ul>
+        </Collapsible>
 
-        {/* ---- Sample transcript files ---- */}
-        <p className="mt-6 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Sample Transcripts
-        </p>
-        <p className="mt-1 max-w-3xl text-xs leading-relaxed text-muted-foreground">
-          Download these sample customer call transcripts, then navigate to the
-          Calls page and click {"\"Upload Transcript\""} on the matching completed
-          call row. The NPS score is included in the transcript header.
-        </p>
-
-        <div className="mt-4 grid gap-4 md:grid-cols-2">
-          {/* ---- Raj Patel transcript ---- */}
-          <div className="flex flex-col rounded-lg border border-border bg-card overflow-hidden">
-            <div className="flex items-center gap-3 border-b border-border px-5 py-3.5 bg-muted/30">
-              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/8 ring-1 ring-primary/15">
-                <FileText className="h-4 w-4 text-primary" />
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold text-foreground">
-                  Raj Patel -- Solaris Packaging
-                </h3>
-                <p className="text-[11px] text-muted-foreground">
-                  Customer call | NPS 8 | .txt format
-                </p>
-              </div>
-            </div>
-            <div className="flex flex-1 flex-col px-5 py-4">
-              <p className="text-xs leading-relaxed text-muted-foreground">
-                60-minute call covering Meridian evaluation criteria, rollout
-                progress, and IO module lead-time concerns.
-              </p>
-              <div className="mt-3 flex-1 overflow-auto rounded-md border border-border bg-muted/20 p-3">
-                <pre className="whitespace-pre-wrap text-[11px] leading-relaxed text-foreground/80 font-mono max-h-36 overflow-y-auto">
-                  {SAMPLE_TRANSCRIPT_RAJ.slice(0, 400)}{"..."}
-                </pre>
-              </div>
-              <div className="mt-3 flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() =>
-                    downloadTextFile(
-                      SAMPLE_TRANSCRIPT_RAJ,
-                      "transcript-raj-patel-solaris-packaging.txt",
-                      "text/plain"
-                    )
-                  }
-                  className="inline-flex items-center gap-1.5 rounded-md bg-muted px-2.5 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted/80"
-                >
-                  <Download className="h-3 w-3" />
-                  Download .txt file
-                </button>
-                <CopyButton text={SAMPLE_TRANSCRIPT_RAJ} />
-              </div>
-            </div>
+        <Collapsible label="Sample transcript: Raj Patel (Customer, NPS 8)">
+          <pre className="whitespace-pre-wrap text-[11px] leading-relaxed text-foreground/80 font-mono max-h-36 overflow-y-auto rounded-md border border-border bg-muted/20 p-3">
+            {SAMPLE_TRANSCRIPT_RAJ.slice(0, 400)}{"..."}
+          </pre>
+          <div className="mt-2 flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() =>
+                downloadTextFile(SAMPLE_TRANSCRIPT_RAJ, "transcript-raj-patel.txt", "text/plain")
+              }
+              className="inline-flex items-center gap-1.5 rounded-md bg-muted px-2.5 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted/80"
+            >
+              <Download className="h-3 w-3" />
+              Download .txt
+            </button>
+            <CopyButton text={SAMPLE_TRANSCRIPT_RAJ} label="Copy transcript" />
           </div>
+        </Collapsible>
 
-          {/* ---- James Achebe transcript ---- */}
-          <div className="flex flex-col rounded-lg border border-border bg-card overflow-hidden">
-            <div className="flex items-center gap-3 border-b border-border px-5 py-3.5 bg-muted/30">
-              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/8 ring-1 ring-primary/15">
-                <FileText className="h-4 w-4 text-primary" />
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold text-foreground">
-                  James Achebe -- FreshPath Foods
-                </h3>
-                <p className="text-[11px] text-muted-foreground">
-                  Customer call | NPS 7 | .txt format
-                </p>
-              </div>
-            </div>
-            <div className="flex flex-1 flex-col px-5 py-4">
-              <p className="text-xs leading-relaxed text-muted-foreground">
-                45-minute call covering batch recipe management, Rockwell
-                vs Meridian pricing, and pilot site rollout progress.
-              </p>
-              <div className="mt-3 flex-1 overflow-auto rounded-md border border-border bg-muted/20 p-3">
-                <pre className="whitespace-pre-wrap text-[11px] leading-relaxed text-foreground/80 font-mono max-h-36 overflow-y-auto">
-                  {SAMPLE_TRANSCRIPT_JAMES.slice(0, 400)}{"..."}
-                </pre>
-              </div>
-              <div className="mt-3 flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() =>
-                    downloadTextFile(
-                      SAMPLE_TRANSCRIPT_JAMES,
-                      "transcript-james-achebe-freshpath-foods.txt",
-                      "text/plain"
-                    )
-                  }
-                  className="inline-flex items-center gap-1.5 rounded-md bg-muted px-2.5 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted/80"
-                >
-                  <Download className="h-3 w-3" />
-                  Download .txt file
-                </button>
-                <CopyButton text={SAMPLE_TRANSCRIPT_JAMES} />
-              </div>
-            </div>
+        <Collapsible label="Sample transcript: James Achebe (Customer, NPS 7)">
+          <pre className="whitespace-pre-wrap text-[11px] leading-relaxed text-foreground/80 font-mono max-h-36 overflow-y-auto rounded-md border border-border bg-muted/20 p-3">
+            {SAMPLE_TRANSCRIPT_JAMES.slice(0, 400)}{"..."}
+          </pre>
+          <div className="mt-2 flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() =>
+                downloadTextFile(SAMPLE_TRANSCRIPT_JAMES, "transcript-james-achebe.txt", "text/plain")
+              }
+              className="inline-flex items-center gap-1.5 rounded-md bg-muted px-2.5 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted/80"
+            >
+              <Download className="h-3 w-3" />
+              Download .txt
+            </button>
+            <CopyButton text={SAMPLE_TRANSCRIPT_JAMES} label="Copy transcript" />
           </div>
-        </div>
+        </Collapsible>
+      </DemoStep>
 
-        <div className="mt-6 flex items-center gap-3">
-          <Link
-            href="/calls"
-            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            <Brain className="h-3.5 w-3.5" />
-            Go to Calls page
-          </Link>
-          <p className="text-xs text-muted-foreground">
-            Click {"\"Upload Transcript\""} on a completed call to paste or upload the text. Completed calls with transcripts show a green {"\"View Transcript\""} button instead.
-          </p>
-        </div>
-      </section>
-      </ScrollReveal>
+      <div className="mt-6 border-t border-border" />
 
       {/* ============================================================ */}
-      {/*  STEP 7 -- Transcripts & Search                                */}
+      {/*  STEP 7 -- Sources List (NEW)                                  */}
       {/* ============================================================ */}
-      <ScrollReveal delay={360}>
-      <section className="mt-10">
-        <div className="flex items-center gap-3">
-          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
-            7
-          </span>
-          <SearchIcon className="h-4 w-4 text-primary/60" />
-          <h2 className="text-lg font-semibold tracking-tight text-foreground">
-            Transcripts & Search
-          </h2>
-        </div>
-        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">
-          The Transcripts page lists every call and AI survey transcript, with
-          filters for expert type, source (calls vs. surveys), and specific
-          expert selection. NPS KPI cards at the top compute live scores from
-          survey data. A natural-language query panel lets you ask questions
-          across your filtered transcripts -- the LLM is given only the
-          transcripts you have selected, with full metadata about who is
-          speaking and their expert type.
-        </p>
-        <ul className="mt-3 flex flex-col gap-1.5 max-w-3xl">
-          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-            Browse call and AI survey transcripts with source toggles and expert-type filters
-          </li>
-          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-            Live NPS KPI cards computed from survey transcript data
-          </li>
-          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-            Natural-language query panel with streaming responses and source attribution
-          </li>
-          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-            Query scope indicator showing exactly which transcripts the LLM sees
-          </li>
-        </ul>
-        <div className="mt-6 flex items-center gap-3">
-          <Link
-            href="/transcripts"
-            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            <SearchIcon className="h-3.5 w-3.5" />
-            Go to Transcripts page
-          </Link>
-          <p className="text-xs text-muted-foreground">
-            Try asking a question like &ldquo;Find me quotes about pricing&rdquo; across the seed transcripts.
-          </p>
-        </div>
-      </section>
-      </ScrollReveal>
+      <DemoStep
+        step={7}
+        icon={EyeOff}
+        title="Anonymised Sources List"
+        summary="Review and export anonymised expert titles for sources slides -- companies are labelled as Customer #1, Competitor #2, etc. and roles show Former where applicable."
+        href="/sources"
+        hrefLabel="Sources page"
+      >
+        <Collapsible label="Detailed instructions">
+          <ul className="flex flex-col gap-1.5">
+            <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+              <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+              Table shows real identity on the left and anonymised values on the right
+            </li>
+            <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+              <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+              Company numbers are assigned first-come-first-served by earliest engagement date
+            </li>
+            <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+              <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+              Filter by type (Customers, Competitors, etc.) and copy each sub-list as bullet points for PowerPoint
+            </li>
+            <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+              <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+              Target-company experts are labelled as Competitors (never &ldquo;Target&rdquo;) for safe external sharing
+            </li>
+          </ul>
+        </Collapsible>
+      </DemoStep>
+
+      <div className="mt-6 border-t border-border" />
 
       {/* ============================================================ */}
-      {/*  STEP 8 -- Reconciliation & Reporting                          */}
+      {/*  STEP 8 -- Transcript Search                                   */}
       {/* ============================================================ */}
-      <ScrollReveal delay={420}>
-      <section className="mt-10">
-        <div className="flex items-center gap-3">
-          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
-            8
-          </span>
-          <FileBarChart className="h-4 w-4 text-primary/60" />
-          <h2 className="text-lg font-semibold tracking-tight text-foreground">
-            Reconciliation & Reporting
-          </h2>
-        </div>
-        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">
-          The Dashboard page provides budget roll-ups, expert-type breakdowns,
-          and spend-by-status reporting. The Budget tab shows cost breakdowns
-          across scheduled, completed, and cancelled calls. Reconciliation
-          tables for network settlement and audit-trail exports are available.
-        </p>
-        <ul className="mt-3 flex flex-col gap-1.5 max-w-3xl">
-          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-            Dashboard with live budget roll-ups across all statuses
-          </li>
-          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-            Expert-type breakdown showing customer, competitor, and target counts
-          </li>
-          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-            Structured reconciliation tables for network settlement
-          </li>
-          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-            Cost verification with full audit trail and project close-out
-          </li>
-        </ul>
-        <div className="mt-6 flex items-center gap-3">
-          <Link
-            href="/dashboard"
-            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            <FileBarChart className="h-3.5 w-3.5" />
-            Go to Dashboard
-          </Link>
-          <p className="text-xs text-muted-foreground">
-            Review budget roll-ups and explore the spend breakdown by status and type.
-          </p>
-        </div>
-      </section>
-      </ScrollReveal>
+      <DemoStep
+        step={8}
+        icon={SearchIcon}
+        title="Search Transcripts"
+        summary="Query across your transcripts with natural language -- filter by expert type or company first, then ask for quotes to support slide arguments."
+        href="/transcripts"
+        hrefLabel="Transcripts page"
+      >
+        <Collapsible label="Detailed instructions">
+          <ul className="flex flex-col gap-1.5">
+            <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+              <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+              Browse call and AI survey transcripts with source toggles and expert-type filters
+            </li>
+            <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+              <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+              Live NPS KPI cards computed from survey transcript data
+            </li>
+            <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+              <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+              Try asking &ldquo;Find me quotes about pricing&rdquo; across the seed transcripts
+            </li>
+          </ul>
+        </Collapsible>
+      </DemoStep>
+
+      <div className="mt-6 border-t border-border" />
+
+      {/* ============================================================ */}
+      {/*  STEP 9 -- Dashboard                                           */}
+      {/* ============================================================ */}
+      <DemoStep
+        step={9}
+        icon={FileBarChart}
+        title="Dashboard & Reporting"
+        summary="Live budget roll-ups, upcoming schedule with copy-to-clipboard, spend-by-status breakdowns, and structured reconciliation tables for network settlement."
+        href="/dashboard"
+        hrefLabel="Dashboard"
+      >
+        <Collapsible label="Detailed instructions">
+          <ul className="flex flex-col gap-1.5">
+            <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+              <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+              Upcoming schedule shows call times and lets you copy the list as bullet points for emails
+            </li>
+            <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+              <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+              Expert-type breakdown showing customer, competitor, and target counts
+            </li>
+            <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+              <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+              Review budget roll-ups and explore the spend breakdown by status and type
+            </li>
+          </ul>
+        </Collapsible>
+      </DemoStep>
 
       {/* Bottom nav */}
-      <div className="mt-12 flex items-center justify-between border-t border-border pt-6">
+      <div className="mt-10 flex items-center justify-between border-t border-border pt-6">
         <Link
           href="/"
           className="text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
