@@ -15,7 +15,6 @@ import {
   Info,
   Copy,
   Check,
-  Clock,
 } from "lucide-react"
 import PageHeader from "../components/page-header"
 import { getExpertProfiles, type ExpertProfile } from "@/lib/expert-profiles"
