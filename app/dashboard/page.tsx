@@ -15,6 +15,7 @@ import {
   Info,
   Copy,
   Check,
+  Clock,
 } from "lucide-react"
 import PageHeader from "../components/page-header"
 import { getExpertProfiles, type ExpertProfile } from "@/lib/expert-profiles"
@@ -133,14 +134,26 @@ function StatusBar({ counts }: { counts: Record<EngagementStatus, number> }) {
 /*  Schedule card with copy-to-clipboard                               */
 /* ------------------------------------------------------------------ */
 
+function formatCallTime(startTime: string, durationMin: number): string {
+  if (!startTime) return ""
+  const [h, m] = startTime.split(":").map(Number)
+  const startDate = new Date(2000, 0, 1, h, m)
+  const endDate = new Date(startDate.getTime() + (durationMin || 60) * 60_000)
+  const fmt = (d: Date) =>
+    d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false })
+  return `${fmt(startDate)} - ${fmt(endDate)}`
+}
+
 function ScheduleCard({
   icon: Icon,
   title,
   items,
+  showTime = false,
 }: {
   icon: typeof Phone
   title: string
   items: EngagementRecord[]
+  showTime?: boolean
 }) {
   const [copied, setCopied] = useState(false)
 
@@ -148,7 +161,10 @@ function ScheduleCard({
     if (items.length === 0) return ""
     const lines = items.map((r) => {
       const date = formatDate(r.date)
-      return `- ${date} | ${r.expert_name}, ${r.expert_role} @ ${r.expert_company} (${r.network}, ${STATUS_LABELS[r.status]})`
+      const time = showTime && r.call_time
+        ? ` ${formatCallTime(r.call_time, r.duration_minutes)}`
+        : ""
+      return `- ${date}${time} | ${r.expert_name}, ${r.expert_role} @ ${r.expert_company} (${r.network}, ${STATUS_LABELS[r.status]})`
     })
     return `${title} (${items.length})\n${lines.join("\n")}`
   }
@@ -220,6 +236,12 @@ function ScheduleCard({
                 <p className="mt-0.5 text-[11px] text-muted-foreground/70">
                   {r.expert_company} &middot; {r.network}
                 </p>
+                {showTime && r.call_time && (
+                  <p className="mt-1 inline-flex items-center gap-1 rounded bg-muted/50 px-1.5 py-0.5 text-[10px] font-medium text-foreground">
+                    <Clock className="h-2.5 w-2.5 text-muted-foreground" />
+                    {formatCallTime(r.call_time, r.duration_minutes)}
+                  </p>
+                )}
               </div>
               <span className={`mt-0.5 shrink-0 inline-flex h-5 items-center rounded-full px-2 text-[10px] font-medium ${r.status === "scheduled" ? "border border-sky-200 bg-sky-50 text-sky-700" : "border border-amber-200 bg-amber-50 text-amber-700"}`}>
                 {STATUS_LABELS[r.status]}
@@ -263,18 +285,26 @@ export default function DashboardPage() {
 
   /* upcoming events (calls: scheduled/invited; surveys: scheduled/invited) */
   const upcomingCalls = useMemo(
-    () =>
-      calls
-        .filter((c) => (c.status === "scheduled" || c.status === "invited") && isUpcoming(c.date))
-        .sort((a, b) => a.date.localeCompare(b.date)),
-    [calls],
+  () =>
+  calls
+  .filter((c) => (c.status === "scheduled" || c.status === "invited") && isUpcoming(c.date))
+  .sort((a, b) => {
+    const da = `${a.date}T${a.call_time ?? "00:00"}`
+    const db = `${b.date}T${b.call_time ?? "00:00"}`
+    return da.localeCompare(db)
+  }),
+  [calls],
   )
   const upcomingSurveys = useMemo(
-    () =>
-      surveys
-        .filter((s) => (s.status === "scheduled" || s.status === "invited") && isUpcoming(s.date))
-        .sort((a, b) => a.date.localeCompare(b.date)),
-    [surveys],
+  () =>
+  surveys
+  .filter((s) => (s.status === "scheduled" || s.status === "invited") && isUpcoming(s.date))
+  .sort((a, b) => {
+    const da = `${a.date}T${a.call_time ?? "00:00"}`
+    const db = `${b.date}T${b.call_time ?? "00:00"}`
+    return da.localeCompare(db)
+  }),
+  [surveys],
   )
 
   /* cancelled counts for the reminder */
@@ -500,6 +530,7 @@ export default function DashboardPage() {
           icon={Phone}
           title="Upcoming Calls"
           items={upcomingCalls}
+          showTime
         />
 
         {/* Upcoming / pending surveys */}
