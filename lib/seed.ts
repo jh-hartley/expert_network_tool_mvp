@@ -68,7 +68,7 @@ export const seedExperts: Expert[] = [
     id: "exp-011", name: "Tom Hartley", title: "CTO", company: "BatteryWorks",
     industry: "Energy", network: "AlphaSights", compliance: "cleared",
     tags: ["battery tech", "cathode materials", "EV"], callCount: 6,
-    createdAt: "2025-12-15T10:00:00Z", updatedAt: now,
+    createdAt: "2026-01-15T10:00:00Z", updatedAt: now,
   },
   {
     id: "exp-012", name: "Anika Patel", title: "VP Product", company: "InsurTech Global",

@@ -42,9 +42,9 @@ const SEED_TRANSCRIPTS: Transcript[] = [
     expert_company: "Solaris Packaging",
     expert_type: "customer",
     engagement_type: "call",
-    uploaded_at: "2025-11-14T11:15:00Z",
+    uploaded_at: "2026-02-03T11:15:00Z",
     text: `CALL TRANSCRIPT -- Raj Patel, VP of Plant Engineering, Solaris Packaging
-Date: 14 November 2025 | Duration: 60 min | Network: AlphaSights
+Date: 3 February 2026 | Duration: 60 min | Network: AlphaSights
 
 INTERVIEWER: Thank you for joining, Raj. Could you start by walking us through how Solaris first evaluated Meridian Controls?
 
@@ -76,9 +76,9 @@ INTERVIEWER: Thank you, Raj. Very helpful.
     expert_company: "Beckhoff Automation",
     expert_type: "competitor",
     engagement_type: "call",
-    uploaded_at: "2025-11-15T16:00:00Z",
+    uploaded_at: "2026-02-04T16:00:00Z",
     text: `CALL TRANSCRIPT -- Diane Kowalski, Former SVP Sales, Beckhoff Automation North America
-Date: 15 November 2025 | Duration: 60 min | Network: AlphaSights
+Date: 4 February 2026 | Duration: 60 min | Network: AlphaSights
 
 INTERVIEWER: Diane, thank you for your time. We'd love to hear your perspective on Meridian Controls' competitive positioning relative to Beckhoff.
 
@@ -112,9 +112,9 @@ INTERVIEWER: Very insightful, Diane. Thank you.
     expert_company: "FreshPath Foods",
     expert_type: "customer",
     engagement_type: "call",
-    uploaded_at: "2025-11-20T13:00:00Z",
+    uploaded_at: "2026-02-06T13:00:00Z",
     text: `CALL TRANSCRIPT -- James Achebe, Global Automation Manager, FreshPath Foods
-Date: 20 November 2025 | Duration: 45 min | Network: GLG
+Date: 6 February 2026 | Duration: 45 min | Network: GLG
 
 INTERVIEWER: James, thank you for making time. Could you describe FreshPath's experience evaluating Meridian Controls alongside Rockwell?
 
@@ -156,7 +156,7 @@ INTERVIEWER: Excellent context, James. Thank you.
     expert_company: "Solaris Packaging",
     expert_type: "customer",
     engagement_type: "survey",
-    uploaded_at: "2025-11-10T11:00:00Z",
+    uploaded_at: "2026-02-02T11:00:00Z",
     product: "Meridian Controls",
     nps_score: 9,
     key_reasons: ["30% lower TCO than Rockwell", "Excellent API documentation", "Predictive maintenance cut downtime from 12% to 7.5%"],
@@ -179,7 +179,7 @@ A: Lead times on IO modules -- we had a six-week wait on analog input cards whic
     expert_company: "Hartwell Brewing Co.",
     expert_type: "customer",
     engagement_type: "survey",
-    uploaded_at: "2025-11-11T10:30:00Z",
+    uploaded_at: "2026-02-03T10:30:00Z",
     product: "Meridian Controls",
     nps_score: 9,
     key_reasons: ["Field engineers understand washdown requirements", "PLC programming environment greatly improved", "Partner-like support model"],
@@ -202,7 +202,7 @@ A: Broader availability of spare parts regionally. We sometimes have to wait for
     expert_company: "FreshPath Foods",
     expert_type: "customer",
     engagement_type: "survey",
-    uploaded_at: "2025-11-15T14:00:00Z",
+    uploaded_at: "2026-02-04T14:00:00Z",
     product: "Meridian Controls",
     nps_score: 8,
     key_reasons: ["Best-in-class batch recipe management", "40% faster recipe configuration", "Compelling per-site licensing model"],
@@ -225,7 +225,7 @@ A: They need to prove performance in high-speed continuous process environments,
     expert_company: "Cascadia Paper Products",
     expert_type: "customer",
     engagement_type: "survey",
-    uploaded_at: "2025-11-16T09:00:00Z",
+    uploaded_at: "2026-02-05T09:00:00Z",
     product: "Meridian Controls",
     nps_score: 8,
     key_reasons: ["Sub-2-hour tech support response", "6-week vs 14-week lead time advantage", "Speed matters when downtime costs $50K/hour"],
@@ -248,7 +248,7 @@ A: I worry about what happens if they get acquired. The hands-on support model i
     expert_company: "TerraForge Metals",
     expert_type: "customer",
     engagement_type: "survey",
-    uploaded_at: "2025-11-17T11:00:00Z",
+    uploaded_at: "2026-02-05T11:00:00Z",
     product: "Meridian Controls",
     nps_score: 7,
     key_reasons: ["Impressive high-temp I/O modules", "Competitive pricing", "Need more MTBF reliability data"],
@@ -271,7 +271,7 @@ A: Publish more reliability data for harsh environments. Heavy industry customer
     expert_company: "GreenValley Chemicals",
     expert_type: "customer",
     engagement_type: "survey",
-    uploaded_at: "2025-11-18T15:00:00Z",
+    uploaded_at: "2026-02-06T15:00:00Z",
     product: "Meridian Controls",
     nps_score: 6,
     key_reasons: ["Adequate process control", "Limited chemical industry references", "Prefer established DCS vendors for safety-critical"],
@@ -296,7 +296,7 @@ A: SIL-rated safety modules and more chemical process industry case studies.`,
     expert_company: "Solaris Packaging",
     expert_type: "customer",
     engagement_type: "survey",
-    uploaded_at: "2025-11-10T12:00:00Z",
+    uploaded_at: "2026-02-02T12:00:00Z",
     product: "Beckhoff Automation",
     nps_score: 7,
     key_reasons: ["Strong EtherCAT hardware ecosystem", "TwinCAT software is powerful but complex", "Premium pricing"],
@@ -319,7 +319,7 @@ A: Simplify the programming environment for mid-market customers who don't have 
     expert_company: "FreshPath Foods",
     expert_type: "customer",
     engagement_type: "survey",
-    uploaded_at: "2025-11-15T15:00:00Z",
+    uploaded_at: "2026-02-04T15:00:00Z",
     product: "Beckhoff Automation",
     nps_score: 6,
     key_reasons: ["Good high-speed motion control", "Weak food & bev specific features", "Expensive for batch processes"],
@@ -342,7 +342,7 @@ A: Industry-specific recipe management tools and better washdown-rated enclosure
     expert_company: "TerraForge Metals",
     expert_type: "customer",
     engagement_type: "survey",
-    uploaded_at: "2025-11-17T12:00:00Z",
+    uploaded_at: "2026-02-05T12:00:00Z",
     product: "Beckhoff Automation",
     nps_score: 7,
     key_reasons: ["In-house manufacturing ensures supply", "Good harsh environment options", "Limited local field support"],
@@ -365,7 +365,7 @@ A: Expand field engineering presence in the US Southeast and Midwest.`,
     expert_company: "Cascadia Paper Products",
     expert_type: "customer",
     engagement_type: "survey",
-    uploaded_at: "2025-11-16T10:00:00Z",
+    uploaded_at: "2026-02-05T10:00:00Z",
     product: "Beckhoff Automation",
     nps_score: 5,
     key_reasons: ["Considered but not selected", "Lead times acceptable but not best", "Programming model too complex for our team"],
@@ -390,7 +390,7 @@ A: A simplified programming tier for maintenance technicians who need to make ba
     expert_company: "Solaris Packaging",
     expert_type: "customer",
     engagement_type: "survey",
-    uploaded_at: "2025-11-10T13:00:00Z",
+    uploaded_at: "2026-02-02T13:00:00Z",
     product: "Rockwell Automation",
     nps_score: 5,
     key_reasons: ["Reliable but expensive", "Locked-in ecosystem", "Costs climbing year on year"],
@@ -413,7 +413,7 @@ A: More open standards support and competitive pricing for mid-market customers.
     expert_company: "FreshPath Foods",
     expert_type: "customer",
     engagement_type: "survey",
-    uploaded_at: "2025-11-15T16:00:00Z",
+    uploaded_at: "2026-02-04T16:00:00Z",
     product: "Rockwell Automation",
     nps_score: 6,
     key_reasons: ["15-year track record", "Known failure modes", "Global enterprise agreement is expensive"],
@@ -436,7 +436,7 @@ A: Flexible licensing models for phased rollouts instead of all-or-nothing enter
     expert_company: "TerraForge Metals",
     expert_type: "customer",
     engagement_type: "survey",
-    uploaded_at: "2025-11-17T13:00:00Z",
+    uploaded_at: "2026-02-05T13:00:00Z",
     product: "Rockwell Automation",
     nps_score: 7,
     key_reasons: ["Proven in harsh environments", "Extensive MTBF data", "Expensive but justified for critical processes"],
@@ -459,7 +459,7 @@ A: More competitive pricing for smaller projects and better integration support 
     expert_company: "Cascadia Paper Products",
     expert_type: "customer",
     engagement_type: "survey",
-    uploaded_at: "2025-11-16T11:00:00Z",
+    uploaded_at: "2026-02-05T11:00:00Z",
     product: "Rockwell Automation",
     nps_score: 4,
     key_reasons: ["Great products but slow support", "14-week lead times unacceptable", "Downtime costs $50K/hour"],
@@ -484,7 +484,7 @@ A: Dramatically improve lead times and support response. Match the service level
     expert_company: "Solaris Packaging",
     expert_type: "customer",
     engagement_type: "survey",
-    uploaded_at: "2025-11-10T14:00:00Z",
+    uploaded_at: "2026-02-02T14:00:00Z",
     product: "Omron Industrial",
     nps_score: 6,
     key_reasons: ["Good vision and robotics integration", "Weaker PLC offering vs specialised vendors", "Competitive on price"],
@@ -507,7 +507,7 @@ A: A more capable standalone PLC platform without requiring the full Omron robot
     expert_company: "FreshPath Foods",
     expert_type: "customer",
     engagement_type: "survey",
-    uploaded_at: "2025-11-15T17:00:00Z",
+    uploaded_at: "2026-02-04T17:00:00Z",
     product: "Omron Industrial",
     nps_score: 5,
     key_reasons: ["Not strong in food & bev", "Better suited for automotive", "Limited batch processing features"],
@@ -530,7 +530,7 @@ A: Invest in food & beverage-specific solutions and batch recipe management.`,
     expert_company: "Nippon Precision Components",
     expert_type: "customer",
     engagement_type: "survey",
-    uploaded_at: "2025-11-17T09:00:00Z",
+    uploaded_at: "2026-02-05T09:00:00Z",
     product: "Omron Industrial",
     nps_score: 8,
     key_reasons: ["Excellent for automotive precision", "Strong Japan-NA support network", "Tight robotics-PLC integration"],
@@ -553,7 +553,7 @@ A: Broader industry coverage beyond automotive. Some of our non-automotive lines
     expert_company: "Atlas Cement Corp",
     expert_type: "customer",
     engagement_type: "survey",
-    uploaded_at: "2025-11-18T08:00:00Z",
+    uploaded_at: "2026-02-06T08:00:00Z",
     product: "Omron Industrial",
     nps_score: 4,
     key_reasons: ["Poor fit for heavy industry", "Limited harsh environment products", "Vision systems not relevant for cement"],
@@ -577,7 +577,7 @@ A: Ruggedised product lines for heavy industry and process control applications.
 /* ------------------------------------------------------------------ */
 
 const LS_KEY = "helmsman_transcripts"
-const TRANSCRIPTS_SEEDED = "helmsman_transcripts_seeded_v4"
+const TRANSCRIPTS_SEEDED = "helmsman_transcripts_seeded_v5"
 
 function ensureTranscriptsSeeded(): void {
   if (typeof window === "undefined") return
