@@ -88,6 +88,17 @@ export function resetAll(): void {
   ensureSeeded()
 }
 
+/** Wipe every consensus_* key from localStorage and re-seed from scratch. */
+export function hardResetAll(): void {
+  if (typeof window === "undefined") return
+  const keysToRemove: string[] = []
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i)
+    if (k && k.startsWith("consensus_")) keysToRemove.push(k)
+  }
+  keysToRemove.forEach((k) => localStorage.removeItem(k))
+}
+
 export function exportJSON(): string {
   return JSON.stringify(
     {

@@ -21,7 +21,9 @@ import {
   Building2,
   ChevronDown,
   EyeOff,
+  RotateCcw,
 } from "lucide-react"
+import { hardResetAll } from "@/lib/storage"
 
 /* ------------------------------------------------------------------ */
 /*  Demo scenario data (unchanged)                                     */
@@ -443,19 +445,42 @@ function DemoStep({
 /* ------------------------------------------------------------------ */
 
 export default function DemoPage() {
+  const [resetting, setResetting] = useState(false)
+
+  function handleReset() {
+    if (!window.confirm("Reset all demo data to its initial state? Any changes you have made will be lost.")) return
+    setResetting(true)
+    hardResetAll()
+    // Small delay so the user sees the spinner before the page reloads
+    setTimeout(() => window.location.reload(), 300)
+  }
+
   return (
     <div className="mx-auto max-w-4xl px-6 py-10">
       {/* Header */}
       <div className="pb-6 border-b border-border">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          Interactive Demo
-        </h1>
-        <p className="mt-1 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-          Walk through a DD scenario evaluating{" "}
-          <strong className="text-foreground font-medium">Zephyr Controls</strong>{" "}
-          (codename &ldquo;Project Atlas&rdquo;). Each step links to a live page
-          -- expand sections below for detailed instructions and sample data.
-        </p>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-xl font-semibold tracking-tight text-foreground">
+              Interactive Demo
+            </h1>
+            <p className="mt-1 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+              Walk through a DD scenario evaluating{" "}
+              <strong className="text-foreground font-medium">Zephyr Controls</strong>{" "}
+              (codename &ldquo;Project Atlas&rdquo;). Each step links to a live page
+              -- expand sections below for detailed instructions and sample data.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleReset}
+            disabled={resetting}
+            className="mt-1 inline-flex shrink-0 items-center gap-1.5 rounded-md border border-destructive/30 bg-destructive/5 px-3 py-1.5 text-[11px] font-medium text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-50"
+          >
+            <RotateCcw className={`h-3 w-3 ${resetting ? "animate-spin" : ""}`} />
+            {resetting ? "Resetting..." : "Reset Demo Data"}
+          </button>
+        </div>
       </div>
 
       {/* Persistence note */}
