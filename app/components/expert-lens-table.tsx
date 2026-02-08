@@ -229,8 +229,8 @@ const COMPLIANCE_FLAG_CONFIG: Record<
     Icon: ShieldCheck,
   },
   ben_advisor: {
-    label: "BEN Advisor",
-    description: "This expert is registered as a BEN (Business Ethics Network) advisor. Additional compliance review may be required before engagement.",
+    label: "BAN Advisor",
+    description: "This expert is registered as a BAN (Bain Advisor Network) advisor. Additional compliance review may be required before engagement.",
     color: "border-amber-300 bg-amber-50 text-amber-700",
     Icon: AlertTriangle,
   },

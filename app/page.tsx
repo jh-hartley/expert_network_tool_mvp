@@ -92,7 +92,7 @@ const pipeline: {
       "Cross-check every profile against internal databases and client advisor lists you upload to flag or block experts that calls should not be booked with. CID clearance lets you mark whole companies or individuals as cleared -- and in a full implementation, auto-populates the CID request forms (project lead, contact name and role, rationale) that are currently filled out by hand, repeatedly, through a separate tool.",
     icon: ShieldCheck,
     capabilities: [
-      "Cross-check against client advisors, BEN advisors, and do-not-contact lists",
+      "Cross-check against client advisors, BAN advisors, and do-not-contact lists",
       "Flag or block profiles that should not be booked through networks",
       "CID clearance: mark whole companies or individual experts as cleared",
       "Auto-populate CID request forms (project lead, contact details, rationale) -- defined once, reused for every request",
@@ -176,7 +176,7 @@ const dataInputBuckets: {
     description:
       "Sourced from within Bain; needs integration or one-time upload.",
     items: [
-      "BEN advisor details and advisors flagged for fraud by Compliance",
+      "BAN advisor details and advisors flagged for fraud by Compliance",
       "CID connection for auto-filing clearance forms and marking companies / experts as safe to contact",
     ],
   },
@@ -199,23 +199,6 @@ const dataInputBuckets: {
 export default function OverviewPage() {
   return (
     <div className="mx-auto max-w-5xl px-6 py-10">
-      {/* Status banner */}
-      <div className="mb-8 flex items-start gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3">
-        <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
-        <div>
-          <p className="text-sm font-medium text-emerald-900">
-            All 8 stages are live
-          </p>
-          <p className="mt-0.5 text-xs leading-relaxed text-emerald-700">
-            Upload and parse expert data, track and shortlist experts, manage
-            calls and spend, enrich profiles, run compliance checks, upload
-            transcripts with AI summarisation, search experts and transcripts
-            with natural language, and view dashboard reporting with live NPS
-            scores. All data persists in your browser via localStorage.
-          </p>
-        </div>
-      </div>
-
       {/* Hackathon banner */}
       <div className="mb-8 flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
         <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />

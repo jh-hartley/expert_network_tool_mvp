@@ -325,7 +325,7 @@ export default function ExpertsPage() {
                 }`}
               >
                 <Building2 className="h-3 w-3" />
-                Bain Expert Network
+                Bain Advisor Network
               </button>
             </div>
           </div>
@@ -337,10 +337,10 @@ export default function ExpertsPage() {
                 <Info className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
                 <div>
                   <p className="text-sm font-medium text-amber-900">
-                    Bain Expert Network Integration
+                    Bain Advisor Network Integration
                   </p>
                   <p className="mt-1 text-xs leading-relaxed text-amber-800">
-                    A full implementation of Bain Expert Network advisor search
+                    A full implementation of Bain Advisor Network advisor search
                     requires connection through an internal API that provides
                     access to the firm&apos;s advisor database. This would enable
                     searching across Bain&apos;s network of vetted industry advisors

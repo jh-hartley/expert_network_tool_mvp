@@ -41,8 +41,8 @@ const FLAG_META: Record<
   { label: string; description: string; severity: "warning" | "danger"; Icon: typeof AlertTriangle }
 > = {
   ben_advisor: {
-    label: "BEN Advisor",
-    description: "This expert is registered as a BEN (Business Ethics Network) advisor. Additional compliance review may be required before engagement.",
+    label: "BAN Advisor",
+    description: "This expert is registered as a BAN (Bain Advisor Network) advisor. Additional compliance review may be required before engagement.",
     severity: "warning",
     Icon: AlertTriangle,
   },

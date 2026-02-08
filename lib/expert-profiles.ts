@@ -23,7 +23,7 @@ export type ExpertLens =
 /** Compliance flags that can be attached to an expert */
 export type ComplianceFlag =
   | "cid_cleared"       // CID clearance has been granted
-  | "ben_advisor"       // Expert is a BEN (Business Ethics Network) advisor
+  | "ben_advisor"       // Expert is a BAN (Bain Advisor Network) advisor
   | "compliance_flagged" // Compliance has flagged the expert as potentially fraudulent
   | "client_advisor"    // Expert is a current client advisor
 

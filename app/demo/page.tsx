@@ -647,7 +647,7 @@ export default function DemoPage() {
           controls vendors{"\u201D"}) and the LLM recommends the best matches
           from your database -- or tells you there is no suitable expert.
           Toggle between searching your external expert database and the Bain
-          Expert Network (BEN) advisor pool.
+          Advisor Network (BAN) advisor pool.
         </p>
         <ul className="mt-3 flex flex-col gap-1.5 max-w-3xl">
           <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
@@ -660,7 +660,7 @@ export default function DemoPage() {
           </li>
           <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
             <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-            Toggle between External Experts and Bain Expert Network advisors
+            Toggle between External Experts and Bain Advisor Network advisors
           </li>
         </ul>
         <div className="mt-6 flex items-center gap-3">
