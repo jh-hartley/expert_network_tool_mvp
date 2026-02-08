@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { ScrollReveal } from "../components/scroll-reveal"
 import {
   Upload,
   FileText,
@@ -12,6 +13,7 @@ import {
   Download,
   ArrowRight,
   AlertCircle,
+  Heart,
   Users,
   Phone,
   ShieldCheck,
@@ -314,7 +316,7 @@ Priya Chakraborty,Engineering Manager,Atlas Cement Corp,Technology,Third Bridge,
 /*  Pipeline steps for the rest of the guide                           */
 /* ------------------------------------------------------------------ */
 
-/* All 8 stages are live */
+/* All stages are live */
 
 /* ------------------------------------------------------------------ */
 /*  Sample data: Transcripts (.txt -- customer calls with NPS)         */
@@ -428,7 +430,7 @@ export default function DemoPage() {
           Walk through a realistic DD scenario using sample data. The case
           involves a PE buyer evaluating <strong className="text-foreground font-medium">Meridian Controls</strong>, a
           mid-market industrial automation company (codename &ldquo;Project Atlas&rdquo;). Follow
-          all 8 stages below -- from ingesting unstructured network data through to
+          all stages below -- from ingesting unstructured network data through to
           search and reconciliation.
         </p>
       </div>
@@ -436,6 +438,7 @@ export default function DemoPage() {
       {/* ============================================================ */}
       {/*  STEP 1 -- Ingest & Standardise                               */}
       {/* ============================================================ */}
+      <ScrollReveal delay={0}>
       <section className="mt-10">
         <div className="flex items-center gap-3">
           <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
@@ -617,37 +620,80 @@ export default function DemoPage() {
           </p>
         </div>
       </section>
+      </ScrollReveal>
 
       {/* ============================================================ */}
-      {/*  STEP 2 -- View & Screen Experts                               */}
+      {/*  STEP 2 -- Review Experts                                      */}
       {/* ============================================================ */}
+      <ScrollReveal delay={60}>
       <section className="mt-10">
         <div className="flex items-center gap-3">
           <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
             2
           </span>
-          <Users className="h-4 w-4 text-primary/60" />
+          <Heart className="h-4 w-4 text-primary/60" />
           <h2 className="text-lg font-semibold tracking-tight text-foreground">
-            View & Screen Your Experts
+            Review Experts
           </h2>
         </div>
         <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">
-          Once you have uploaded and parsed your expert data, navigate to the{" "}
+          A focused, card-based review flow that presents expert profiles one
+          at a time. Swipe through candidates to shortlist, discard, or defer
+          -- giving every profile proper attention without the noise of a full
+          spreadsheet. Unreviewed experts are surfaced first in the order they
+          were ingested (FIFO), so nothing slips through the cracks.
+        </p>
+        <ul className="mt-3 flex flex-col gap-1.5 max-w-3xl">
+          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+            Tinder-style card interface: shortlist, discard, or review later with one click or keyboard shortcut
+          </li>
+          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+            Full profile detail on each card -- background, screener answers, compliance flags, network pricing
+          </li>
+          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+            Review decisions sync back to the main expert database and carry through to the Experts table
+          </li>
+        </ul>
+        <div className="mt-6 flex items-center gap-3">
           <Link
-            href="/experts"
-            className="font-medium text-primary underline underline-offset-2"
+            href="/review"
+            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Experts
-          </Link>{" "}
-          tab to view all ingested profiles in a unified table. Review each
-          expert{"'"}s details, screening responses, and compliance status, and
-          begin shortlisting candidates for calls. A natural-language search
-          panel lets you describe what you{"'"}re looking for
-          (e.g. {"\u201C"}someone with deep pricing knowledge across mid-market
-          controls vendors{"\u201D"}) and the LLM recommends the best matches
-          from your database -- or tells you there is no suitable expert.
-          Toggle between searching your external expert database and the Bain
-          Advisor Network (BAN) advisor pool.
+            <Heart className="h-3.5 w-3.5" />
+            Go to Review page
+          </Link>
+          <p className="text-xs text-muted-foreground">
+            Swipe through expert cards or use keyboard shortcuts (arrow keys).
+          </p>
+        </div>
+      </section>
+      </ScrollReveal>
+
+      {/* ============================================================ */}
+      {/*  STEP 3 -- View & Search Experts                               */}
+      {/* ============================================================ */}
+      <ScrollReveal delay={120}>
+      <section className="mt-10">
+        <div className="flex items-center gap-3">
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
+            3
+          </span>
+          <Users className="h-4 w-4 text-primary/60" />
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
+            View & Search Experts
+          </h2>
+        </div>
+        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+          The unified expert table -- your single source of truth across the
+          project. All profiles land here after ingestion, with review
+          decisions already applied. Lens-based views let you slice by
+          customer, competitor, or target, and natural-language search surfaces
+          the best matches from your database. Toggle between searching your
+          external expert database and the Bain Advisor Network (BAN) advisor
+          pool.
         </p>
         <ul className="mt-3 flex flex-col gap-1.5 max-w-3xl">
           <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
@@ -657,49 +703,6 @@ export default function DemoPage() {
           <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
             <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
             Natural-language expert search with LLM-powered ranking and streaming results
-          </li>
-          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-            Toggle between External Experts and Bain Advisor Network advisors
-          </li>
-        </ul>
-        <div className="mt-6 flex items-center gap-3">
-          <Link
-            href="/experts"
-            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            <Users className="h-3.5 w-3.5" />
-            Go to Experts page
-          </Link>
-          <p className="text-xs text-muted-foreground">
-            Try the {"\u201C"}Find Expert{"\u201D"} button and describe what you need in plain English.
-          </p>
-        </div>
-      </section>
-
-      {/* ============================================================ */}
-      {/*  STEP 3 -- Track & Shortlist                                   */}
-      {/* ============================================================ */}
-      <section className="mt-10">
-        <div className="flex items-center gap-3">
-          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
-            3
-          </span>
-          <Users className="h-4 w-4 text-primary/60" />
-          <h2 className="text-lg font-semibold tracking-tight text-foreground">
-            Track & Shortlist
-          </h2>
-        </div>
-        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">
-          Tag experts into shortlist groups (customer, competitor, target) and
-          track their lifecycle from recommended through to call completed. The
-          Experts table supports lens-based views, inline notes, and CID
-          clearance requests -- all auto-populated from ingestion.
-        </p>
-        <ul className="mt-3 flex flex-col gap-1.5 max-w-3xl">
-          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-            Switch between Customer, Competitor, and Target lens views to focus on a specific expert type
           </li>
           <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
             <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
@@ -719,14 +722,16 @@ export default function DemoPage() {
             Go to Experts page
           </Link>
           <p className="text-xs text-muted-foreground">
-            Try shortlisting an expert or requesting CID clearance.
+            Try the {"\u201C"}Find Expert{"\u201D"} button and describe what you need in plain English.
           </p>
         </div>
       </section>
+      </ScrollReveal>
 
       {/* ============================================================ */}
       {/*  STEP 4 -- Schedule Calls & Track Spend                        */}
       {/* ============================================================ */}
+      <ScrollReveal delay={180}>
       <section className="mt-10">
         <div className="flex items-center gap-3">
           <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
@@ -775,10 +780,12 @@ export default function DemoPage() {
           </p>
         </div>
       </section>
+      </ScrollReveal>
 
       {/* ============================================================ */}
       {/*  STEP 5 -- AI Surveys                                          */}
       {/* ============================================================ */}
+      <ScrollReveal delay={240}>
       <section className="mt-10">
         <div className="flex items-center gap-3">
           <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
@@ -823,10 +830,12 @@ export default function DemoPage() {
           </p>
         </div>
       </section>
+      </ScrollReveal>
 
       {/* ============================================================ */}
       {/*  STEP 6 -- Transcripts & KPI Extraction                        */}
       {/* ============================================================ */}
+      <ScrollReveal delay={300}>
       <section className="mt-10">
         <div className="flex items-center gap-3">
           <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
@@ -974,10 +983,12 @@ export default function DemoPage() {
           </p>
         </div>
       </section>
+      </ScrollReveal>
 
       {/* ============================================================ */}
       {/*  STEP 7 -- Transcripts & Search                                */}
       {/* ============================================================ */}
+      <ScrollReveal delay={360}>
       <section className="mt-10">
         <div className="flex items-center gap-3">
           <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
@@ -1028,10 +1039,12 @@ export default function DemoPage() {
           </p>
         </div>
       </section>
+      </ScrollReveal>
 
       {/* ============================================================ */}
       {/*  STEP 8 -- Reconciliation & Reporting                          */}
       {/* ============================================================ */}
+      <ScrollReveal delay={420}>
       <section className="mt-10">
         <div className="flex items-center gap-3">
           <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
@@ -1079,6 +1092,7 @@ export default function DemoPage() {
           </p>
         </div>
       </section>
+      </ScrollReveal>
 
       {/* Bottom nav */}
       <div className="mt-12 flex items-center justify-between border-t border-border pt-6">
