@@ -102,9 +102,18 @@ export default function ExpertsPage() {
         transform: (v) => (v ? "Yes" : "No"),
       },
       {
-        key: "cid_clearance_requested",
-        header: "CID Requested",
-        transform: (v) => (v ? "Yes" : "No"),
+        key: "cid_status",
+        header: "CID Status",
+        transform: (v) => {
+          const labels: Record<string, string> = {
+            not_checked: "Not Checked",
+            no_conflict: "No Conflict",
+            pending: "Pending",
+            approved: "Approved",
+            declined: "Declined",
+          }
+          return labels[String(v)] ?? String(v)
+        },
       },
       {
         key: "compliance_flags",

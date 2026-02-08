@@ -650,8 +650,14 @@ export default function EngagementTable({
                                       <span className="font-medium text-foreground">{exp.name}</span>
                                       <span className="truncate text-muted-foreground">{exp.company}</span>
                                       {hasWarnings && <AlertTriangle className="h-3 w-3 shrink-0 text-amber-500" title="Compliance warning" />}
-                                      {(exp.compliance_flags ?? []).includes("cid_cleared") && (
-                                        <span className="shrink-0 text-[9px] font-semibold text-emerald-600" title="CID Cleared">CID</span>
+                                      {(exp.cid_status === "approved" || exp.cid_status === "no_conflict") && (
+                                        <span className="shrink-0 text-[9px] font-semibold text-emerald-600" title={exp.cid_status === "approved" ? "CID Approved" : "No CID Conflict"}>CID</span>
+                                      )}
+                                      {exp.cid_status === "declined" && (
+                                        <span className="shrink-0 text-[9px] font-semibold text-red-600" title="CID Declined">CID</span>
+                                      )}
+                                      {exp.cid_status === "pending" && (
+                                        <span className="shrink-0 text-[9px] font-semibold text-sky-600" title="CID Pending">CID</span>
                                       )}
                                       <span className={`ml-auto shrink-0 inline-flex items-center rounded-full border px-1.5 py-0.5 text-[10px] font-medium ${TYPE_COLORS[exp.expert_type] ?? ""}`}>
                                         {TYPE_LABELS[exp.expert_type] ?? exp.expert_type}

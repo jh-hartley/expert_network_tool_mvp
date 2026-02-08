@@ -14,6 +14,7 @@ import {
   Settings,
   Compass,
   ChevronDown,
+  EyeOff,
 } from "lucide-react"
 
 /* ------------------------------------------------------------------ */
@@ -60,10 +61,11 @@ const NAV_ITEMS: NavItem[] = [
     id: "engagements-group",
     label: "Engagements",
     icon: Phone,
-    activePaths: ["/calls", "/ai-surveys"],
+    activePaths: ["/calls", "/ai-surveys", "/sources"],
     children: [
-      { href: "/calls",      label: "Calls",       icon: Phone,         description: "Schedule calls and track spend" },
-      { href: "/ai-surveys", label: "AI Surveys",  icon: ClipboardList, description: "Manage AI interview surveys" },
+      { href: "/calls",      label: "Calls",        icon: Phone,         description: "Schedule calls and track spend" },
+      { href: "/ai-surveys", label: "AI Surveys",   icon: ClipboardList, description: "Manage AI interview surveys" },
+      { href: "/sources",    label: "Sources List",  icon: EyeOff,        description: "Anonymised titles for sources slides" },
     ],
   },
   { kind: "link", id: "transcripts",  href: "/transcripts", label: "Transcripts", icon: FileText },

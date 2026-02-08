@@ -191,7 +191,7 @@ export function toExpertProfile(
     network_prices,
     shortlisted: false,
     notes: "",
-    cid_clearance_requested: false,
+    cid_status: "not_checked",
     compliance_flags: [],
   }
 }
