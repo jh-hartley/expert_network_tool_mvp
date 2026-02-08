@@ -10,6 +10,7 @@ import {
   DollarSign,
   Users,
   Download,
+  Sparkles,
 } from "lucide-react"
 import PageHeader from "../components/page-header"
 import StatCard from "../components/stat-card"
@@ -163,8 +164,22 @@ export default function CallsPage() {
         }
       />
 
+      {/* KPI extraction banner */}
+      <div className="mt-6 flex items-start gap-3 rounded-lg border border-violet-200 bg-violet-50 px-4 py-3">
+        <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-violet-600" />
+        <div>
+          <p className="text-xs leading-relaxed text-violet-800">
+            <span className="font-semibold text-violet-900">Automatic KPI extraction: </span>
+            When a transcript is uploaded against a completed call, the system
+            uses an LLM call to extract KPIs (e.g. NPS scores for customer
+            calls). Extracted values update the Dashboard averages and
+            reporting in real time.
+          </p>
+        </div>
+      </div>
+
       {/* Dashboard cards */}
-      <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <StatCard
           label="Experts Contacted"
           value={stats.uniqueExperts}
