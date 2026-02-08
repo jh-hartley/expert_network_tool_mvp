@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation"
 import {
   LayoutDashboard,
   Upload,
+  Heart,
   Users,
   Phone,
   ClipboardList,
@@ -17,6 +18,7 @@ const links = [
   { href: "/demo", label: "Demo", icon: Compass },
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/upload", label: "Upload", icon: Upload },
+  { href: "/review", label: "Review", icon: Heart },
   { href: "/experts", label: "Experts", icon: Users },
   { href: "/calls", label: "Calls", icon: Phone },
   { href: "/ai-surveys", label: "AI Surveys", icon: ClipboardList },
