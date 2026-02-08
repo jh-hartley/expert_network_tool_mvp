@@ -9,13 +9,19 @@ import {
   Star,
   ShieldCheck,
   ShieldAlert,
+  ShieldX,
   StickyNote,
   Check,
   X,
   AlertTriangle,
   Briefcase,
+  Loader2,
+  Clock,
+  Ban,
+  CircleCheck,
+  Send,
 } from "lucide-react"
-import type { ExpertProfile, ExpertLens, ComplianceFlag } from "@/lib/expert-profiles"
+import type { ExpertProfile, ExpertLens, ComplianceFlag, CidStatus } from "@/lib/expert-profiles"
 import { getNetworks, PROJECT_CONTEXT } from "@/lib/expert-profiles"
 import Modal from "./modal"
 
@@ -220,14 +226,13 @@ const TYPE_LABELS: Record<string, string> = {
 
 const COMPLIANCE_FLAG_CONFIG: Record<
   ComplianceFlag,
-  { label: string; description: string; color: string; Icon: typeof AlertTriangle }
+  {
+    label: string
+    description: string
+    color: string
+    Icon: typeof AlertTriangle
+  }
 > = {
-  cid_cleared: {
-    label: "CID Cleared",
-    description: "CID clearance has been granted for this expert.",
-    color: "border-emerald-300 bg-emerald-50 text-emerald-700",
-    Icon: ShieldCheck,
-  },
   ben_advisor: {
     label: "BAN Advisor",
     description: "This expert is registered as a BAN (Bain Advisor Network) advisor. Additional compliance review may be required before engagement.",
@@ -246,6 +251,41 @@ const COMPLIANCE_FLAG_CONFIG: Record<
     color: "border-orange-300 bg-orange-50 text-orange-700",
     Icon: Briefcase,
   },
+}
+
+/* ------------------------------------------------------------------ */
+/*  CID status helpers                                                  */
+/* ------------------------------------------------------------------ */
+
+const CID_STATUS_CONFIG: Record<CidStatus, { label: string; color: string; Icon: typeof ShieldCheck }> = {
+  not_checked:  { label: "Run CID",       color: "border-border bg-card text-muted-foreground hover:bg-accent hover:text-foreground", Icon: ShieldCheck },
+  no_conflict:  { label: "No Conflict",   color: "border-emerald-300 bg-emerald-50 text-emerald-700",                                Icon: CircleCheck },
+  pending:      { label: "CID Pending",   color: "border-sky-300 bg-sky-50 text-sky-700",                                            Icon: Clock },
+  approved:     { label: "CID Approved",  color: "border-emerald-300 bg-emerald-50 text-emerald-700",                                Icon: ShieldCheck },
+  declined:     { label: "CID Declined",  color: "border-red-300 bg-red-50 text-red-700",                                            Icon: ShieldX },
+}
+
+/* ------------------------------------------------------------------ */
+/*  Mock CID conflict database                                         */
+/* ------------------------------------------------------------------ */
+
+interface CidConflictMatch {
+  company: string
+  relationship: string
+}
+
+/** Maps expert company names (lowercased) to potential conflict matches */
+const CID_CONFLICT_DB: Record<string, CidConflictMatch[]> = {
+  "solaris packaging":            [{ company: "Solaris Packaging Inc.", relationship: "Prospective client" }],
+  "freshpath foods":              [{ company: "FreshPath Foods Group", relationship: "Active client" }, { company: "FreshPath Holdings LLC", relationship: "Former client (2023)" }],
+  "beckhoff automation":          [{ company: "Beckhoff Automation GmbH", relationship: "Prospective client" }, { company: "Beckhoff North America", relationship: "Active engagement" }],
+  "omron industrial automation":  [{ company: "Omron Corporation", relationship: "Active client" }],
+  "meridian controls":            [{ company: "Meridian Controls Inc.", relationship: "Target company (Project Atlas)" }, { company: "Meridian Industrial Group", relationship: "Former client (2022)" }],
+  "greenvalley chemicals":        [{ company: "GreenValley Chemical Corp", relationship: "Prospective client" }],
+}
+
+function findCidConflicts(company: string): CidConflictMatch[] {
+  return CID_CONFLICT_DB[company.toLowerCase()] ?? []
 }
 
 /* ------------------------------------------------------------------ */
@@ -325,10 +365,17 @@ export default function ExpertLensTable({
   // CID modal state
   const [cidModalOpen, setCidModalOpen] = useState(false)
   const [cidExpert, setCidExpert] = useState<ExpertProfile | null>(null)
-  const cidJustification = useMemo(
-    () => (cidExpert ? generateCidJustification(cidExpert) : ""),
-    [cidExpert],
-  )
+  const [cidStep, setCidStep] = useState<"searching" | "results" | "form" | "sent">("searching")
+  const [cidConflicts, setCidConflicts] = useState<CidConflictMatch[]>([])
+  const [cidFormData, setCidFormData] = useState({
+    caseBackground: "",
+    casePartners: "",
+    caseManagers: "",
+    cc: "",
+    expertInfo: "",
+    caseDescription: "",
+    reasonForOutreach: "",
+  })
 
   // Notes editing state
   const [editingNotesIdx, setEditingNotesIdx] = useState<number | null>(null)
@@ -438,16 +485,51 @@ export default function ExpertLensTable({
 
   const openCidModal = useCallback((expert: ExpertProfile) => {
     setCidExpert(expert)
+    setCidStep("searching")
     setCidModalOpen(true)
+    setCidConflicts([])
+    // Fake search: wait 3 seconds then show results
+    setTimeout(() => {
+      const matches = findCidConflicts(expert.company)
+      setCidConflicts(matches)
+      setCidStep("results")
+    }, 3000)
   }, [])
 
-  const confirmCid = useCallback(() => {
+  const handleNoConflict = useCallback(() => {
     if (!cidExpert) return
     const idx = findOriginalIndex(cidExpert)
-    if (idx >= 0) onUpdateExpert(idx, { cid_clearance_requested: true })
+    if (idx >= 0) onUpdateExpert(idx, { cid_status: "no_conflict" as CidStatus })
     setCidModalOpen(false)
     setCidExpert(null)
   }, [cidExpert, findOriginalIndex, onUpdateExpert])
+
+  const openApprovalForm = useCallback(() => {
+    if (!cidExpert) return
+    const ctx = PROJECT_CONTEXT
+    setCidFormData({
+      caseBackground: `Commercial due diligence on ${ctx.targetCompany}. Evaluating growth trajectory, competitive positioning, customer retention, and margin sustainability ahead of a potential acquisition.`,
+      casePartners: ctx.caseLeader,
+      caseManagers: ctx.seniorManager,
+      cc: "",
+      expertInfo: `${cidExpert.name}, ${cidExpert.original_role} at ${cidExpert.company}`,
+      caseDescription: ctx.projectDescription,
+      reasonForOutreach: generateCidJustification(cidExpert).split("JUSTIFICATION FOR SPEAKING\n")[1] ?? "Expert consultation for commercial due diligence workstream.",
+    })
+    setCidStep("form")
+  }, [cidExpert])
+
+  const submitCidRequest = useCallback(() => {
+    if (!cidExpert) return
+    const idx = findOriginalIndex(cidExpert)
+    if (idx >= 0) onUpdateExpert(idx, { cid_status: "pending" as CidStatus })
+    setCidStep("sent")
+  }, [cidExpert, findOriginalIndex, onUpdateExpert])
+
+  const closeCidModal = useCallback(() => {
+    setCidModalOpen(false)
+    setCidExpert(null)
+  }, [])
 
   const startEditingNotes = useCallback(
     (expert: ExpertProfile) => {
@@ -676,41 +758,27 @@ export default function ExpertLensTable({
                             </span>
                           </button>
 
-                          {/* CID clearance button */}
-                          {expert.compliance_flags?.includes("cid_cleared") ? (
-                            <span
-                              className="inline-flex h-7 items-center gap-1 rounded-md border border-emerald-300 bg-emerald-50 px-2 text-[11px] font-medium text-emerald-700"
-                              title="CID clearance granted"
-                            >
-                              <ShieldCheck className="h-3 w-3" />
-                              <span className="sr-only sm:not-sr-only">Cleared</span>
-                            </span>
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={() => openCidModal(expert)}
-                              title={
-                                expert.cid_clearance_requested
-                                  ? "CID clearance requested (pending)"
-                                  : "Request CID clearance"
-                              }
-                              className={[
-                                "inline-flex h-7 items-center gap-1 rounded-md border px-2 text-[11px] font-medium transition-colors",
-                                expert.cid_clearance_requested
-                                  ? "border-sky-300 bg-sky-50 text-sky-700"
-                                  : "border-border bg-card text-muted-foreground hover:bg-accent hover:text-foreground",
-                              ].join(" ")}
-                            >
-                              <ShieldCheck className="h-3 w-3" />
-                              <span className="sr-only sm:not-sr-only">
-                                {expert.cid_clearance_requested ? "Pending" : "CID"}
-                              </span>
-                            </button>
-                          )}
+                          {/* CID status button */}
+                          {(() => {
+                            const status = expert.cid_status ?? "not_checked"
+                            const cfg = CID_STATUS_CONFIG[status]
+                            const CidIcon = cfg.Icon
+                            const isClickable = status === "not_checked"
+                            const Tag = isClickable ? "button" : "span"
+                            return (
+                              <Tag
+                                {...(isClickable ? { type: "button" as const, onClick: () => openCidModal(expert) } : {})}
+                                title={cfg.label}
+                                className={`inline-flex h-7 items-center gap-1 rounded-md border px-2 text-[11px] font-medium transition-colors ${cfg.color}`}
+                              >
+                                <CidIcon className="h-3 w-3" />
+                                <span className="sr-only sm:not-sr-only">{cfg.label}</span>
+                              </Tag>
+                            )
+                          })()}
 
                           {/* Compliance warning badges */}
                           {(expert.compliance_flags ?? [])
-                            .filter((f) => f !== "cid_cleared")
                             .map((flag) => {
                               const cfg = COMPLIANCE_FLAG_CONFIG[flag]
                               if (!cfg) return null
@@ -830,55 +898,194 @@ export default function ExpertLensTable({
       {/* ---- CID Clearance Modal ---- */}
       <Modal
         open={cidModalOpen}
-        onClose={() => {
-          setCidModalOpen(false)
-          setCidExpert(null)
-        }}
-        title="Request CID Clearance"
+        onClose={closeCidModal}
+        title={
+          cidStep === "searching" ? "Running CID Check..."
+          : cidStep === "results" ? "CID Check Results"
+          : cidStep === "form" ? "Request CID Approval"
+          : "Request Submitted"
+        }
         description={
           cidExpert
             ? `${cidExpert.name} -- ${cidExpert.original_role} at ${cidExpert.company}`
             : undefined
         }
-        maxWidth="max-w-lg"
+        maxWidth={cidStep === "form" ? "max-w-2xl" : "max-w-lg"}
       >
-        {cidExpert && (
-          <div className="flex flex-col gap-4">
-            <pre className="max-h-[50vh] overflow-auto whitespace-pre-wrap rounded-md border border-border bg-muted/30 p-4 text-xs leading-relaxed text-foreground">
-              {cidJustification}
-            </pre>
-
-            {cidExpert.cid_clearance_requested && (
-              <div className="flex items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
-                <ShieldCheck className="h-3.5 w-3.5" />
-                CID clearance has already been requested for this expert.
-              </div>
-            )}
-
-            <div className="flex items-center justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setCidModalOpen(false)
-                  setCidExpert(null)
-                }}
-                className="h-8 rounded-md border border-border bg-card px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-              >
-                Cancel
-              </button>
-              {!cidExpert.cid_clearance_requested && (
-                <button
-                  type="button"
-                  onClick={confirmCid}
-                  className="h-8 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-                >
-                  Confirm CID Request
-                </button>
-              )}
+        {cidExpert && cidStep === "searching" && (
+          <div className="flex flex-col items-center gap-4 py-8">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <div className="text-center">
+              <p className="text-sm font-medium text-foreground">
+                Searching conflict database...
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Checking {cidExpert.company} against active and prospective client lists
+              </p>
+            </div>
+            <div className="mt-2 h-1.5 w-48 overflow-hidden rounded-full bg-muted">
+              <div className="h-full animate-pulse rounded-full bg-primary/60" style={{ width: "65%", animation: "pulse 1.5s ease-in-out infinite" }} />
             </div>
           </div>
         )}
+
+        {cidExpert && cidStep === "results" && (
+          <div className="flex flex-col gap-4">
+            {cidConflicts.length === 0 ? (
+              <>
+                <div className="flex items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3">
+                  <CircleCheck className="h-5 w-5 shrink-0 text-emerald-600" />
+                  <div>
+                    <p className="text-sm font-medium text-emerald-800">No conflicts found</p>
+                    <p className="mt-0.5 text-xs text-emerald-700">
+                      {cidExpert.company} did not match any companies in the conflict database.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2">
+                  <button type="button" onClick={closeCidModal} className="h-8 rounded-md border border-border bg-card px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+                    Cancel
+                  </button>
+                  <button type="button" onClick={handleNoConflict} className="h-8 rounded-md bg-emerald-600 px-3 text-xs font-medium text-white transition-colors hover:bg-emerald-700">
+                    Confirm No Conflict
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+                  <AlertTriangle className="h-5 w-5 shrink-0 text-amber-600" />
+                  <div>
+                    <p className="text-sm font-medium text-amber-800">Potential conflicts detected</p>
+                    <p className="mt-0.5 text-xs text-amber-700">
+                      {cidConflicts.length} matching {cidConflicts.length === 1 ? "entity" : "entities"} found in the conflict database. Review below and request approval if needed.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="overflow-hidden rounded-lg border border-border">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="border-b border-border bg-muted/50">
+                        <th className="px-3 py-2 text-left font-semibold text-foreground">Company Name</th>
+                        <th className="px-3 py-2 text-left font-semibold text-foreground">Relationship</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border">
+                      {cidConflicts.map((match, i) => (
+                        <tr key={i} className="bg-card">
+                          <td className="px-3 py-2 font-medium text-foreground">{match.company}</td>
+                          <td className="px-3 py-2 text-muted-foreground">{match.relationship}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="flex justify-end gap-2">
+                  <button type="button" onClick={closeCidModal} className="h-8 rounded-md border border-border bg-card px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+                    Cancel
+                  </button>
+                  <button type="button" onClick={openApprovalForm} className="inline-flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90">
+                    <Send className="h-3 w-3" />
+                    Send for Approval
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {cidExpert && cidStep === "form" && (
+          <div className="flex flex-col gap-4">
+            <p className="text-xs text-muted-foreground">
+              Complete the fields below. Auto-generated text has been filled in but you can edit any field before sending.
+            </p>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <CidFormField label="Case Background" value={cidFormData.caseBackground} onChange={(v) => setCidFormData((p) => ({ ...p, caseBackground: v }))} multiline />
+              <CidFormField label="Case Operating Partner(s)" value={cidFormData.casePartners} onChange={(v) => setCidFormData((p) => ({ ...p, casePartners: v }))} />
+              <CidFormField label="Case Operating Manager(s)" value={cidFormData.caseManagers} onChange={(v) => setCidFormData((p) => ({ ...p, caseManagers: v }))} />
+              <CidFormField label="Cc" value={cidFormData.cc} onChange={(v) => setCidFormData((p) => ({ ...p, cc: v }))} placeholder="email@example.com" />
+              <CidFormField label="Expert Name, Title & Company" value={cidFormData.expertInfo} onChange={(v) => setCidFormData((p) => ({ ...p, expertInfo: v }))} />
+              <CidFormField label="Case Description" value={cidFormData.caseDescription} onChange={(v) => setCidFormData((p) => ({ ...p, caseDescription: v }))} multiline />
+            </div>
+            <CidFormField label="Reason for Outreach / Additional Comments" value={cidFormData.reasonForOutreach} onChange={(v) => setCidFormData((p) => ({ ...p, reasonForOutreach: v }))} multiline fullWidth />
+
+            <div className="flex justify-end gap-2 pt-1">
+              <button type="button" onClick={() => setCidStep("results")} className="h-8 rounded-md border border-border bg-card px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+                Back
+              </button>
+              <button type="button" onClick={submitCidRequest} className="inline-flex h-8 items-center gap-1.5 rounded-md bg-primary px-4 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90">
+                <Send className="h-3 w-3" />
+                Submit Request
+              </button>
+            </div>
+          </div>
+        )}
+
+        {cidExpert && cidStep === "sent" && (
+          <div className="flex flex-col items-center gap-4 py-6">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-sky-100">
+              <Clock className="h-6 w-6 text-sky-600" />
+            </div>
+            <div className="text-center">
+              <p className="text-sm font-medium text-foreground">CID Approval Request Sent</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                The request for {cidExpert.name} has been submitted to the compliance team. Status has been updated to CID Pending.
+              </p>
+            </div>
+            <button type="button" onClick={closeCidModal} className="mt-2 h-8 rounded-md bg-primary px-4 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90">
+              Done
+            </button>
+          </div>
+        )}
       </Modal>
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/*  CID form field                                                     */
+/* ------------------------------------------------------------------ */
+
+function CidFormField({
+  label,
+  value,
+  onChange,
+  multiline,
+  placeholder,
+  fullWidth,
+}: {
+  label: string
+  value: string
+  onChange: (v: string) => void
+  multiline?: boolean
+  placeholder?: string
+  fullWidth?: boolean
+}) {
+  return (
+    <div className={fullWidth ? "sm:col-span-2" : ""}>
+      <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+        {label}
+      </label>
+      {multiline ? (
+        <textarea
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          rows={3}
+          placeholder={placeholder}
+          className="w-full resize-none rounded-md border border-border bg-background px-3 py-2 text-xs leading-relaxed text-foreground outline-none transition-colors focus:border-ring focus:ring-1 focus:ring-ring"
+        />
+      ) : (
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          className="h-8 w-full rounded-md border border-border bg-background px-3 text-xs text-foreground outline-none transition-colors focus:border-ring focus:ring-1 focus:ring-ring"
+        />
+      )}
     </div>
   )
 }

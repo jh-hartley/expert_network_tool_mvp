@@ -66,10 +66,17 @@ const TYPE_COLORS: Record<string, { bg: string; text: string; ring: string }> = 
 }
 
 const FLAG_META: Record<ComplianceFlag, { label: string; color: string }> = {
-  cid_cleared:        { label: "CID Cleared",        color: "bg-emerald-100 text-emerald-800" },
   ben_advisor:        { label: "BAN Advisor",         color: "bg-sky-100 text-sky-800" },
   compliance_flagged: { label: "Compliance Flagged",  color: "bg-red-100 text-red-800" },
   client_advisor:     { label: "Client Advisor",      color: "bg-amber-100 text-amber-800" },
+}
+
+const CID_STATUS_LABELS: Record<string, { label: string; color: string }> = {
+  not_checked: { label: "Not Checked",  color: "bg-gray-100 text-gray-700" },
+  no_conflict: { label: "No Conflict",  color: "bg-emerald-100 text-emerald-800" },
+  pending:     { label: "CID Pending",  color: "bg-sky-100 text-sky-800" },
+  approved:    { label: "CID Approved", color: "bg-emerald-100 text-emerald-800" },
+  declined:    { label: "CID Declined", color: "bg-red-100 text-red-800" },
 }
 
 /* ------------------------------------------------------------------ */
@@ -456,7 +463,7 @@ export default function ReviewPage() {
                     <InfoCell icon={Users} label="Employees" value={current.fte_estimate} />
                     <InfoCell icon={DollarSign} label="Price" value={current.price ? `$${current.price}/hr` : "Not specified"} />
                     <InfoCell icon={Briefcase} label="Network" value={current.network} />
-                    <InfoCell icon={ShieldCheck} label="CID Status" value={current.compliance_flags.includes("cid_cleared") ? "Cleared" : current.cid_clearance_requested ? "Requested" : "Not requested"} />
+                    <InfoCell icon={ShieldCheck} label="CID Status" value={CID_STATUS_LABELS[current.cid_status ?? "not_checked"]?.label ?? "Not Checked"} />
                   </div>
 
                   {/* Network prices */}
@@ -756,14 +763,23 @@ function buildWarnings(expert: ExpertProfile): ComplianceWarning[] {
   /* Target-company expert without CID clearance */
   if (
     expert.expert_type === "target" &&
-    !expert.compliance_flags.includes("cid_cleared") &&
-    !expert.cid_clearance_requested
+    (expert.cid_status ?? "not_checked") === "not_checked"
   ) {
     warnings.push({
       level: "info",
-      title: "CID Not Requested",
+      title: "CID Not Checked",
       detail:
-        "This is a target-company expert with no CID clearance request on file. Consider requesting CID clearance before scheduling a call.",
+        "This is a target-company expert with no CID check on file. Consider running a CID check before scheduling a call.",
+    })
+  }
+
+  /* CID declined */
+  if ((expert.cid_status ?? "not_checked") === "declined") {
+    warnings.push({
+      level: "warning",
+      title: "CID Declined",
+      detail:
+        "The compliance team has declined CID clearance for this expert. Do not proceed with engagement.",
     })
   }
 

@@ -20,9 +20,16 @@ export type ExpertLens =
   | "target"
   | "competitor_customer"
 
+/** CID clearance status -- 5 possible states */
+export type CidStatus =
+  | "not_checked"   // No CID check performed yet
+  | "no_conflict"   // Checked -- no matching names found in the conflict list
+  | "pending"       // Checked -- match found, approval request sent, awaiting response
+  | "approved"      // Checked -- compliance approved the engagement
+  | "declined"      // Checked -- compliance declined the engagement
+
 /** Compliance flags that can be attached to an expert */
 export type ComplianceFlag =
-  | "cid_cleared"       // CID clearance has been granted
   | "ben_advisor"       // Expert is a BAN (Bain Advisor Network) advisor
   | "compliance_flagged" // Compliance has flagged the expert as potentially fraudulent
   | "client_advisor"    // Expert is a current client advisor
@@ -32,7 +39,10 @@ export interface ExpertProfile extends ExtractedExpert {
   network_prices: Record<string, number | null>
   shortlisted: boolean
   notes: string
-  cid_clearance_requested: boolean
+  /** CID clearance status */
+  cid_status: CidStatus
+  /** @deprecated -- kept for backward compat migration only */
+  cid_clearance_requested?: boolean
   /** Compliance & CID flags. Empty array = no flags. */
   compliance_flags: ComplianceFlag[]
 }
@@ -59,7 +69,7 @@ export function getNetworks(profiles?: ExpertProfile[]): string[] {
 /* ------------------------------------------------------------------ */
 
 const LS_KEY = "helmsman_expert_profiles"
-const LS_SEEDED_KEY = "helmsman_expert_profiles_seeded_v2"
+const LS_SEEDED_KEY = "helmsman_expert_profiles_seeded_v3"
 
 /* ------------------------------------------------------------------ */
 /*  Read / write helpers                                               */
@@ -81,9 +91,20 @@ export function getExpertProfiles(): ExpertProfile[] {
     const raw = localStorage.getItem(LS_KEY)
     if (!raw) return SEED_PROFILES
     const profiles = JSON.parse(raw) as ExpertProfile[]
-    // Backward compat: ensure compliance_flags exists on all profiles
+    // Backward compat: ensure compliance_flags & cid_status exist
     for (const p of profiles) {
       if (!p.compliance_flags) p.compliance_flags = []
+      // Migrate old cid_clearance_requested / cid_cleared flag
+      if (!p.cid_status) {
+        if ((p.compliance_flags as string[]).includes("cid_cleared")) {
+          p.cid_status = "approved"
+          p.compliance_flags = p.compliance_flags.filter((f) => f !== ("cid_cleared" as ComplianceFlag))
+        } else if (p.cid_clearance_requested) {
+          p.cid_status = "pending"
+        } else {
+          p.cid_status = "not_checked"
+        }
+      }
     }
     return profiles
   } catch {
@@ -290,8 +311,8 @@ export const SEED_PROFILES: ExpertProfile[] = [
       "16 years in plant operations. Manages automation procurement across 12 North American facilities. Annual controls spend ~$8M. Previously at Unilever manufacturing ops.",
     shortlisted: false,
     notes: "",
-    cid_clearance_requested: true,
-    compliance_flags: ["cid_cleared"],
+    cid_status: "approved",
+    compliance_flags: [],
   },
   {
     name: "Marcus Oyelaran",
@@ -322,8 +343,8 @@ export const SEED_PROFILES: ExpertProfile[] = [
       "11 years in food & beverage manufacturing. Oversees automation strategy for 4 breweries. Manages $3.5M annual controls budget.",
     shortlisted: false,
     notes: "",
-    cid_clearance_requested: true,
-    compliance_flags: ["cid_cleared"],
+    cid_status: "approved",
+    compliance_flags: [],
   },
   {
     name: "Chen Wei-Lin",
@@ -354,7 +375,7 @@ export const SEED_PROFILES: ExpertProfile[] = [
       "14 years in metals and heavy manufacturing. Manages automation for high-temperature and hazardous environments. Previously at Nucor Steel.",
     shortlisted: false,
     notes: "",
-    cid_clearance_requested: false,
+    cid_status: "not_checked",
     compliance_flags: [],
   },
   {
@@ -386,7 +407,7 @@ export const SEED_PROFILES: ExpertProfile[] = [
       "18 years in food manufacturing. Manages global automation standards and vendor relationships across 22 plants in North America and Europe. $15M annual automation spend.",
     shortlisted: false,
     notes: "",
-    cid_clearance_requested: false,
+    cid_status: "no_conflict",
     compliance_flags: ["ben_advisor"],
   },
   {
@@ -418,7 +439,7 @@ export const SEED_PROFILES: ExpertProfile[] = [
       "15 years in pulp & paper manufacturing. Responsible for automation reliability across 3 mills. Has deployed systems from Rockwell, Meridian Controls, and ABB.",
     shortlisted: false,
     notes: "",
-    cid_clearance_requested: false,
+    cid_status: "not_checked",
     compliance_flags: ["client_advisor"],
   },
   {
@@ -446,7 +467,7 @@ export const SEED_PROFILES: ExpertProfile[] = [
       "Process industries customer. Imported from CSV -- no screening responses available.",
     shortlisted: false,
     notes: "",
-    cid_clearance_requested: false,
+    cid_status: "pending",
     compliance_flags: ["compliance_flagged"],
   },
   {
@@ -474,7 +495,7 @@ export const SEED_PROFILES: ExpertProfile[] = [
       "Automotive Tier 2 customer. Japan-NA operations. Imported from CSV -- no screening responses available.",
     shortlisted: false,
     notes: "",
-    cid_clearance_requested: false,
+    cid_status: "not_checked",
     compliance_flags: [],
   },
   {
@@ -502,7 +523,7 @@ export const SEED_PROFILES: ExpertProfile[] = [
       "Heavy industry / harsh environment customer. Imported from CSV -- no screening responses available.",
     shortlisted: false,
     notes: "",
-    cid_clearance_requested: false,
+    cid_status: "not_checked",
     compliance_flags: [],
   },
 
@@ -536,7 +557,7 @@ export const SEED_PROFILES: ExpertProfile[] = [
       "19 years in industrial automation sales. Built Beckhoff's NA business from $40M to $180M revenue. Previously at B&R Automation (now ABB) and Bosch Rexroth. Non-compete expired.",
     shortlisted: false,
     notes: "",
-    cid_clearance_requested: false,
+    cid_status: "no_conflict",
     compliance_flags: [],
   },
   {
@@ -568,7 +589,7 @@ export const SEED_PROFILES: ExpertProfile[] = [
       "13 years at Omron. Leads corporate strategy and M&A evaluation for the Americas region. Previously at McKinsey (industrials practice). Currently employed -- requires pre-screening for confidentiality.",
     shortlisted: false,
     notes: "",
-    cid_clearance_requested: false,
+    cid_status: "declined",
     compliance_flags: [],
   },
   {
@@ -600,7 +621,7 @@ export const SEED_PROFILES: ExpertProfile[] = [
       "10 years at WAGO. Leads BD for industrial automation products across North and South America. Previously at Phoenix Contact in product management. Currently employed -- requires pre-screening.",
     shortlisted: false,
     notes: "",
-    cid_clearance_requested: false,
+    cid_status: "not_checked",
     compliance_flags: [],
   },
   {
@@ -628,7 +649,7 @@ export const SEED_PROFILES: ExpertProfile[] = [
       "PC-based control expert. European perspective. Imported from CSV -- no screening responses available.",
     shortlisted: false,
     notes: "",
-    cid_clearance_requested: false,
+    cid_status: "not_checked",
     compliance_flags: [],
   },
   {
@@ -656,7 +677,7 @@ export const SEED_PROFILES: ExpertProfile[] = [
       "Sensor/IO and fieldbus/connectivity specialist. Imported from CSV -- no screening responses available.",
     shortlisted: false,
     notes: "",
-    cid_clearance_requested: false,
+    cid_status: "not_checked",
     compliance_flags: [],
   },
 
@@ -690,7 +711,7 @@ export const SEED_PROFILES: ExpertProfile[] = [
       "21 years in industrial automation. Most recently COO at Meridian Controls overseeing manufacturing, supply chain, and field operations for 7 years. Previously at Rockwell Automation and Parker Hannifin. Left 2+ months ago, no active non-compete. Will need CID clearance given recency.",
     shortlisted: false,
     notes: "",
-    cid_clearance_requested: false,
+    cid_status: "pending",
     compliance_flags: [],
   },
   {
@@ -718,7 +739,7 @@ export const SEED_PROFILES: ExpertProfile[] = [
       "Former target company insider. Product roadmap and R&D perspective. Imported from CSV -- no screening responses available. Compliance pending.",
     shortlisted: false,
     notes: "",
-    cid_clearance_requested: false,
+    cid_status: "declined",
     compliance_flags: [],
   },
 ]
