@@ -3,6 +3,7 @@
 import {
   Upload, FileText, CheckCircle2, ClipboardPaste, Mail, Table2, X,
   ChevronDown, ChevronUp, ArrowRight, AlertCircle, Loader2, Sparkles,
+  Plug, ArrowRightLeft,
 } from "lucide-react"
 import { useState, useRef } from "react"
 import { toast } from "sonner"
@@ -257,6 +258,31 @@ export default function UploadPage() {
         title="Upload"
         description="Import expert profiles from CSV files, network emails, or pasted text. Structured CSV is parsed directly; unstructured content is sent to an LLM for extraction. New experts are saved to the expert tracker in your browser. Duplicates are detected by fuzzy name + company matching; if an existing expert is found via a new network, the new price is merged automatically."
       />
+
+      {/* ---- Direct integration note ---- */}
+      <div className="mt-6 rounded-lg border border-sky-200 bg-sky-50 px-5 py-4">
+        <div className="flex items-start gap-3">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sky-100">
+            <Plug className="h-4 w-4 text-sky-600" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-sky-900">
+              Direct network integration
+            </p>
+            <p className="mt-1 text-xs leading-relaxed text-sky-800">
+              In a complete product, this system would interface directly with
+              expert networks (e.g. AlphaSights, GLG, Guidepoint) on a
+              per-project basis. Expert profiles, availability, and pricing
+              would flow into the platform automatically and be parsed in
+              real-time, removing the need for manual batch uploads entirely.
+            </p>
+            <div className="mt-2.5 flex items-center gap-1.5 text-[11px] font-medium text-sky-600">
+              <ArrowRightLeft className="h-3 w-3" />
+              <span>API-driven sync would replace the upload workflow below</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* ---- Input methods ---- */}
       {!processing && !extraction && (
