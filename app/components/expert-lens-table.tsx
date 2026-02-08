@@ -75,7 +75,7 @@ const SHARED_COLS: ColDef[] = [
     key: "role",
     label: "Anonymised Role",
     accessor: (e) => e.role,
-    minWidth: "170px",
+    minWidth: "240px",
   },
   {
     key: "company",
@@ -1056,7 +1056,7 @@ export default function ExpertLensTable({
                                   className="group flex w-full items-center gap-1.5 rounded px-1 py-0.5 text-left text-xs transition-colors hover:bg-muted/50"
                                   title="Click to edit anonymised role"
                                 >
-                                  <span className="line-clamp-1">{String(value)}</span>
+                                  <span>{String(value)}</span>
                                   <Pencil className="h-3 w-3 shrink-0 text-muted-foreground/0 transition-colors group-hover:text-muted-foreground" />
                                 </button>
                               )}

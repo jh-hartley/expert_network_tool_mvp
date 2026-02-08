@@ -335,7 +335,7 @@ export default function SourcesPage() {
                 <th className="px-3 py-2 text-left text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Role</th>
                 <th className="px-3 py-2 text-left text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Company</th>
                 <th className="w-8 px-1 py-2" />
-                <th className="px-3 py-2 text-left text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Anonymised Title</th>
+                <th className="px-3 py-2 text-left text-[10px] font-medium uppercase tracking-wider text-muted-foreground" style={{ minWidth: "240px" }}>Anonymised Title</th>
                 <th className="px-3 py-2 text-left text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Anonymised Company</th>
               </tr>
             </thead>
@@ -371,7 +371,7 @@ export default function SourcesPage() {
                     </td>
 
                     {/* Anonymised (editable) */}
-                    <td className="px-3 py-2.5 font-medium text-foreground">
+                    <td className="px-3 py-2.5 font-medium text-foreground" style={{ minWidth: "240px" }}>
                       {editingKey === s.nameKey ? (
                         <div className="flex items-center gap-1">
                           <input
@@ -379,7 +379,7 @@ export default function SourcesPage() {
                             type="text"
                             value={roleDraft}
                             onChange={(e) => setRoleDraft(e.target.value)}
-                            className="h-7 w-full min-w-[160px] rounded border border-ring bg-background px-2 text-xs text-foreground outline-none"
+                            className="h-7 w-full min-w-[200px] rounded border border-ring bg-background px-2 text-xs text-foreground outline-none"
                             onKeyDown={(e) => {
                               if (e.key === "Enter") saveEditing()
                               if (e.key === "Escape") cancelEditing()
