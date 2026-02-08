@@ -1,5 +1,5 @@
 /* ------------------------------------------------------------------ */
-/*  Helmsman -- Transcript storage                                     */
+/*  Consensus -- Transcript storage                                     */
 /*                                                                     */
 /*  Transcripts are stored in localStorage keyed by engagement ID.     */
 /*  Each transcript carries the expert name, company, and expert type  */
@@ -23,7 +23,7 @@ export interface Transcript {
   uploaded_at: string
 
   /* ---------- NPS fields (populated for survey transcripts) ---------- */
-  /** The product/company being rated (e.g. "Meridian Controls") */
+  /** The product/company being rated (e.g. "Zephyr Controls") */
   product?: string | null
   /** NPS score 0-10 */
   nps_score?: number | null
@@ -39,20 +39,20 @@ const SEED_TRANSCRIPTS: Transcript[] = [
   {
     engagement_id: "call_seed_1",
     expert_name: "Raj Patel",
-    expert_company: "Solaris Packaging",
+    expert_company: "Orion Packaging",
     expert_type: "customer",
     engagement_type: "call",
     uploaded_at: "2026-02-03T11:15:00Z",
-    text: `CALL TRANSCRIPT -- Raj Patel, VP of Plant Engineering, Solaris Packaging
-Date: 3 February 2026 | Duration: 60 min | Network: AlphaSights
+    text: `CALL TRANSCRIPT -- Raj Patel, VP of Plant Engineering, Orion Packaging
+Date: 3 February 2026 | Duration: 60 min | Network: AlphaView
 
-INTERVIEWER: Thank you for joining, Raj. Could you start by walking us through how Solaris first evaluated Meridian Controls?
+INTERVIEWER: Thank you for joining, Raj. Could you start by walking us through how Orion first evaluated Zephyr Controls?
 
-RAJ PATEL: Sure. We began our evaluation roughly eighteen months ago when we needed to replace aging Rockwell PLCs across three of our packaging lines. Meridian came onto our radar through an industry conference -- their demo of the real-time adaptive control loop was genuinely impressive compared to what we'd seen from incumbents.
+RAJ PATEL: Sure. We began our evaluation roughly eighteen months ago when we needed to replace aging Stonemill PLCs across three of our packaging lines. Zephyr came onto our radar through an industry conference -- their demo of the real-time adaptive control loop was genuinely impressive compared to what we'd seen from incumbents.
 
-INTERVIEWER: What were the key selection criteria for Solaris?
+INTERVIEWER: What were the key selection criteria for Orion?
 
-RAJ PATEL: Three things drove it. First, total cost of ownership -- Meridian's licensing model was roughly 30% lower over a five-year horizon compared to Rockwell and Siemens. Second, ease of integration with our existing SCADA layer. Third, and this was the clincher, their predictive maintenance module. We'd been losing about 12% of uptime annually on unplanned stoppages, and their analytics showed credible paths to cutting that by half.
+RAJ PATEL: Three things drove it. First, total cost of ownership -- Zephyr's licensing model was roughly 30% lower over a five-year horizon compared to Stonemill and Siemens. Second, ease of integration with our existing SCADA layer. Third, and this was the clincher, their predictive maintenance module. We'd been losing about 12% of uptime annually on unplanned stoppages, and their analytics showed credible paths to cutting that by half.
 
 INTERVIEWER: How has the rollout gone so far?
 
@@ -62,9 +62,9 @@ INTERVIEWER: And the predictive maintenance results?
 
 RAJ PATEL: Early data looks promising. We've seen unplanned downtime drop from about 12% to roughly 7.5% on Line 1 which has been live longest. The anomaly detection catches bearing wear patterns about two weeks before we'd typically notice vibration issues. I'm cautiously optimistic we'll hit the 6% target by end of year once the models have a full seasonal cycle of data.
 
-INTERVIEWER: Would you recommend Meridian to a peer in your position?
+INTERVIEWER: Would you recommend Zephyr to a peer in your position?
 
-RAJ PATEL: With caveats, yes. If your operation is mid-scale -- say 5 to 15 lines -- and you're not locked into a long-term Rockwell enterprise agreement, Meridian is worth serious consideration. For very large plants with 50+ lines, I'd want to see more proof points on their scalability. But for our size, it's been a good decision.
+RAJ PATEL: With caveats, yes. If your operation is mid-scale -- say 5 to 15 lines -- and you're not locked into a long-term Stonemill enterprise agreement, Zephyr is worth serious consideration. For very large plants with 50+ lines, I'd want to see more proof points on their scalability. But for our size, it's been a good decision.
 
 INTERVIEWER: Thank you, Raj. Very helpful.
 
@@ -73,32 +73,32 @@ INTERVIEWER: Thank you, Raj. Very helpful.
   {
     engagement_id: "call_seed_2",
     expert_name: "Diane Kowalski",
-    expert_company: "Beckhoff Automation",
+    expert_company: "Kestrel Automation",
     expert_type: "competitor",
     engagement_type: "call",
     uploaded_at: "2026-02-04T16:00:00Z",
-    text: `CALL TRANSCRIPT -- Diane Kowalski, Former SVP Sales, Beckhoff Automation North America
-Date: 4 February 2026 | Duration: 60 min | Network: AlphaSights
+    text: `CALL TRANSCRIPT -- Diane Kowalski, Former SVP Sales, Kestrel Automation North America
+Date: 4 February 2026 | Duration: 60 min | Network: AlphaView
 
-INTERVIEWER: Diane, thank you for your time. We'd love to hear your perspective on Meridian Controls' competitive positioning relative to Beckhoff.
+INTERVIEWER: Diane, thank you for your time. We'd love to hear your perspective on Zephyr Controls' competitive positioning relative to Kestrel.
 
-DIANE KOWALSKI: Happy to share. I left Beckhoff about ten months ago so my perspective is reasonably current. Meridian is interesting because they're attacking a gap that the larger players have been slow to fill -- the mid-market industrial automation space where customers want sophisticated control but don't want the complexity and cost of a full Siemens or Rockwell stack.
+DIANE KOWALSKI: Happy to share. I left Kestrel about ten months ago so my perspective is reasonably current. Zephyr is interesting because they're attacking a gap that the larger players have been slow to fill -- the mid-market industrial automation space where customers want sophisticated control but don't want the complexity and cost of a full Siemens or Stonemill stack.
 
-INTERVIEWER: Where do you see Meridian's key strengths versus Beckhoff specifically?
+INTERVIEWER: Where do you see Zephyr's key strengths versus Kestrel specifically?
 
-DIANE KOWALSKI: Software, full stop. Their control algorithms and especially the predictive maintenance analytics layer are genuinely ahead of what Beckhoff offers natively. Beckhoff's strength has always been hardware -- the EtherCAT ecosystem, the IPC platform. But on the software and analytics side, Meridian has a legitimate two-year head start. Their engineering team clearly comes from a software-first background.
+DIANE KOWALSKI: Software, full stop. Their control algorithms and especially the predictive maintenance analytics layer are genuinely ahead of what Kestrel offers natively. Kestrel's strength has always been hardware -- the EtherCAT ecosystem, the IPC platform. But on the software and analytics side, Zephyr has a legitimate two-year head start. Their engineering team clearly comes from a software-first background.
 
 INTERVIEWER: And their weaknesses?
 
-DIANE KOWALSKI: Scale and service infrastructure. Beckhoff has offices and field engineers in 40 countries. Meridian has -- what, maybe 120 people total? When a customer's line goes down at 2 AM on a Saturday, Beckhoff can have someone on-site within hours in most major markets. Meridian relies heavily on remote support and a thin partner network. For mission-critical processes, that's a real concern.
+DIANE KOWALSKI: Scale and service infrastructure. Kestrel has offices and field engineers in 40 countries. Zephyr has -- what, maybe 120 people total? When a customer's line goes down at 2 AM on a Saturday, Kestrel can have someone on-site within hours in most major markets. Zephyr relies heavily on remote support and a thin partner network. For mission-critical processes, that's a real concern.
 
-The other weakness is their hardware supply chain. They're still reliant on a small number of contract manufacturers for their IO modules. I've heard from contacts that lead times have stretched to 6-8 weeks on certain cards. Beckhoff manufactures in-house in Verl and has much tighter control.
+The other weakness is their hardware supply chain. They're still reliant on a small number of contract manufacturers for their IO modules. I've heard from contacts that lead times have stretched to 6-8 weeks on certain cards. Kestrel manufactures in-house in Verl and has much tighter control.
 
-INTERVIEWER: How seriously does Beckhoff view Meridian as a competitive threat?
+INTERVIEWER: How seriously does Kestrel view Zephyr as a competitive threat?
 
-DIANE KOWALSKI: More seriously than they'd publicly admit. When I was there, Meridian came up in every quarterly competitive review. They'd won about a dozen accounts that Beckhoff had expected to close -- mostly in food and beverage and packaging. The internal estimate when I left was that Meridian had taken roughly EUR 8-10 million in annual revenue that would have otherwise gone to Beckhoff in North America.
+DIANE KOWALSKI: More seriously than they'd publicly admit. When I was there, Zephyr came up in every quarterly competitive review. They'd won about a dozen accounts that Kestrel had expected to close -- mostly in food and beverage and packaging. The internal estimate when I left was that Zephyr had taken roughly EUR 8-10 million in annual revenue that would have otherwise gone to Kestrel in North America.
 
-INTERVIEWER: Do you expect Meridian to move upmarket?
+INTERVIEWER: Do you expect Zephyr to move upmarket?
 
 DIANE KOWALSKI: They'll try, but that's where it gets much harder. Enterprise-scale industrial automation requires a level of system integration capability, global support, and regulatory compliance that takes a decade to build. My bet is they'll dominate the mid-market and become an attractive acquisition target for one of the majors within 3-5 years.
 
@@ -109,36 +109,36 @@ INTERVIEWER: Very insightful, Diane. Thank you.
   {
     engagement_id: "call_seed_7",
     expert_name: "James Achebe",
-    expert_company: "FreshPath Foods",
+    expert_company: "Brambleway Foods",
     expert_type: "customer",
     engagement_type: "call",
     uploaded_at: "2026-02-06T13:00:00Z",
-    text: `CALL TRANSCRIPT -- James Achebe, Global Automation Manager, FreshPath Foods
-Date: 6 February 2026 | Duration: 45 min | Network: GLG
+    text: `CALL TRANSCRIPT -- James Achebe, Global Automation Manager, Brambleway Foods
+Date: 6 February 2026 | Duration: 45 min | Network: GLS
 
-INTERVIEWER: James, thank you for making time. Could you describe FreshPath's experience evaluating Meridian Controls alongside Rockwell?
+INTERVIEWER: James, thank you for making time. Could you describe Brambleway's experience evaluating Zephyr Controls alongside Stonemill?
 
-JAMES ACHEBE: Of course. FreshPath operates 22 food processing facilities globally and we've been on Rockwell ControlLogix for about fifteen years. When the time came to upgrade our batch control systems -- starting with four pilot sites -- we ran a formal evaluation that included Rockwell, Siemens, and Meridian.
+JAMES ACHEBE: Of course. Brambleway operates 22 food processing facilities globally and we've been on Stonemill ControlLogix for about fifteen years. When the time came to upgrade our batch control systems -- starting with four pilot sites -- we ran a formal evaluation that included Stonemill, Siemens, and Zephyr.
 
-INTERVIEWER: What set Meridian apart in the evaluation?
+INTERVIEWER: What set Zephyr apart in the evaluation?
 
-JAMES ACHEBE: Two things. First, their batch recipe management module is genuinely best-in-class for food and beverage. It handles complex multi-stage processes with variable ingredient inputs far more elegantly than what Rockwell offers out of the box. Our process engineers could configure new product recipes in about 40% less time during the pilot.
+JAMES ACHEBE: Two things. First, their batch recipe management module is genuinely best-in-class for food and beverage. It handles complex multi-stage processes with variable ingredient inputs far more elegantly than what Stonemill offers out of the box. Our process engineers could configure new product recipes in about 40% less time during the pilot.
 
-Second, their pricing model. Rockwell wanted us to commit to a global enterprise agreement -- roughly $2.4 million annually. Meridian's per-site licensing for the same four pilot facilities came in at about $380,000 per year. Even accounting for Rockwell's broader feature set, the value proposition was compelling for a phased rollout.
+Second, their pricing model. Stonemill wanted us to commit to a global enterprise agreement -- roughly $2.4 million annually. Zephyr's per-site licensing for the same four pilot facilities came in at about $380,000 per year. Even accounting for Stonemill's broader feature set, the value proposition was compelling for a phased rollout.
 
-INTERVIEWER: Were there concerns about switching from an established vendor like Rockwell?
+INTERVIEWER: Were there concerns about switching from an established vendor like Stonemill?
 
-JAMES ACHEBE: Absolutely. Our reliability engineering team was initially sceptical. Rockwell has a 15-year track record with us and we know their failure modes intimately. Meridian was an unknown. We negotiated an extended proof-of-concept at our Charlotte facility -- 90 days of parallel running alongside the existing Rockwell system.
+JAMES ACHEBE: Absolutely. Our reliability engineering team was initially sceptical. Stonemill has a 15-year track record with us and we know their failure modes intimately. Zephyr was an unknown. We negotiated an extended proof-of-concept at our Charlotte facility -- 90 days of parallel running alongside the existing Stonemill system.
 
-The results were encouraging. System availability was 99.7% versus Rockwell's 99.8% over the same period, which is well within our tolerance. And the Meridian system flagged two equipment anomalies that the Rockwell predictive module missed entirely.
+The results were encouraging. System availability was 99.7% versus Stonemill's 99.8% over the same period, which is well within our tolerance. And the Zephyr system flagged two equipment anomalies that the Stonemill predictive module missed entirely.
 
 INTERVIEWER: How is the broader rollout progressing?
 
-JAMES ACHEBE: We've approved Meridian for the four pilot sites and we're six months in. Two sites are fully cut over, two are in parallel testing. The board has approved conditional expansion to eight additional sites pending the 12-month review. If the pilot sites maintain current performance metrics, I expect we'll move to a broader global evaluation in 2026.
+JAMES ACHEBE: We've approved Zephyr for the four pilot sites and we're six months in. Two sites are fully cut over, two are in parallel testing. The board has approved conditional expansion to eight additional sites pending the 12-month review. If the pilot sites maintain current performance metrics, I expect we'll move to a broader global evaluation in 2026.
 
-INTERVIEWER: What would need to change for FreshPath to move entirely away from Rockwell?
+INTERVIEWER: What would need to change for Brambleway to move entirely away from Stonemill?
 
-JAMES ACHEBE: Meridian needs to demonstrate three things: proven performance in high-speed continuous process environments (not just batch), a credible global support presence -- especially in our Southeast Asian facilities -- and a migration toolset that can port our existing Rockwell ladder logic without a full rewrite. If they can tick those boxes in the next 18-24 months, a full transition becomes thinkable.
+JAMES ACHEBE: Zephyr needs to demonstrate three things: proven performance in high-speed continuous process environments (not just batch), a credible global support presence -- especially in our Southeast Asian facilities -- and a migration toolset that can port our existing Stonemill ladder logic without a full rewrite. If they can tick those boxes in the next 18-24 months, a full transition becomes thinkable.
 
 INTERVIEWER: Excellent context, James. Thank you.
 
@@ -149,26 +149,26 @@ INTERVIEWER: Excellent context, James. Thank you.
   /* be extracted automatically by an LLM when the transcript is        */
   /* uploaded. They are hardcoded here for the demo.                    */
 
-  /* -- Meridian Controls NPS surveys (from customers) -- */
+  /* -- Zephyr Controls NPS surveys (from customers) -- */
   {
     engagement_id: "surv_nps_mc_1",
     expert_name: "Raj Patel",
-    expert_company: "Solaris Packaging",
+    expert_company: "Orion Packaging",
     expert_type: "customer",
     engagement_type: "survey",
     uploaded_at: "2026-02-02T11:00:00Z",
-    product: "Meridian Controls",
+    product: "Zephyr Controls",
     nps_score: 9,
-    key_reasons: ["30% lower TCO than Rockwell", "Excellent API documentation", "Predictive maintenance cut downtime from 12% to 7.5%"],
-    text: `AI SURVEY RESPONSE -- Raj Patel, Solaris Packaging
-Product evaluated: Meridian Controls
+    key_reasons: ["30% lower TCO than Stonemill", "Excellent API documentation", "Predictive maintenance cut downtime from 12% to 7.5%"],
+    text: `AI SURVEY RESPONSE -- Raj Patel, Orion Packaging
+Product evaluated: Zephyr Controls
 NPS Score: 9 (Promoter)
 
-Q: How likely are you to recommend Meridian Controls to a peer? (0-10)
+Q: How likely are you to recommend Zephyr Controls to a peer? (0-10)
 A: 9
 
 Q: What are the main reasons for your score?
-A: Three things stand out. The total cost of ownership is roughly 30% lower than Rockwell over five years. Their API documentation is vastly better than what we experienced with Honeywell or Rockwell. And the predictive maintenance module has already cut our unplanned downtime from 12% to about 7.5%.
+A: Three things stand out. The total cost of ownership is roughly 30% lower than Stonemill over five years. Their API documentation is vastly better than what we experienced with Honeywell or Stonemill. And the predictive maintenance module has already cut our unplanned downtime from 12% to about 7.5%.
 
 Q: What could they improve?
 A: Lead times on IO modules -- we had a six-week wait on analog input cards which held up commissioning. That needs to be addressed for them to compete at scale.`,
@@ -180,14 +180,14 @@ A: Lead times on IO modules -- we had a six-week wait on analog input cards whic
     expert_type: "customer",
     engagement_type: "survey",
     uploaded_at: "2026-02-03T10:30:00Z",
-    product: "Meridian Controls",
+    product: "Zephyr Controls",
     nps_score: 9,
     key_reasons: ["Field engineers understand washdown requirements", "PLC programming environment greatly improved", "Partner-like support model"],
     text: `AI SURVEY RESPONSE -- Marcus Oyelaran, Hartwell Brewing Co.
-Product evaluated: Meridian Controls
+Product evaluated: Zephyr Controls
 NPS Score: 9 (Promoter)
 
-Q: How likely are you to recommend Meridian Controls to a peer? (0-10)
+Q: How likely are you to recommend Zephyr Controls to a peer? (0-10)
 A: 9
 
 Q: What are the main reasons for your score?
@@ -199,22 +199,22 @@ A: Broader availability of spare parts regionally. We sometimes have to wait for
   {
     engagement_id: "surv_nps_mc_3",
     expert_name: "James Achebe",
-    expert_company: "FreshPath Foods",
+    expert_company: "Brambleway Foods",
     expert_type: "customer",
     engagement_type: "survey",
     uploaded_at: "2026-02-04T14:00:00Z",
-    product: "Meridian Controls",
+    product: "Zephyr Controls",
     nps_score: 8,
     key_reasons: ["Best-in-class batch recipe management", "40% faster recipe configuration", "Compelling per-site licensing model"],
-    text: `AI SURVEY RESPONSE -- James Achebe, FreshPath Foods
-Product evaluated: Meridian Controls
+    text: `AI SURVEY RESPONSE -- James Achebe, Brambleway Foods
+Product evaluated: Zephyr Controls
 NPS Score: 8 (Promoter)
 
-Q: How likely are you to recommend Meridian Controls to a peer? (0-10)
+Q: How likely are you to recommend Zephyr Controls to a peer? (0-10)
 A: 8
 
 Q: What are the main reasons for your score?
-A: Their batch recipe management module is genuinely best-in-class for food and beverage. Our process engineers configure new recipes in about 40% less time. The per-site licensing at $380K/year vs Rockwell's $2.4M enterprise agreement is compelling.
+A: Their batch recipe management module is genuinely best-in-class for food and beverage. Our process engineers configure new recipes in about 40% less time. The per-site licensing at $380K/year vs Stonemill's $2.4M enterprise agreement is compelling.
 
 Q: What could they improve?
 A: They need to prove performance in high-speed continuous process environments, not just batch. And their global support -- especially in Southeast Asia -- needs work.`,
@@ -226,18 +226,18 @@ A: They need to prove performance in high-speed continuous process environments,
     expert_type: "customer",
     engagement_type: "survey",
     uploaded_at: "2026-02-05T09:00:00Z",
-    product: "Meridian Controls",
+    product: "Zephyr Controls",
     nps_score: 8,
     key_reasons: ["Sub-2-hour tech support response", "6-week vs 14-week lead time advantage", "Speed matters when downtime costs $50K/hour"],
     text: `AI SURVEY RESPONSE -- Roberto Garza, Cascadia Paper Products
-Product evaluated: Meridian Controls
+Product evaluated: Zephyr Controls
 NPS Score: 8 (Promoter)
 
-Q: How likely are you to recommend Meridian Controls to a peer? (0-10)
+Q: How likely are you to recommend Zephyr Controls to a peer? (0-10)
 A: 8
 
 Q: What are the main reasons for your score?
-A: Tech support response averages under 2 hours. When we needed a packaging line retrofit, their lead time was 6 weeks vs 14 weeks from Rockwell. In our industry, downtime costs $50K per hour so speed matters enormously.
+A: Tech support response averages under 2 hours. When we needed a packaging line retrofit, their lead time was 6 weeks vs 14 weeks from Stonemill. In our industry, downtime costs $50K per hour so speed matters enormously.
 
 Q: What could they improve?
 A: I worry about what happens if they get acquired. The hands-on support model is why we chose them.`,
@@ -249,14 +249,14 @@ A: I worry about what happens if they get acquired. The hands-on support model i
     expert_type: "customer",
     engagement_type: "survey",
     uploaded_at: "2026-02-05T11:00:00Z",
-    product: "Meridian Controls",
+    product: "Zephyr Controls",
     nps_score: 7,
     key_reasons: ["Impressive high-temp I/O modules", "Competitive pricing", "Need more MTBF reliability data"],
     text: `AI SURVEY RESPONSE -- Chen Wei-Lin, TerraForge Metals
-Product evaluated: Meridian Controls
+Product evaluated: Zephyr Controls
 NPS Score: 7 (Passive)
 
-Q: How likely are you to recommend Meridian Controls to a peer? (0-10)
+Q: How likely are you to recommend Zephyr Controls to a peer? (0-10)
 A: 7
 
 Q: What are the main reasons for your score?
@@ -272,14 +272,14 @@ A: Publish more reliability data for harsh environments. Heavy industry customer
     expert_type: "customer",
     engagement_type: "survey",
     uploaded_at: "2026-02-06T15:00:00Z",
-    product: "Meridian Controls",
+    product: "Zephyr Controls",
     nps_score: 6,
     key_reasons: ["Adequate process control", "Limited chemical industry references", "Prefer established DCS vendors for safety-critical"],
     text: `AI SURVEY RESPONSE -- Angela Moretti, GreenValley Chemicals
-Product evaluated: Meridian Controls
+Product evaluated: Zephyr Controls
 NPS Score: 6 (Passive)
 
-Q: How likely are you to recommend Meridian Controls to a peer? (0-10)
+Q: How likely are you to recommend Zephyr Controls to a peer? (0-10)
 A: 6
 
 Q: What are the main reasons for your score?
@@ -289,22 +289,22 @@ Q: What could they improve?
 A: SIL-rated safety modules and more chemical process industry case studies.`,
   },
 
-  /* -- Beckhoff NPS surveys (from competitor customers) -- */
+  /* -- Kestrel NPS surveys (from competitor customers) -- */
   {
     engagement_id: "surv_nps_bk_1",
     expert_name: "Raj Patel",
-    expert_company: "Solaris Packaging",
+    expert_company: "Orion Packaging",
     expert_type: "customer",
     engagement_type: "survey",
     uploaded_at: "2026-02-02T12:00:00Z",
-    product: "Beckhoff Automation",
+    product: "Kestrel Automation",
     nps_score: 7,
     key_reasons: ["Strong EtherCAT hardware ecosystem", "TwinCAT software is powerful but complex", "Premium pricing"],
-    text: `AI SURVEY RESPONSE -- Raj Patel, Solaris Packaging
-Product evaluated: Beckhoff Automation
+    text: `AI SURVEY RESPONSE -- Raj Patel, Orion Packaging
+Product evaluated: Kestrel Automation
 NPS Score: 7 (Passive)
 
-Q: How likely are you to recommend Beckhoff to a peer? (0-10)
+Q: How likely are you to recommend Kestrel to a peer? (0-10)
 A: 7
 
 Q: What are the main reasons for your score?
@@ -316,18 +316,18 @@ A: Simplify the programming environment for mid-market customers who don't have 
   {
     engagement_id: "surv_nps_bk_2",
     expert_name: "James Achebe",
-    expert_company: "FreshPath Foods",
+    expert_company: "Brambleway Foods",
     expert_type: "customer",
     engagement_type: "survey",
     uploaded_at: "2026-02-04T15:00:00Z",
-    product: "Beckhoff Automation",
+    product: "Kestrel Automation",
     nps_score: 6,
     key_reasons: ["Good high-speed motion control", "Weak food & bev specific features", "Expensive for batch processes"],
-    text: `AI SURVEY RESPONSE -- James Achebe, FreshPath Foods
-Product evaluated: Beckhoff Automation
+    text: `AI SURVEY RESPONSE -- James Achebe, Brambleway Foods
+Product evaluated: Kestrel Automation
 NPS Score: 6 (Passive)
 
-Q: How likely are you to recommend Beckhoff to a peer? (0-10)
+Q: How likely are you to recommend Kestrel to a peer? (0-10)
 A: 6
 
 Q: What are the main reasons for your score?
@@ -343,18 +343,18 @@ A: Industry-specific recipe management tools and better washdown-rated enclosure
     expert_type: "customer",
     engagement_type: "survey",
     uploaded_at: "2026-02-05T12:00:00Z",
-    product: "Beckhoff Automation",
+    product: "Kestrel Automation",
     nps_score: 7,
     key_reasons: ["In-house manufacturing ensures supply", "Good harsh environment options", "Limited local field support"],
     text: `AI SURVEY RESPONSE -- Chen Wei-Lin, TerraForge Metals
-Product evaluated: Beckhoff Automation
+Product evaluated: Kestrel Automation
 NPS Score: 7 (Passive)
 
-Q: How likely are you to recommend Beckhoff to a peer? (0-10)
+Q: How likely are you to recommend Kestrel to a peer? (0-10)
 A: 7
 
 Q: What are the main reasons for your score?
-A: In-house manufacturing in Verl gives them tight supply chain control. They have decent options for harsh environments. But local field support is thinner than Rockwell's in our region.
+A: In-house manufacturing in Verl gives them tight supply chain control. They have decent options for harsh environments. But local field support is thinner than Stonemill's in our region.
 
 Q: What could they improve?
 A: Expand field engineering presence in the US Southeast and Midwest.`,
@@ -366,43 +366,43 @@ A: Expand field engineering presence in the US Southeast and Midwest.`,
     expert_type: "customer",
     engagement_type: "survey",
     uploaded_at: "2026-02-05T10:00:00Z",
-    product: "Beckhoff Automation",
+    product: "Kestrel Automation",
     nps_score: 5,
     key_reasons: ["Considered but not selected", "Lead times acceptable but not best", "Programming model too complex for our team"],
     text: `AI SURVEY RESPONSE -- Roberto Garza, Cascadia Paper Products
-Product evaluated: Beckhoff Automation
+Product evaluated: Kestrel Automation
 NPS Score: 5 (Detractor)
 
-Q: How likely are you to recommend Beckhoff to a peer? (0-10)
+Q: How likely are you to recommend Kestrel to a peer? (0-10)
 A: 5
 
 Q: What are the main reasons for your score?
-A: We evaluated them but the programming model was too complex for our maintenance team. Lead times were acceptable but Meridian was significantly faster. Not a bad product, just not the right fit for us.
+A: We evaluated them but the programming model was too complex for our maintenance team. Lead times were acceptable but Zephyr was significantly faster. Not a bad product, just not the right fit for us.
 
 Q: What could they improve?
 A: A simplified programming tier for maintenance technicians who need to make basic changes without learning TwinCAT.`,
   },
 
-  /* -- Rockwell Automation NPS surveys -- */
+  /* -- Stonemill Automation NPS surveys -- */
   {
     engagement_id: "surv_nps_rw_1",
     expert_name: "Raj Patel",
-    expert_company: "Solaris Packaging",
+    expert_company: "Orion Packaging",
     expert_type: "customer",
     engagement_type: "survey",
     uploaded_at: "2026-02-02T13:00:00Z",
-    product: "Rockwell Automation",
+    product: "Stonemill Automation",
     nps_score: 5,
     key_reasons: ["Reliable but expensive", "Locked-in ecosystem", "Costs climbing year on year"],
-    text: `AI SURVEY RESPONSE -- Raj Patel, Solaris Packaging
-Product evaluated: Rockwell Automation
+    text: `AI SURVEY RESPONSE -- Raj Patel, Orion Packaging
+Product evaluated: Stonemill Automation
 NPS Score: 5 (Detractor)
 
-Q: How likely are you to recommend Rockwell to a peer? (0-10)
+Q: How likely are you to recommend Stonemill to a peer? (0-10)
 A: 5
 
 Q: What are the main reasons for your score?
-A: Reliable products but the costs keep climbing. The ecosystem feels locked-in and proprietary. We evaluated alternatives specifically because Rockwell's five-year TCO was 30% higher.
+A: Reliable products but the costs keep climbing. The ecosystem feels locked-in and proprietary. We evaluated alternatives specifically because Stonemill's five-year TCO was 30% higher.
 
 Q: What could they improve?
 A: More open standards support and competitive pricing for mid-market customers.`,
@@ -410,22 +410,22 @@ A: More open standards support and competitive pricing for mid-market customers.
   {
     engagement_id: "surv_nps_rw_2",
     expert_name: "James Achebe",
-    expert_company: "FreshPath Foods",
+    expert_company: "Brambleway Foods",
     expert_type: "customer",
     engagement_type: "survey",
     uploaded_at: "2026-02-04T16:00:00Z",
-    product: "Rockwell Automation",
+    product: "Stonemill Automation",
     nps_score: 6,
     key_reasons: ["15-year track record", "Known failure modes", "Global enterprise agreement is expensive"],
-    text: `AI SURVEY RESPONSE -- James Achebe, FreshPath Foods
-Product evaluated: Rockwell Automation
+    text: `AI SURVEY RESPONSE -- James Achebe, Brambleway Foods
+Product evaluated: Stonemill Automation
 NPS Score: 6 (Passive)
 
-Q: How likely are you to recommend Rockwell to a peer? (0-10)
+Q: How likely are you to recommend Stonemill to a peer? (0-10)
 A: 6
 
 Q: What are the main reasons for your score?
-A: We have a 15-year track record with Rockwell and know their failure modes intimately. Reliability is at 99.8%. But the global enterprise agreement at $2.4M annually is hard to justify when alternatives exist at a fraction of the cost.
+A: We have a 15-year track record with Stonemill and know their failure modes intimately. Reliability is at 99.8%. But the global enterprise agreement at $2.4M annually is hard to justify when alternatives exist at a fraction of the cost.
 
 Q: What could they improve?
 A: Flexible licensing models for phased rollouts instead of all-or-nothing enterprise agreements.`,
@@ -437,14 +437,14 @@ A: Flexible licensing models for phased rollouts instead of all-or-nothing enter
     expert_type: "customer",
     engagement_type: "survey",
     uploaded_at: "2026-02-05T13:00:00Z",
-    product: "Rockwell Automation",
+    product: "Stonemill Automation",
     nps_score: 7,
     key_reasons: ["Proven in harsh environments", "Extensive MTBF data", "Expensive but justified for critical processes"],
     text: `AI SURVEY RESPONSE -- Chen Wei-Lin, TerraForge Metals
-Product evaluated: Rockwell Automation
+Product evaluated: Stonemill Automation
 NPS Score: 7 (Passive)
 
-Q: How likely are you to recommend Rockwell to a peer? (0-10)
+Q: How likely are you to recommend Stonemill to a peer? (0-10)
 A: 7
 
 Q: What are the main reasons for your score?
@@ -460,66 +460,66 @@ A: More competitive pricing for smaller projects and better integration support 
     expert_type: "customer",
     engagement_type: "survey",
     uploaded_at: "2026-02-05T11:00:00Z",
-    product: "Rockwell Automation",
+    product: "Stonemill Automation",
     nps_score: 4,
     key_reasons: ["Great products but slow support", "14-week lead times unacceptable", "Downtime costs $50K/hour"],
     text: `AI SURVEY RESPONSE -- Roberto Garza, Cascadia Paper Products
-Product evaluated: Rockwell Automation
+Product evaluated: Stonemill Automation
 NPS Score: 4 (Detractor)
 
-Q: How likely are you to recommend Rockwell to a peer? (0-10)
+Q: How likely are you to recommend Stonemill to a peer? (0-10)
 A: 4
 
 Q: What are the main reasons for your score?
-A: Great products but support is slow -- I'd rate them a 6 on support vs Meridian's 8. The 14-week lead time on our last retrofit was unacceptable. When downtime costs $50K per hour, speed matters more than brand name.
+A: Great products but support is slow -- I'd rate them a 6 on support vs Zephyr's 8. The 14-week lead time on our last retrofit was unacceptable. When downtime costs $50K per hour, speed matters more than brand name.
 
 Q: What could they improve?
 A: Dramatically improve lead times and support response. Match the service level of mid-market competitors.`,
   },
 
-  /* -- Omron NPS surveys -- */
+  /* -- Trilon NPS surveys -- */
   {
     engagement_id: "surv_nps_om_1",
     expert_name: "Raj Patel",
-    expert_company: "Solaris Packaging",
+    expert_company: "Orion Packaging",
     expert_type: "customer",
     engagement_type: "survey",
     uploaded_at: "2026-02-02T14:00:00Z",
-    product: "Omron Industrial",
+    product: "Trilon Industrial",
     nps_score: 6,
     key_reasons: ["Good vision and robotics integration", "Weaker PLC offering vs specialised vendors", "Competitive on price"],
-    text: `AI SURVEY RESPONSE -- Raj Patel, Solaris Packaging
-Product evaluated: Omron Industrial
+    text: `AI SURVEY RESPONSE -- Raj Patel, Orion Packaging
+Product evaluated: Trilon Industrial
 NPS Score: 6 (Passive)
 
-Q: How likely are you to recommend Omron to a peer? (0-10)
+Q: How likely are you to recommend Trilon to a peer? (0-10)
 A: 6
 
 Q: What are the main reasons for your score?
-A: Strong on vision systems and robotics integration. But their standalone PLC offering is weaker than specialised vendors like Meridian or Beckhoff. Competitive on price though.
+A: Strong on vision systems and robotics integration. But their standalone PLC offering is weaker than specialised vendors like Zephyr or Kestrel. Competitive on price though.
 
 Q: What could they improve?
-A: A more capable standalone PLC platform without requiring the full Omron robotics stack.`,
+A: A more capable standalone PLC platform without requiring the full Trilon robotics stack.`,
   },
   {
     engagement_id: "surv_nps_om_2",
     expert_name: "James Achebe",
-    expert_company: "FreshPath Foods",
+    expert_company: "Brambleway Foods",
     expert_type: "customer",
     engagement_type: "survey",
     uploaded_at: "2026-02-04T17:00:00Z",
-    product: "Omron Industrial",
+    product: "Trilon Industrial",
     nps_score: 5,
     key_reasons: ["Not strong in food & bev", "Better suited for automotive", "Limited batch processing features"],
-    text: `AI SURVEY RESPONSE -- James Achebe, FreshPath Foods
-Product evaluated: Omron Industrial
+    text: `AI SURVEY RESPONSE -- James Achebe, Brambleway Foods
+Product evaluated: Trilon Industrial
 NPS Score: 5 (Detractor)
 
-Q: How likely are you to recommend Omron to a peer? (0-10)
+Q: How likely are you to recommend Trilon to a peer? (0-10)
 A: 5
 
 Q: What are the main reasons for your score?
-A: Omron is better suited for automotive and electronics than food & beverage. Limited batch processing features and their local support in food manufacturing is thin.
+A: Trilon is better suited for automotive and electronics than food & beverage. Limited batch processing features and their local support in food manufacturing is thin.
 
 Q: What could they improve?
 A: Invest in food & beverage-specific solutions and batch recipe management.`,
@@ -531,14 +531,14 @@ A: Invest in food & beverage-specific solutions and batch recipe management.`,
     expert_type: "customer",
     engagement_type: "survey",
     uploaded_at: "2026-02-05T09:00:00Z",
-    product: "Omron Industrial",
+    product: "Trilon Industrial",
     nps_score: 8,
     key_reasons: ["Excellent for automotive precision", "Strong Japan-NA support network", "Tight robotics-PLC integration"],
     text: `AI SURVEY RESPONSE -- Yuki Tanaka, Nippon Precision Components
-Product evaluated: Omron Industrial
+Product evaluated: Trilon Industrial
 NPS Score: 8 (Promoter)
 
-Q: How likely are you to recommend Omron to a peer? (0-10)
+Q: How likely are you to recommend Trilon to a peer? (0-10)
 A: 8
 
 Q: What are the main reasons for your score?
@@ -554,14 +554,14 @@ A: Broader industry coverage beyond automotive. Some of our non-automotive lines
     expert_type: "customer",
     engagement_type: "survey",
     uploaded_at: "2026-02-06T08:00:00Z",
-    product: "Omron Industrial",
+    product: "Trilon Industrial",
     nps_score: 4,
     key_reasons: ["Poor fit for heavy industry", "Limited harsh environment products", "Vision systems not relevant for cement"],
     text: `AI SURVEY RESPONSE -- Priya Chakraborty, Atlas Cement Corp
-Product evaluated: Omron Industrial
+Product evaluated: Trilon Industrial
 NPS Score: 4 (Detractor)
 
-Q: How likely are you to recommend Omron to a peer? (0-10)
+Q: How likely are you to recommend Trilon to a peer? (0-10)
 A: 4
 
 Q: What are the main reasons for your score?
@@ -576,8 +576,8 @@ A: Ruggedised product lines for heavy industry and process control applications.
 /*  localStorage persistence                                           */
 /* ------------------------------------------------------------------ */
 
-const LS_KEY = "helmsman_transcripts"
-const TRANSCRIPTS_SEEDED = "helmsman_transcripts_seeded_v5"
+const LS_KEY = "consensus_transcripts"
+const TRANSCRIPTS_SEEDED = "consensus_transcripts_seeded_v5"
 
 function ensureTranscriptsSeeded(): void {
   if (typeof window === "undefined") return

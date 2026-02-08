@@ -1,13 +1,13 @@
 /* ------------------------------------------------------------------ */
-/*  Helmsman – localStorage CRUD layer                                */
+/*  Consensus – localStorage CRUD layer                               */
 /*  Single source of truth: every page reads/writes through here.     */
 /* ------------------------------------------------------------------ */
 
 import type { EntityType, EntityMap } from "./types"
 import { seedExperts } from "./seed"
 
-const STORAGE_PREFIX = "helmsman_"
-const SEEDED_KEY = "helmsman_seeded"
+const STORAGE_PREFIX = "consensus_"
+const SEEDED_KEY = "consensus_seeded"
 
 /* ---------- helpers ------------------------------------------------ */
 

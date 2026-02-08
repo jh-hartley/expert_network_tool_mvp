@@ -1,5 +1,5 @@
 /* ------------------------------------------------------------------ */
-/*  Helmsman -- Reusable client-side LLM API caller                   */
+/*  Consensus -- Reusable client-side LLM API caller                  */
 /*  Use this from any page / component to invoke server-side LLM      */
 /*  extraction endpoints without duplicating fetch logic.             */
 /* ------------------------------------------------------------------ */

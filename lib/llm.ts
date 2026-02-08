@@ -1,5 +1,5 @@
 /* ------------------------------------------------------------------ */
-/*  Helmsman -- LLM extraction helpers                                */
+/*  Consensus -- LLM extraction helpers                               */
 /*  Reusable prompt-building and schema definitions for structured    */
 /*  expert extraction from unstructured text.                         */
 /* ------------------------------------------------------------------ */
@@ -96,7 +96,7 @@ REQUIRED FIELDS
 - "former" (boolean): true if the expert's relevant role is a past position (look for words like "former", "ex-", "departed", "left", past-tense descriptions).
 - "date_left" (string): If "former" is true, provide the departure date in "YYYY-MM" format if available, or "Unknown" if the date is not specified. If "former" is false, return "N/A".
 - "price" (number or null): The hourly rate in USD. Parse from the text (look for "Rate:", "Hourly rate:", "$X/hr", "$X per hour", etc.). Return null if not specified.
-- "network" (string): The expert network that sourced this expert (e.g. "AlphaSights", "GLG", "Third Bridge", "Guidepoint"). Infer from the document context or explicit mentions.
+- "network" (string): The expert network that sourced this expert (e.g. "AlphaView", "GLS", "FifthBridge", "GuidePost"). Infer from the document context or explicit mentions.
 - "industry_guess" (string): Your best estimate of the industry sector for the expert's company. Use categories like "Industrial Automation", "Food & Beverage Manufacturing", "Specialty Metals", "Chemicals", "Paper & Packaging", "Automotive Components", etc.
 - "fte_estimate" (string): Your best estimate of the number of full-time employees at the expert's company. Use ranges like "<100", "100-500", "500-1,000", "1,000-5,000", "5,000-10,000", "10,000-50,000", "50,000+". Base this on any revenue, plant count, or scale clues in the text.
 

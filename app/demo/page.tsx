@@ -37,7 +37,7 @@ Below are 5 expert recommendations for your consideration. We have conducted ini
 
 1. Raj Patel
    Type: Customer
-   Current Role: VP of Plant Engineering, Solaris Packaging (CPG manufacturer)
+   Current Role: VP of Plant Engineering, Orion Packaging (CPG manufacturer)
    Background: 16 years in plant operations. Manages automation procurement across 12 North American facilities. Annual controls spend ~$8M. Previously at Unilever manufacturing ops.
    Relevant Expertise: Multi-vendor evaluation processes, total cost of ownership analysis, mid-market vs enterprise vendor trade-offs
    Compliance: No known conflicts. Never employed by any automation vendor.
@@ -45,7 +45,7 @@ Below are 5 expert recommendations for your consideration. We have conducted ini
 
    Screening Responses (Customer):
    Q1 - Which vendors have you evaluated in the last 24 months?
-   "We looked at Meridian Controls, Beckhoff, and Omron for our latest line expansion. Also got proposals from Rockwell but they were out of budget."
+   "We looked at Zephyr Controls, Kestrel, and Trilon for our latest line expansion. Also got proposals from Stonemill but they were out of budget."
 
    Q2 - What drove your most recent vendor selection?
    "Ultimately it came down to integration support and total cost. The mid-market players were much more hands-on during commissioning."
@@ -58,24 +58,24 @@ Below are 5 expert recommendations for your consideration. We have conducted ini
 
 2. Diane Kowalski
    Type: Competitor
-   Current Role: Former SVP Sales, Beckhoff Automation North America (departed Aug 2024)
-   Background: 19 years in industrial automation sales. Built Beckhoff's NA business from $40M to $180M revenue. Previously at B&R Automation (now ABB) and Bosch Rexroth.
+   Current Role: Former SVP Sales, Kestrel Automation North America (departed Aug 2024)
+   Background: 19 years in industrial automation sales. Built Kestrel's NA business from $40M to $180M revenue. Previously at B&R Automation (now ABB) and Bosch Rexroth.
    Relevant Expertise: PC-based control market dynamics, competitive win/loss patterns, channel strategy for mid-market automation
    Compliance: Non-compete expired. No current advisory or board roles.
    Rate: $950/hr | Network: AlphaSights | ID: AS-2025-00202
 
    Screening Responses (Competitor):
    Q1 - How do you view the competitive landscape in industrial controls?
-   "The mid-market is getting crowded. You have Beckhoff, Meridian Controls, WAGO, and Omron all fighting for the same $2-10M plant budgets. Rockwell and Siemens own the top end."
+   "The mid-market is getting crowded. You have Kestrel, Zephyr Controls, WAGO, and Trilon all fighting for the same $2-10M plant budgets. Stonemill and Siemens own the top end."
 
    Q2 - Which competitors are you losing deals to most often?
-   "When I was at Beckhoff, we lost most often to Meridian Controls in food & beverage and to Omron in automotive Tier 2. Meridian's local support model is very effective."
+   "When I was at Kestrel, we lost most often to Zephyr Controls in food & beverage and to Trilon in automotive Tier 2. Zephyr's local support model is very effective."
 
    Q3 - How does your pricing compare to mid-market players?
-   "Beckhoff is slightly premium but justifiable on total cost. Meridian is maybe 10-15% cheaper on hardware but closes the gap on service contracts."
+   "Kestrel is slightly premium but justifiable on total cost. Zephyr is maybe 10-15% cheaper on hardware but closes the gap on service contracts."
 
    Q4 - Where are you investing in R&D over the next 2 years?
-   "Beckhoff is all-in on XTS linear transport and TwinCAT cloud engineering. The industry is moving toward software-defined control."
+   "Kestrel is all-in on XTS linear transport and TwinCAT cloud engineering. The industry is moving toward software-defined control."
 
 3. Marcus Oyelaran
    Type: Customer
@@ -87,34 +87,34 @@ Below are 5 expert recommendations for your consideration. We have conducted ini
 
    Screening Responses (Customer):
    Q1 - Which vendors have you evaluated in the last 24 months?
-   "Meridian Controls and Rockwell. We also looked at Siemens but their local distributor coverage was thin in our regions."
+   "Zephyr Controls and Stonemill. We also looked at Siemens but their local distributor coverage was thin in our regions."
 
    Q2 - What drove your most recent vendor selection?
-   "Meridian won our latest project because their field engineers actually understood our washdown requirements without us having to educate them."
+   "Zephyr won our latest project because their field engineers actually understood our washdown requirements without us having to educate them."
 
    Q3 - How would you rate your satisfaction with your current vendor (1-10)?
-   "Meridian gets a 9 from us. Very responsive, and their PLC programming environment has gotten much better in the last two releases."
+   "Zephyr gets a 9 from us. Very responsive, and their PLC programming environment has gotten much better in the last two releases."
 
    Q4 - What would trigger you to switch providers?
    "Acquisition by a larger company that changed the support model. That hands-on approach is why we chose them."
 
 4. Sandra Voss
    Type: Competitor
-   Current Role: Head of Strategy, Omron Industrial Automation, Americas
-   Background: 13 years at Omron. Leads corporate strategy and M&A evaluation for the Americas region. Previously at McKinsey (industrials practice).
+   Current Role: Head of Strategy, Trilon Industrial Automation, Americas
+   Background: 13 years at Trilon. Leads corporate strategy and M&A evaluation for the Americas region. Previously at McKinsey (industrials practice).
    Relevant Expertise: Competitive intelligence on mid-market controls, M&A landscape, Japanese vs Western automation vendor strategies
-   Compliance: Currently employed at Omron. Requires pre-screening for confidentiality.
+   Compliance: Currently employed at Trilon. Requires pre-screening for confidentiality.
    Rate: $1,100/hr | Network: AlphaSights | ID: AS-2025-00204
 
    Screening Responses (Competitor):
    Q1 - How do you view the competitive landscape in industrial controls?
-   "The mid-market is fragmenting. Meridian Controls has built a strong regional presence in North America, while Beckhoff is pushing hard from Europe. Omron differentiates on vision and robotics integration."
+   "The mid-market is fragmenting. Zephyr Controls has built a strong regional presence in North America, while Kestrel is pushing hard from Europe. Trilon differentiates on vision and robotics integration."
 
    Q2 - Which competitors are you losing deals to most often?
-   "In discrete manufacturing we lose to Beckhoff on innovation and to Meridian Controls on price-for-value in the $1-5M project range."
+   "In discrete manufacturing we lose to Kestrel on innovation and to Zephyr Controls on price-for-value in the $1-5M project range."
 
    Q3 - How does your pricing compare to mid-market players?
-   "We are competitive but the Japanese yen fluctuation creates margin pressure. Meridian and Beckhoff both have domestic manufacturing advantages."
+   "We are competitive but the Japanese yen fluctuation creates margin pressure. Zephyr and Kestrel both have domestic manufacturing advantages."
 
    Q4 - Where are you investing in R&D over the next 2 years?
    "AI-enabled quality inspection and tighter robotics-PLC integration. We think the control layer and the robot layer merge within 5 years."
@@ -129,13 +129,13 @@ Below are 5 expert recommendations for your consideration. We have conducted ini
 
    Screening Responses (Customer):
    Q1 - Which vendors have you evaluated in the last 24 months?
-   "Rockwell, Siemens, and Meridian Controls. For our environment we need proven high-temp rated hardware so the field narrows quickly."
+   "Stonemill, Siemens, and Zephyr Controls. For our environment we need proven high-temp rated hardware so the field narrows quickly."
 
    Q2 - What drove your most recent vendor selection?
-   "Rockwell won on installed base compatibility, but Meridian came very close. Their newer high-temp rated I/O modules impressed our maintenance team."
+   "Stonemill won on installed base compatibility, but Zephyr came very close. Their newer high-temp rated I/O modules impressed our maintenance team."
 
    Q3 - How would you rate your satisfaction with your current vendor (1-10)?
-   "Rockwell is a 7 -- solid but expensive. I'd rate Meridian an 8 on the project we trialled them on."
+   "Stonemill is a 7 -- solid but expensive. I'd rate Zephyr an 8 on the project we trialled them on."
 
    Q4 - What would trigger you to switch providers?
    "Significant cost savings with equivalent reliability data. We need at least 3 years of MTBF data before we commit to a new vendor at scale."
@@ -161,23 +161,23 @@ Please find below our expert recommendations for Project Atlas. Each profile inc
 EXPERT 1
 Name: Laura Fischer
 Type: Competitor
-Title: Former COO, Meridian Controls (departed November 2024)
+Title: Former COO, Zephyr Controls (departed November 2024)
 Geography: Milwaukee, WI
-Background: 21 years in industrial automation. Most recently COO at Meridian Controls where she oversaw manufacturing, supply chain, and field operations for 7 years. Previously held senior operations roles at Rockwell Automation and Parker Hannifin.
+Background: 21 years in industrial automation. Most recently COO at Zephyr Controls where she oversaw manufacturing, supply chain, and field operations for 7 years. Previously held senior operations roles at Stonemill Automation and Parker Hannifin.
 Why relevant: Direct operational knowledge of the target's cost structure, manufacturing footprint, supply chain, and go-to-market model.
-Compliance note: Left Meridian Controls 2+ months ago. No active non-compete per Wisconsin law. Will need CID clearance given recency.
+Compliance note: Left Zephyr Controls 2+ months ago. No active non-compete per Wisconsin law. Will need CID clearance given recency.
 Hourly rate: USD 1,200
 GLG Member ID: GLG-US-90102
 
 Screening Responses (Competitor):
 Q1 - How do you view the competitive landscape in industrial controls?
-"Meridian occupies a strong niche in the mid-market. The company competes primarily with Beckhoff, Omron, and WAGO, while trying to pull customers down from Rockwell. The value proposition is local service plus competitive pricing."
+"Zephyr occupies a strong niche in the mid-market. The company competes primarily with Kestrel, Trilon, and WAGO, while trying to pull customers down from Stonemill. The value proposition is local service plus competitive pricing."
 
 Q2 - Which competitors are you losing deals to most often?
-"While I was there, Beckhoff was the toughest competitor on technology. Omron competed hard on price in automotive. Rockwell was difficult to displace in brownfield sites."
+"While I was there, Kestrel was the toughest competitor on technology. Trilon competed hard on price in automotive. Stonemill was difficult to displace in brownfield sites."
 
 Q3 - How does your pricing compare to mid-market players?
-"Meridian typically prices 10-20% below Rockwell and roughly in line with Beckhoff, but margins are protected by the service contract attach rate which runs around 65%."
+"Zephyr typically prices 10-20% below Stonemill and roughly in line with Kestrel, but margins are protected by the service contract attach rate which runs around 65%."
 
 Q4 - Where are you investing in R&D over the next 2 years?
 "When I left, the roadmap priorities were Ethernet-APL I/O for process industries, a cloud-based engineering toolkit, and edge analytics modules. The R&D budget was growing about 15% YoY."
@@ -187,26 +187,26 @@ Q4 - Where are you investing in R&D over the next 2 years?
 EXPERT 2
 Name: James Achebe
 Type: Customer
-Title: Global Automation Manager, FreshPath Foods (multinational food manufacturer)
+Title: Global Automation Manager, Brambleway Foods (multinational food manufacturer)
 Geography: Toronto, Canada
 Background: 18 years in food manufacturing. Manages global automation standards and vendor relationships across 22 plants in North America and Europe. $15M annual automation spend.
-Why relevant: Large-scale multi-vendor customer with direct procurement experience across Meridian Controls, Rockwell, and Siemens.
+Why relevant: Large-scale multi-vendor customer with direct procurement experience across Zephyr Controls, Stonemill, and Siemens.
 Compliance note: No conflicts. End-user only.
 Hourly rate: USD 750
 GLG Member ID: GLG-CA-88714
 
 Screening Responses (Customer):
 Q1 - Which vendors have you evaluated in the last 24 months?
-"Rockwell is our global standard but we have been piloting Meridian Controls in 3 plants for secondary lines. We also evaluated Beckhoff for a new greenfield facility in Ontario."
+"Stonemill is our global standard but we have been piloting Zephyr Controls in 3 plants for secondary lines. We also evaluated Kestrel for a new greenfield facility in Ontario."
 
 Q2 - What drove your most recent vendor selection?
-"For the Meridian pilots, it was 30% cost savings on hardware plus their willingness to provide on-site commissioning support at no extra charge for the first year."
+"For the Zephyr pilots, it was 30% cost savings on hardware plus their willingness to provide on-site commissioning support at no extra charge for the first year."
 
 Q3 - How would you rate your satisfaction with your current vendor (1-10)?
-"Rockwell is a 7 -- reliable but the cost keeps climbing. Meridian is an 8 so far on the pilots, but it is early days."
+"Stonemill is a 7 -- reliable but the cost keeps climbing. Zephyr is an 8 so far on the pilots, but it is early days."
 
 Q4 - What would trigger you to switch providers?
-"If Meridian can demonstrate consistent performance across all 3 pilot plants over 18 months, we would consider them for our global approved vendor list."
+"If Zephyr can demonstrate consistent performance across all 3 pilot plants over 18 months, we would consider them for our global approved vendor list."
 
 ---
 
@@ -222,13 +222,13 @@ GLG Member ID: GLG-US-91330
 
 Screening Responses (Competitor):
 Q1 - How do you view the competitive landscape in industrial controls?
-"The mid-market is the most dynamic part of the controls industry right now. WAGO, Meridian Controls, and Beckhoff are all growing faster than the large incumbents. The customer base is looking for alternatives to Rockwell's pricing."
+"The mid-market is the most dynamic part of the controls industry right now. WAGO, Zephyr Controls, and Kestrel are all growing faster than the large incumbents. The customer base is looking for alternatives to Stonemill's pricing."
 
 Q2 - Which competitors are you losing deals to most often?
-"Meridian Controls in food & beverage and general manufacturing. Beckhoff in high-performance machine building. We differentiate on open standards and DIN-rail I/O density."
+"Zephyr Controls in food & beverage and general manufacturing. Kestrel in high-performance machine building. We differentiate on open standards and DIN-rail I/O density."
 
 Q3 - How does your pricing compare to mid-market players?
-"WAGO is generally in line with Meridian on I/O pricing. They tend to win on the PLC/controller level where they have stronger software."
+"WAGO is generally in line with Zephyr on I/O pricing. They tend to win on the PLC/controller level where they have stronger software."
 
 Q4 - Where are you investing in R&D over the next 2 years?
 "Docker-based runtime environments on our controllers, expanded MQTT/OPC-UA connectivity, and compact safety I/O. We see the edge compute layer as key."
@@ -240,23 +240,23 @@ Name: Roberto Garza
 Type: Customer
 Title: Maintenance & Reliability Director, Cascadia Paper Products
 Geography: Portland, OR
-Background: 15 years in pulp & paper manufacturing. Responsible for automation reliability across 3 mills. Has evaluated and deployed systems from Rockwell, Meridian Controls, and ABB.
+Background: 15 years in pulp & paper manufacturing. Responsible for automation reliability across 3 mills. Has evaluated and deployed systems from Stonemill, Zephyr Controls, and ABB.
 Compliance note: Clear. No vendor advisory roles.
 Hourly rate: USD 600
 GLG Member ID: GLG-US-92008
 
 Screening Responses (Customer):
 Q1 - Which vendors have you evaluated in the last 24 months?
-"ABB for our main DCS, Meridian Controls for discrete PLC applications on packaging lines, and Rockwell for some legacy upgrades."
+"ABB for our main DCS, Zephyr Controls for discrete PLC applications on packaging lines, and Stonemill for some legacy upgrades."
 
 Q2 - What drove your most recent vendor selection?
-"Meridian was selected for the packaging line retrofit because their lead time was 6 weeks vs 14 weeks from Rockwell. In our industry, downtime costs $50K/hour so speed matters enormously."
+"Zephyr was selected for the packaging line retrofit because their lead time was 6 weeks vs 14 weeks from Stonemill. In our industry, downtime costs $50K/hour so speed matters enormously."
 
 Q3 - How would you rate your satisfaction with your current vendor (1-10)?
-"Meridian is a solid 8. Their tech support response time averages under 2 hours. ABB is a 7 on the DCS side. Rockwell is a 6 -- great products but support is slow."
+"Zephyr is a solid 8. Their tech support response time averages under 2 hours. ABB is a 7 on the DCS side. Stonemill is a 6 -- great products but support is slow."
 
 Q4 - What would trigger you to switch providers?
-"If Meridian's support model degraded after growth or acquisition, that would be a red flag. We chose them specifically because they act like a partner, not a vendor."
+"If Zephyr's support model degraded after growth or acquisition, that would be a red flag. We chose them specifically because they act like a partner, not a vendor."
 
 Please confirm which experts you'd like to proceed with and we'll send calendar invitations.
 
@@ -264,56 +264,56 @@ Best,
 GLG Research Team`
 
 const SAMPLE_CSV = `Name,Title,Company,Industry,Network,Compliance,Rate_USD,Tags
-Raj Patel,VP of Plant Engineering,Solaris Packaging,Technology,Third Bridge,cleared,650,customer;multi-vendor;CPG;packaging
-Laura Fischer,Former COO,Meridian Controls,Technology,Third Bridge,pending,1200,competitor;target-company;operations;supply-chain
-Henrik Larsson,VP Manufacturing,Beckhoff Automation,Technology,Third Bridge,cleared,850,competitor;PC-based-control;Europe
-Angela Moretti,Plant Manager,GreenValley Chemicals,Technology,Third Bridge,cleared,500,customer;process-industries;chemicals;safety
-Nathan Cross,Former VP Product,Meridian Controls,Technology,Third Bridge,pending,950,competitor;target-company;product-roadmap;R&D
+Raj Patel,VP of Plant Engineering,Orion Packaging,Technology,Third Bridge,cleared,650,customer;multi-vendor;CPG;packaging
+Laura Fischer,Former COO,Zephyr Controls,Technology,Third Bridge,pending,1200,competitor;target-company;operations;supply-chain
+Henrik Larsson,VP Manufacturing,Kestrel Automation,Technology,Third Bridge,cleared,850,competitor;PC-based-control;Europe
+Angela Moretti,Plant Manager,Cedarpoint Chemicals,Technology,Third Bridge,cleared,500,customer;process-industries;chemicals;safety
+Nathan Cross,Former VP Product,Zephyr Controls,Technology,Third Bridge,pending,950,competitor;target-company;product-roadmap;R&D
 Yuki Tanaka,Director of Automation,Nippon Precision Components,Technology,Third Bridge,cleared,700,customer;automotive-tier2;Japan-NA;precision
 Derek Otieno,Head of Industrial Strategy,Turck Inc.,Technology,Third Bridge,pending,800,competitor;sensor-IO;fieldbus;connectivity
 Priya Chakraborty,Engineering Manager,Atlas Cement Corp,Technology,Third Bridge,cleared,550,customer;heavy-industry;harsh-environment;cement`
 
-const SAMPLE_TRANSCRIPT_RAJ = `CALL TRANSCRIPT -- Raj Patel, VP of Plant Engineering, Solaris Packaging
+const SAMPLE_TRANSCRIPT_RAJ = `CALL TRANSCRIPT -- Raj Patel, VP of Plant Engineering, Orion Packaging
 Date: 14 November 2025 | Duration: 60 min | Network: AlphaSights
 NPS Score: 8
 
-INTERVIEWER: Thank you for joining, Raj. Could you start by walking us through how Solaris first evaluated Meridian Controls?
+INTERVIEWER: Thank you for joining, Raj. Could you start by walking us through how Orion first evaluated Zephyr Controls?
 
-RAJ PATEL: Sure. We began our evaluation roughly eighteen months ago when we needed to replace aging Rockwell PLCs across three of our packaging lines. Meridian came onto our radar through an industry conference -- their demo of the real-time adaptive control loop was genuinely impressive compared to what we'd seen from incumbents.
+RAJ PATEL: Sure. We began our evaluation roughly eighteen months ago when we needed to replace aging Stonemill PLCs across three of our packaging lines. Zephyr came onto our radar through an industry conference -- their demo of the real-time adaptive control loop was genuinely impressive compared to what we'd seen from incumbents.
 
-INTERVIEWER: What were the key selection criteria for Solaris?
+INTERVIEWER: What were the key selection criteria for Orion?
 
-RAJ PATEL: Three things drove it. First, total cost of ownership -- Meridian's licensing model was roughly 30% lower over a five-year horizon compared to Rockwell and Siemens. Second, ease of integration with our existing SCADA layer. Third, and this was the clincher, their predictive maintenance module. We'd been losing about 12% of uptime annually on unplanned stoppages, and their analytics showed credible paths to cutting that by half.
+RAJ PATEL: Three things drove it. First, total cost of ownership -- Zephyr's licensing model was roughly 30% lower over a five-year horizon compared to Stonemill and Siemens. Second, ease of integration with our existing SCADA layer. Third, and this was the clincher, their predictive maintenance module. We'd been losing about 12% of uptime annually on unplanned stoppages, and their analytics showed credible paths to cutting that by half.
 
 INTERVIEWER: How has the rollout gone so far?
 
 RAJ PATEL: We're about eight months in and we've completed two of the three lines. I'd say 80% positive. The initial integration was smoother than expected -- their API documentation is vastly better than what we experienced with Honeywell. The main friction point has been lead times on replacement IO modules. We had a six-week wait on a batch of analog input cards which held up Line 2 commissioning.
 
-INTERVIEWER: Would you recommend Meridian to a peer in your position?
+INTERVIEWER: Would you recommend Zephyr to a peer in your position?
 
-RAJ PATEL: With caveats, yes. If your operation is mid-scale -- say 5 to 15 lines -- and you're not locked into a long-term Rockwell enterprise agreement, Meridian is worth serious consideration. For very large plants with 50+ lines, I'd want to see more proof points on their scalability.
+RAJ PATEL: With caveats, yes. If your operation is mid-scale -- say 5 to 15 lines -- and you're not locked into a long-term Stonemill enterprise agreement, Zephyr is worth serious consideration. For very large plants with 50+ lines, I'd want to see more proof points on their scalability.
 
 [END OF TRANSCRIPT]`
 
-const SAMPLE_TRANSCRIPT_JAMES = `CALL TRANSCRIPT -- James Achebe, Global Automation Manager, FreshPath Foods
+const SAMPLE_TRANSCRIPT_JAMES = `CALL TRANSCRIPT -- James Achebe, Global Automation Manager, Brambleway Foods
 Date: 20 November 2025 | Duration: 45 min | Network: GLG
 NPS Score: 7
 
-INTERVIEWER: James, could you describe FreshPath's experience evaluating Meridian Controls alongside Rockwell?
+INTERVIEWER: James, could you describe Brambleway's experience evaluating Zephyr Controls alongside Stonemill?
 
-JAMES ACHEBE: Of course. FreshPath operates 22 food processing facilities globally and we've been on Rockwell ControlLogix for about fifteen years. When the time came to upgrade our batch control systems we ran a formal evaluation that included Rockwell, Siemens, and Meridian.
+JAMES ACHEBE: Of course. Brambleway operates 22 food processing facilities globally and we've been on Stonemill ControlLogix for about fifteen years. When the time came to upgrade our batch control systems we ran a formal evaluation that included Stonemill, Siemens, and Zephyr.
 
-INTERVIEWER: What set Meridian apart in the evaluation?
+INTERVIEWER: What set Zephyr apart in the evaluation?
 
-JAMES ACHEBE: Two things. First, their batch recipe management module is best-in-class for food and beverage. Our process engineers could configure new product recipes in about 40% less time during the pilot. Second, their pricing model -- Rockwell wanted roughly $2.4M annually for a global enterprise agreement, Meridian's per-site licensing came in at about $380K for four pilot sites.
+JAMES ACHEBE: Two things. First, their batch recipe management module is best-in-class for food and beverage. Our process engineers could configure new product recipes in about 40% less time during the pilot. Second, their pricing model -- Stonemill wanted roughly $2.4M annually for a global enterprise agreement, Zephyr's per-site licensing came in at about $380K for four pilot sites.
 
-INTERVIEWER: Were there concerns about switching from Rockwell?
+INTERVIEWER: Were there concerns about switching from Stonemill?
 
-JAMES ACHEBE: Absolutely. Our reliability engineering team was initially sceptical. We negotiated a 90-day proof-of-concept at our Charlotte facility running in parallel with Rockwell. System availability was 99.7% versus Rockwell's 99.8% -- well within tolerance. The Meridian system also flagged two equipment anomalies that the Rockwell predictive module missed entirely.
+JAMES ACHEBE: Absolutely. Our reliability engineering team was initially sceptical. We negotiated a 90-day proof-of-concept at our Charlotte facility running in parallel with Stonemill. System availability was 99.7% versus Stonemill's 99.8% -- well within tolerance. The Zephyr system also flagged two equipment anomalies that the Stonemill predictive module missed entirely.
 
 INTERVIEWER: How is the broader rollout progressing?
 
-JAMES ACHEBE: We've approved Meridian for four pilot sites, two are fully cut over. The board has approved conditional expansion to eight additional sites pending a 12-month review.
+JAMES ACHEBE: We've approved Zephyr for four pilot sites, two are fully cut over. The board has approved conditional expansion to eight additional sites pending a 12-month review.
 
 [END OF TRANSCRIPT]`
 
@@ -452,7 +452,7 @@ export default function DemoPage() {
         </h1>
         <p className="mt-1 max-w-2xl text-sm leading-relaxed text-muted-foreground">
           Walk through a DD scenario evaluating{" "}
-          <strong className="text-foreground font-medium">Meridian Controls</strong>{" "}
+          <strong className="text-foreground font-medium">Zephyr Controls</strong>{" "}
           (codename &ldquo;Project Atlas&rdquo;). Each step links to a live page
           -- expand sections below for detailed instructions and sample data.
         </p>

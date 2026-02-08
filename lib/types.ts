@@ -1,10 +1,10 @@
 /* ------------------------------------------------------------------ */
-/*  Helmsman – canonical data types                                   */
+/*  Consensus – canonical data types                                  */
 /* ------------------------------------------------------------------ */
 
 export type ComplianceStatus = "cleared" | "pending" | "blocked"
 
-export type Network = "GLG" | "AlphaSights" | "Third Bridge" | "Guidepoint" | "Direct"
+export type Network = "GLS" | "AlphaView" | "FifthBridge" | "GuidePost" | "Direct"
 
 export type Industry =
   | "Technology"
