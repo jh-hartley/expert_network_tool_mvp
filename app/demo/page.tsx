@@ -142,6 +142,216 @@ Below are 5 expert recommendations for your consideration. We have conducted ini
    Q4 - What would trigger you to switch providers?
    "Significant cost savings with equivalent reliability data. We need at least 3 years of MTBF data before we commit to a new vendor at scale."
 
+6. Felicity Okonjo
+   Type: Customer
+   Current Role: VP of Engineering, Ridgeline Automotive Components (Tier 1 supplier)
+   Background: 17 years in automotive manufacturing. Oversees automation across 6 plants serving BMW, Toyota, and Ford. Annual controls budget ~$12M. Previously at Magna International.
+   Relevant Expertise: Automotive OEM compliance requirements, high-volume line integration, vendor qualification processes for IATF 16949 environments
+   Compliance: No known conflicts. Pure end-user perspective.
+   Rate: $700/hr | Network: AlphaView | ID: AS-2025-00206
+
+   Screening Responses (Customer):
+   Q1 - Which vendors have you evaluated in the last 24 months?
+   "Stonemill, Kestrel, Zephyr Controls, and Siemens. We run mostly Stonemill but have been diversifying to reduce single-vendor risk."
+
+   Q2 - What drove your most recent vendor selection?
+   "Kestrel won our latest high-speed press line project because of their motion control performance. Zephyr Controls came second -- very competitive on price but lacking automotive-specific reference installs."
+
+   Q3 - How would you rate your satisfaction with your current vendor (1-10)?
+   "Stonemill is a 7 -- reliable but the annual price increases are aggressive. Kestrel is an 8 on the new line."
+
+   Q4 - What would trigger you to switch providers?
+   "If a mid-market vendor could demonstrate IATF 16949 compliance support and sub-100ms cycle time performance consistently, we would seriously consider switching more lines."
+
+7. Declan Moriarty
+   Type: Competitor
+   Current Role: Former VP Engineering, Stonemill Automation (departed March 2024)
+   Background: 22 years at Stonemill. Led PLC and PAC product development for the last 8 years. Holds 12 patents in industrial control architectures. Previously at Honeywell Process Solutions.
+   Relevant Expertise: Stonemill product roadmap insights, large enterprise controls architecture, competitive positioning vs mid-market disruptors
+   Compliance: Non-compete expired. No active advisory or board roles. Requires CID check given target-adjacent overlap.
+   Rate: $1,300/hr | Network: AlphaView | ID: AS-2025-00207
+
+   Screening Responses (Competitor):
+   Q1 - How do you view the competitive landscape in industrial controls?
+   "Stonemill still dominates in installed base, but the mid-market players are eroding share faster than the market realises. Zephyr Controls in particular has built a very effective land-and-expand strategy in food & beverage."
+
+   Q2 - Which competitors are you losing deals to most often?
+   "When I was at Stonemill, the biggest surprise losses were to Zephyr Controls in brownfield upgrades where the customer didn't want to pay for a full ControlLogix migration."
+
+   Q3 - How does your pricing compare to mid-market players?
+   "Stonemill hardware is typically 30-50% more expensive than Zephyr or Kestrel. The justification is ecosystem lock-in and FactoryTalk, but that argument is weakening."
+
+   Q4 - Where are you investing in R&D over the next 2 years?
+   "When I left, the big bets were cloud-native engineering tools, simplified micro-PLCs for OEM, and AI-assisted troubleshooting. The threat from software-defined control was taken very seriously."
+
+8. Amara Diallo
+   Type: Customer
+   Current Role: Director of Process Engineering, Clearwater Pharmaceuticals
+   Background: 13 years in pharmaceutical manufacturing. Manages automation for 2 sterile manufacturing facilities and 1 API production plant. Strict FDA/GMP validation requirements.
+   Relevant Expertise: Pharma-grade automation requirements, 21 CFR Part 11 compliance, validation lifecycle costs, vendor audit processes
+   Compliance: Clear. No vendor relationships beyond standard procurement.
+   Rate: $800/hr | Network: AlphaView | ID: AS-2025-00208
+
+   Screening Responses (Customer):
+   Q1 - Which vendors have you evaluated in the last 24 months?
+   "Siemens, Stonemill, and Zephyr Controls. We also considered Kestrel but they lacked pharma reference sites at the time."
+
+   Q2 - What drove your most recent vendor selection?
+   "Siemens won our latest cleanroom expansion because of their SIMATIC Batch integration. However, Zephyr Controls is being piloted on our packaging lines where the validation burden is lower."
+
+   Q3 - How would you rate your satisfaction with your current vendor (1-10)?
+   "Siemens is a 7 -- powerful but complex. Zephyr is too early to rate on the pilot, but their engineering team has been very responsive to our validation documentation needs."
+
+   Q4 - What would trigger you to switch providers?
+   "If a vendor could significantly reduce our validation lifecycle cost -- which currently runs $200K+ per system -- that would be transformative for our procurement decisions."
+
+9. Niall Brennan
+   Type: Competitor
+   Current Role: Chief Commercial Officer, WestBridge Automation (emerging UK-based controls vendor)
+   Background: 15 years in industrial automation sales. Built WestBridge's North American business from scratch. Previously at Schneider Electric and ABB.
+   Relevant Expertise: Emerging competitor strategies, transatlantic market entry, channel partner dynamics in mid-market controls
+   Compliance: Currently employed at WestBridge. Requires pre-screening for confidentiality.
+   Rate: $850/hr | Network: AlphaView | ID: AS-2025-00209
+
+   Screening Responses (Competitor):
+   Q1 - How do you view the competitive landscape in industrial controls?
+   "North America is the battleground. Everyone -- Zephyr, Kestrel, WAGO, and us -- is going after the same underserved mid-market that Stonemill has overcharged for years."
+
+   Q2 - Which competitors are you losing deals to most often?
+   "Zephyr Controls is our most frequent competitor in the $1-3M project range. They win on local service and established distributor relationships that we are still building."
+
+   Q3 - How does your pricing compare to mid-market players?
+   "We are aggressive on entry pricing -- typically 15-20% below Zephyr -- to build reference sites. The challenge is proving long-term support capability from a UK base."
+
+   Q4 - Where are you investing in R&D over the next 2 years?
+   "Container-based runtimes, digital twin integration, and simplified HMI development. We think the next generation of controls buyers will choose based on software experience, not hardware specs."
+
+10. Gloria Stenberg
+    Type: Customer
+    Current Role: VP Operations, Nordic Cold Storage (temperature-controlled logistics)
+    Background: 12 years in cold chain logistics. Manages automation for 8 distribution centres with -30C to +4C zones. $5M annual automation spend. Previously at Lineage Logistics.
+    Relevant Expertise: Cold chain automation requirements, energy efficiency considerations, multi-site standardisation challenges
+    Compliance: No conflicts. Pure end-user perspective.
+    Rate: $550/hr | Network: AlphaView | ID: AS-2025-00210
+
+    Screening Responses (Customer):
+    Q1 - Which vendors have you evaluated in the last 24 months?
+    "Stonemill for our main warehouse management systems, Zephyr Controls for conveyor and sortation PLCs, and Siemens for refrigeration control."
+
+    Q2 - What drove your most recent vendor selection?
+    "Zephyr won our latest DC build-out because they offered a bundled PLC + I/O + engineering package that was 25% cheaper than Stonemill for equivalent functionality."
+
+    Q3 - How would you rate your satisfaction with your current vendor (1-10)?
+    "Zephyr is an 8. Their cold-rated hardware has performed well and remote diagnostics have cut our unplanned downtime by about 30%."
+
+    Q4 - What would trigger you to switch providers?
+    "If energy monitoring and optimisation were better integrated into the control platform. We spend $2M/year on refrigeration energy alone."
+
+11. Kwame Asante
+    Type: Competitor
+    Current Role: Former Director of Product Marketing, Trilon Industrial Automation (departed June 2024)
+    Background: 9 years at Trilon. Ran product positioning and competitive analysis for the Americas division. Deep knowledge of Trilon's go-to-market strategy and win/loss analysis.
+    Relevant Expertise: Mid-market competitive positioning, Trilon's strategic priorities, customer perception benchmarking across vendors
+    Compliance: Non-compete expired. No active advisory or board roles.
+    Rate: $750/hr | Network: AlphaView | ID: AS-2025-00211
+
+    Screening Responses (Competitor):
+    Q1 - How do you view the competitive landscape in industrial controls?
+    "Zephyr Controls has been the story of the last 3 years. They have taken share from everyone in the mid-market by out-executing on customer service and local support."
+
+    Q2 - Which competitors are you losing deals to most often?
+    "At Trilon, Zephyr was our #1 loss reason in food & beverage and general discrete manufacturing. Kestrel was #1 in machine building and automotive."
+
+    Q3 - How does your pricing compare to mid-market players?
+    "Trilon was generally cheaper than Zephyr on hardware, but Zephyr's bundled service packages made the total cost comparison unfavourable for us."
+
+    Q4 - Where are you investing in R&D over the next 2 years?
+    "When I left, Trilon was pivoting hard toward collaborative robotics integration and vision-guided automation. The PLC side was getting less R&D investment."
+
+12. Ingrid Haugen
+    Type: Customer
+    Current Role: Chief Technology Officer, FjordSteel AS (Norwegian specialty steel manufacturer)
+    Background: 20 years in metals and heavy industry. Leads digital transformation and automation strategy for 3 production facilities. Annual automation investment ~$9M.
+    Relevant Expertise: European industrial automation procurement, harsh-environment reliability benchmarking, Stonemill vs Siemens vs mid-market vendor comparison from a global end-user perspective
+    Compliance: No conflicts. Norway-based, available for video calls.
+    Rate: $900/hr | Network: AlphaView | ID: AS-2025-00212
+
+    Screening Responses (Customer):
+    Q1 - Which vendors have you evaluated in the last 24 months?
+    "Siemens is our standard in Europe. We evaluated Zephyr Controls when they entered the Nordic market last year, along with Kestrel and ABB for specific applications."
+
+    Q2 - What drove your most recent vendor selection?
+    "Siemens won on ecosystem -- TIA Portal integration across our plants. But Zephyr Controls submitted a very compelling proposal for a new rolling mill line that was 35% cheaper."
+
+    Q3 - How would you rate your satisfaction with your current vendor (1-10)?
+    "Siemens is a solid 8 globally. Zephyr Controls we cannot rate yet as we have not deployed, but their technical pre-sales team impressed our engineers."
+
+    Q4 - What would trigger you to switch providers?
+    "Proven reliability data in high-vibration, high-temperature steel mill environments. The mid-market vendors need to demonstrate they can handle harsh conditions at scale."
+
+13. Trevor Pham
+    Type: Competitor
+    Current Role: Senior Director of Strategic Partnerships, Kestrel Automation
+    Background: 11 years in industrial automation. Manages Kestrel's technology partnerships and OEM channel strategy in North America. Previously at National Instruments (now NI).
+    Relevant Expertise: OEM channel dynamics, technology partnership strategies, Kestrel's competitive response to mid-market disruptors
+    Compliance: Currently employed at Kestrel. Requires pre-screening for confidentiality.
+    Rate: $1,000/hr | Network: AlphaView | ID: AS-2025-00213
+
+    Screening Responses (Competitor):
+    Q1 - How do you view the competitive landscape in industrial controls?
+    "Kestrel and Zephyr Controls are on a collision course in the mid-market. We both target the same customer tier but from different angles -- Kestrel leads with technology, Zephyr leads with service."
+
+    Q2 - Which competitors are you losing deals to most often?
+    "Zephyr Controls in end-user projects where the customer values local support over cutting-edge features. We win machine builder deals where cycle time and precision matter."
+
+    Q3 - How does your pricing compare to mid-market players?
+    "Kestrel is 10-20% premium over Zephyr on hardware. We justify it with TwinCAT's engineering productivity and our motion control performance."
+
+    Q4 - Where are you investing in R&D over the next 2 years?
+    "Vision integration, XPlanar next-gen, and TwinCAT Chat -- an AI assistant for PLC programming. We believe software differentiation is the future moat."
+
+14. Miriam Rothschild
+    Type: Customer
+    Current Role: Head of Manufacturing Excellence, Luminos Solar (solar panel manufacturer)
+    Background: 10 years in high-tech manufacturing. Manages automation for 2 gigawatt-scale panel production facilities. Rapid expansion requiring aggressive vendor evaluation cycles.
+    Relevant Expertise: High-speed discrete manufacturing automation, cleanroom-adjacent requirements, rapid scaling challenges, vendor evaluation for greenfield facilities
+    Compliance: No conflicts. Pure end-user perspective.
+    Rate: $650/hr | Network: AlphaView | ID: AS-2025-00214
+
+    Screening Responses (Customer):
+    Q1 - Which vendors have you evaluated in the last 24 months?
+    "Kestrel, Zephyr Controls, Siemens, and Trilon. Solar manufacturing needs fast cycle times and high reliability -- not all vendors can deliver both."
+
+    Q2 - What drove your most recent vendor selection?
+    "Kestrel won our newest line on motion control performance. But Zephyr Controls is being seriously evaluated for our material handling and packaging subsystems where cost matters more than cycle time."
+
+    Q3 - How would you rate your satisfaction with your current vendor (1-10)?
+    "Kestrel is a 9 for the core process. For auxiliary systems, we need a more cost-effective solution and Zephyr looks very promising."
+
+    Q4 - What would trigger you to switch providers?
+    "If Zephyr could demonstrate 50ms deterministic cycle times we would consider them for more critical applications. Right now they are strong on the $500K-$2M subsystem projects."
+
+15. Oscar Lindqvist
+    Type: Competitor
+    Current Role: Former Chief Strategy Officer, WAGO Corporation (departed January 2025)
+    Background: 16 years in industrial automation strategy. Most recently led WAGO's global strategy including M&A pipeline and competitive intelligence. Previously at BCG (industrials practice).
+    Relevant Expertise: Mid-market M&A landscape, open-standards vs proprietary control strategies, WAGO's assessment of Zephyr Controls as an acquisition target
+    Compliance: Non-compete waived per separation agreement. CID clearance recommended given strategic role.
+    Rate: $1,400/hr | Network: AlphaView | ID: AS-2025-00215
+
+    Screening Responses (Competitor):
+    Q1 - How do you view the competitive landscape in industrial controls?
+    "The mid-market is ripe for consolidation. Zephyr Controls, Kestrel, and WAGO are all potential acquirers or targets depending on strategic direction. The question is who moves first."
+
+    Q2 - Which competitors are you losing deals to most often?
+    "At WAGO, Zephyr Controls was increasingly our primary competitor in North America. They out-executed us on go-to-market and channel development."
+
+    Q3 - How does your pricing compare to mid-market players?
+    "WAGO and Zephyr are very close on pricing. The differentiation comes down to software ecosystem and local support -- areas where Zephyr has invested heavily."
+
+    Q4 - Where are you investing in R&D over the next 2 years?
+    "When I left, WAGO was all-in on Linux-based open runtimes and container orchestration on the edge. The belief was that open platforms would win long-term over proprietary ecosystems."
+
 Please let us know which experts you would like to schedule, and we will coordinate availability.
 
 Best regards,
@@ -521,7 +731,7 @@ export default function DemoPage() {
           </ul>
         </Collapsible>
 
-        <Collapsible label="Sample data: Raw text (AlphaView, 5 experts)">
+        <Collapsible label="Sample data: Raw text (AlphaView, 15 experts)">
           <pre className="whitespace-pre-wrap text-[11px] leading-relaxed text-foreground/80 font-mono max-h-48 overflow-y-auto rounded-md border border-border bg-muted/20 p-3">
             {SAMPLE_RAW_TEXT.slice(0, 500)}{"..."}
           </pre>
