@@ -712,9 +712,17 @@ export default function ExpertLensTable({
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/40">
-                {/* Actions header */}
-                <th className="sticky left-0 z-10 bg-muted/40 px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground" style={{ minWidth: "300px" }}>
-                  Actions
+                {/* Screening header */}
+                <th className="sticky left-0 z-20 bg-muted/40 px-2 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground" style={{ minWidth: "100px", width: "100px" }}>
+                  Screen
+                </th>
+                {/* CID header */}
+                <th className="sticky z-20 bg-muted/40 px-2 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground" style={{ left: "100px", minWidth: "110px", width: "110px" }}>
+                  CID
+                </th>
+                {/* Flags header */}
+                <th className="sticky z-20 bg-muted/40 px-2 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground" style={{ left: "210px", minWidth: "130px" }}>
+                  Flags
                 </th>
                 {/* Notes header */}
                 <th className="px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground" style={{ minWidth: "160px" }}>
@@ -763,7 +771,7 @@ export default function ExpertLensTable({
               {sorted.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={columns.length + 2}
+                    colSpan={columns.length + 4}
                     className="px-4 py-10 text-center text-sm text-muted-foreground"
                   >
                   {screeningFilter !== "all"
@@ -789,73 +797,108 @@ export default function ExpertLensTable({
                             : "",
                       ].join(" ")}
                     >
-                      {/* ---- Actions cell ---- */}
-                      <td className="sticky left-0 z-10 bg-card px-3 py-2" style={{ minWidth: "300px" }}>
-                        <div className="flex flex-nowrap items-center gap-1.5">
-                          {/* Screening status: shortlist / discard / reset */}
-                          {(() => {
-                            const ss = expert.screening_status ?? "pending"
-                            return (
-                              <div className="inline-flex items-center overflow-hidden rounded-md border border-border">
-                                <button
-                                  type="button"
-                                  onClick={() => setScreeningStatus(expert, ss === "shortlisted" ? "pending" : "shortlisted")}
-                                  title={ss === "shortlisted" ? "Remove from shortlist" : "Shortlist"}
-                                  className={[
-                                    "inline-flex h-7 items-center gap-1 whitespace-nowrap px-2 text-[11px] font-medium transition-colors",
-                                    ss === "shortlisted"
-                                      ? "bg-emerald-100 text-emerald-700"
-                                      : "bg-card text-muted-foreground hover:bg-emerald-50 hover:text-emerald-700",
-                                  ].join(" ")}
-                                >
-                                  <Star className={`h-3 w-3 shrink-0 ${ss === "shortlisted" ? "fill-emerald-600" : ""}`} />
-                                  <span className="sr-only sm:not-sr-only">
-                                    {ss === "shortlisted" ? "Listed" : "List"}
-                                  </span>
-                                </button>
-                                <span className="w-px self-stretch bg-border" />
-                                <button
-                                  type="button"
-                                  onClick={() => setScreeningStatus(expert, ss === "discarded" ? "pending" : "discarded")}
-                                  title={ss === "discarded" ? "Restore to pending" : "Discard"}
-                                  className={[
-                                    "inline-flex h-7 items-center gap-1 whitespace-nowrap px-2 text-[11px] font-medium transition-colors",
-                                    ss === "discarded"
-                                      ? "bg-rose-100 text-rose-700"
-                                      : "bg-card text-muted-foreground hover:bg-rose-50 hover:text-rose-700",
-                                  ].join(" ")}
-                                >
-                                  <X className={`h-3 w-3 shrink-0 ${ss === "discarded" ? "text-rose-600" : ""}`} />
-                                  <span className="sr-only sm:not-sr-only">
-                                    {ss === "discarded" ? "Nope" : "Drop"}
-                                  </span>
-                                </button>
-                              </div>
-                            )
-                          })()}
-
-                          {/* CID status button */}
-                          {(() => {
-                            const status = expert.cid_status ?? "not_checked"
-                            const cfg = CID_STATUS_CONFIG[status]
-                            const CidIcon = cfg.Icon
-                            const isClickable = status === "not_checked"
-                            const Tag = isClickable ? "button" : "span"
-                            return (
-                              <Tag
-                                {...(isClickable ? { type: "button" as const, onClick: () => openCidModal(expert) } : {})}
-                                title={cfg.label}
-                                className={`inline-flex h-7 items-center gap-1 whitespace-nowrap rounded-md border px-2 text-[11px] font-medium transition-colors ${cfg.color}`}
+                      {/* ---- Screening cell (frozen col 1) ---- */}
+                      <td
+                        className={[
+                          "sticky left-0 z-10 px-2 py-2",
+                          (expert.screening_status ?? "pending") === "shortlisted"
+                            ? "bg-emerald-50"
+                            : (expert.screening_status ?? "pending") === "discarded"
+                              ? "bg-rose-50"
+                              : "bg-card",
+                        ].join(" ")}
+                        style={{ minWidth: "100px", width: "100px" }}
+                      >
+                        {(() => {
+                          const ss = expert.screening_status ?? "pending"
+                          return (
+                            <div className="inline-flex items-center overflow-hidden rounded-md border border-border">
+                              <button
+                                type="button"
+                                onClick={() => setScreeningStatus(expert, ss === "shortlisted" ? "pending" : "shortlisted")}
+                                title={ss === "shortlisted" ? "Remove from shortlist" : "Shortlist"}
+                                className={[
+                                  "inline-flex h-7 items-center gap-1 whitespace-nowrap px-2 text-[11px] font-medium transition-colors",
+                                  ss === "shortlisted"
+                                    ? "bg-emerald-100 text-emerald-700"
+                                    : "bg-card text-muted-foreground hover:bg-emerald-50 hover:text-emerald-700",
+                                ].join(" ")}
                               >
-                                <CidIcon className="h-3 w-3 shrink-0" />
-                                <span className="sr-only sm:not-sr-only">{cfg.label}</span>
-                              </Tag>
-                            )
-                          })()}
+                                <Star className={`h-3 w-3 shrink-0 ${ss === "shortlisted" ? "fill-emerald-600" : ""}`} />
+                                <span className="sr-only sm:not-sr-only">
+                                  {ss === "shortlisted" ? "Listed" : "List"}
+                                </span>
+                              </button>
+                              <span className="w-px self-stretch bg-border" />
+                              <button
+                                type="button"
+                                onClick={() => setScreeningStatus(expert, ss === "discarded" ? "pending" : "discarded")}
+                                title={ss === "discarded" ? "Restore to pending" : "Discard"}
+                                className={[
+                                  "inline-flex h-7 items-center gap-1 whitespace-nowrap px-2 text-[11px] font-medium transition-colors",
+                                  ss === "discarded"
+                                    ? "bg-rose-100 text-rose-700"
+                                    : "bg-card text-muted-foreground hover:bg-rose-50 hover:text-rose-700",
+                                ].join(" ")}
+                              >
+                                <X className={`h-3 w-3 shrink-0 ${ss === "discarded" ? "text-rose-600" : ""}`} />
+                                <span className="sr-only sm:not-sr-only">
+                                  {ss === "discarded" ? "Nope" : "Drop"}
+                                </span>
+                              </button>
+                            </div>
+                          )
+                        })()}
+                      </td>
 
-                          {/* Compliance warning badges */}
-                          {(expert.compliance_flags ?? [])
-                            .map((flag) => {
+                      {/* ---- CID cell (frozen col 2) ---- */}
+                      <td
+                        className={[
+                          "sticky z-10 px-2 py-2",
+                          (expert.screening_status ?? "pending") === "shortlisted"
+                            ? "bg-emerald-50"
+                            : (expert.screening_status ?? "pending") === "discarded"
+                              ? "bg-rose-50"
+                              : "bg-card",
+                        ].join(" ")}
+                        style={{ left: "100px", minWidth: "110px", width: "110px" }}
+                      >
+                        {(() => {
+                          const status = expert.cid_status ?? "not_checked"
+                          const cfg = CID_STATUS_CONFIG[status]
+                          const CidIcon = cfg.Icon
+                          const isClickable = status === "not_checked"
+                          const Tag = isClickable ? "button" : "span"
+                          return (
+                            <Tag
+                              {...(isClickable ? { type: "button" as const, onClick: () => openCidModal(expert) } : {})}
+                              title={cfg.label}
+                              className={`inline-flex h-7 items-center gap-1 whitespace-nowrap rounded-md border px-2 text-[11px] font-medium transition-colors ${cfg.color}`}
+                            >
+                              <CidIcon className="h-3 w-3 shrink-0" />
+                              <span className="sr-only sm:not-sr-only">{cfg.label}</span>
+                            </Tag>
+                          )
+                        })()}
+                      </td>
+
+                      {/* ---- Flags cell (frozen col 3) ---- */}
+                      <td
+                        className={[
+                          "sticky z-10 px-2 py-2",
+                          (expert.screening_status ?? "pending") === "shortlisted"
+                            ? "bg-emerald-50"
+                            : (expert.screening_status ?? "pending") === "discarded"
+                              ? "bg-rose-50"
+                              : "bg-card",
+                        ].join(" ")}
+                        style={{ left: "210px", minWidth: "130px" }}
+                      >
+                        <div className="flex flex-nowrap items-center gap-1">
+                          {(expert.compliance_flags ?? []).length === 0 ? (
+                            <span className="text-[10px] text-muted-foreground/50">&mdash;</span>
+                          ) : (
+                            (expert.compliance_flags ?? []).map((flag) => {
                               const cfg = COMPLIANCE_FLAG_CONFIG[flag]
                               if (!cfg) return null
                               const IconComp = cfg.Icon
@@ -869,7 +912,8 @@ export default function ExpertLensTable({
                                   <span className="sr-only sm:not-sr-only">{cfg.label}</span>
                                 </span>
                               )
-                            })}
+                            })
+                          )}
                         </div>
                       </td>
 
