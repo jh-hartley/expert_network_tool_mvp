@@ -3,8 +3,7 @@
 /*                                                                     */
 /*  ExpertProfile extends the LLM's ExtractedExpert with UI-layer      */
 /*  fields (network_prices, screening_status, notes, cid_clearance).   */
-/*  These profiles mirror the demo scenario (Project Atlas / Zephyr    */
-/*  Controls).                                                         */
+/*  These profiles mirror the demo scenario (Zephyr Controls DD).      */
 /* ------------------------------------------------------------------ */
 
 import type { ExtractedExpert } from "./llm"
@@ -278,7 +277,7 @@ export function mergeNewExperts(incoming: ExtractedExpert[]): MergeResult {
 /* ------------------------------------------------------------------ */
 
 export const PROJECT_CONTEXT = {
-  projectName: "Project Atlas",
+  projectName: "Zephyr Controls DD",
   targetCompany: "Zephyr Controls",
   caseLeader: "[Case Leader Name]",
   seniorManager: "[Senior Manager Name]",

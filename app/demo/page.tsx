@@ -29,7 +29,7 @@ import { hardResetAll } from "@/lib/storage"
 /*  Demo scenario data (unchanged)                                     */
 /* ------------------------------------------------------------------ */
 
-const SAMPLE_RAW_TEXT = `Expert Network Recommendations - Project Atlas
+const SAMPLE_RAW_TEXT = `Expert Network Recommendations - Zephyr Controls DD
 
 From: AlphaView Research Team
 Date: 15 January 2025
@@ -359,14 +359,14 @@ AlphaView Research Team`
 
 const SAMPLE_EML = `From: research-team@glg.com
 To: project-team@deal.com
-Subject: GLS Expert Recommendations - Project Atlas (Industrial Controls)
+Subject: GLS Expert Recommendations - Zephyr Controls DD (Industrial Controls)
 Date: Thu, 17 Jan 2025 10:15:00 +0000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 
 Hi team,
 
-Please find below our expert recommendations for Project Atlas. Each profile includes responses to your screening questions.
+Please find below our expert recommendations for the Zephyr Controls engagement. Each profile includes responses to your screening questions.
 
 ---
 
@@ -676,8 +676,8 @@ export default function DemoPage() {
             </h1>
             <p className="mt-1 max-w-2xl text-sm leading-relaxed text-muted-foreground">
               Walk through a DD scenario evaluating{" "}
-              <strong className="text-foreground font-medium">Zephyr Controls</strong>{" "}
-              (codename &ldquo;Project Atlas&rdquo;). Each step links to a live page
+              <strong className="text-foreground font-medium">Zephyr Controls</strong>.
+              Each step links to a live page
               -- expand sections below for detailed instructions and sample data.
             </p>
           </div>

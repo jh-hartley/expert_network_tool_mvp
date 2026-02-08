@@ -280,7 +280,7 @@ const CID_CONFLICT_DB: Record<string, CidConflictMatch[]> = {
   "brambleway foods":             [{ company: "Brambleway Foods Group", relationship: "Active client" }, { company: "Brambleway Holdings LLC", relationship: "Former client (2023)" }],
   "kestrel automation":           [{ company: "Kestrel Automation GmbH", relationship: "Prospective client" }, { company: "Kestrel North America", relationship: "Active engagement" }],
   "trilon industrial":            [{ company: "Trilon Corporation", relationship: "Active client" }],
-  "zephyr controls":              [{ company: "Zephyr Controls Inc.", relationship: "Target company (Project Atlas)" }, { company: "Zephyr Industrial Group", relationship: "Former client (2022)" }],
+  "zephyr controls":              [{ company: "Zephyr Controls Inc.", relationship: "Target company" }, { company: "Zephyr Industrial Group", relationship: "Former client (2022)" }],
   "cedarpoint chemicals":         [{ company: "Cedarpoint Chemical Corp", relationship: "Prospective client" }],
 }
 
