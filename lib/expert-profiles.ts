@@ -2,7 +2,7 @@
 /*  Consensus -- ExpertProfile seed data for the Experts table         */
 /*                                                                     */
 /*  ExpertProfile extends the LLM's ExtractedExpert with UI-layer      */
-/*  fields (network_prices, shortlisted, notes, cid_clearance).        */
+/*  fields (network_prices, screening_status, notes, cid_clearance).   */
 /*  These profiles mirror the demo scenario (Project Atlas / Zephyr    */
 /*  Controls).                                                         */
 /* ------------------------------------------------------------------ */
@@ -28,6 +28,9 @@ export type CidStatus =
   | "approved"      // Checked -- compliance approved the engagement
   | "declined"      // Checked -- compliance declined the engagement
 
+/** Screening triage state for an expert */
+export type ScreeningStatus = "pending" | "shortlisted" | "discarded"
+
 /** Compliance flags that can be attached to an expert */
 export type ComplianceFlag =
   | "ben_advisor"       // Expert is a BAN (Bain Advisor Network) advisor
@@ -37,7 +40,10 @@ export type ComplianceFlag =
 export interface ExpertProfile extends ExtractedExpert {
   /** Prices per network.  e.g. { AlphaView: 650, GLS: 700 } */
   network_prices: Record<string, number | null>
-  shortlisted: boolean
+  /** Triage state: pending (not yet reviewed), shortlisted, or discarded */
+  screening_status: ScreeningStatus
+  /** @deprecated -- kept for backward compat migration only */
+  shortlisted?: boolean
   notes: string
   /** CID clearance status */
   cid_status: CidStatus
@@ -69,7 +75,7 @@ export function getNetworks(profiles?: ExpertProfile[]): string[] {
 /* ------------------------------------------------------------------ */
 
 const LS_KEY = "consensus_expert_profiles"
-const LS_SEEDED_KEY = "consensus_expert_profiles_seeded_v4"
+const LS_SEEDED_KEY = "consensus_expert_profiles_seeded_v5"
 
 /* ------------------------------------------------------------------ */
 /*  Read / write helpers                                               */
@@ -91,9 +97,13 @@ export function getExpertProfiles(): ExpertProfile[] {
     const raw = localStorage.getItem(LS_KEY)
     if (!raw) return SEED_PROFILES
     const profiles = JSON.parse(raw) as ExpertProfile[]
-    // Backward compat: ensure compliance_flags & cid_status exist
+    // Backward compat: ensure compliance_flags, cid_status & screening_status exist
     for (const p of profiles) {
       if (!p.compliance_flags) p.compliance_flags = []
+      // Migrate old boolean shortlisted -> screening_status
+      if (!p.screening_status) {
+        p.screening_status = p.shortlisted ? "shortlisted" : "pending"
+      }
       // Migrate old cid_clearance_requested / cid_cleared flag
       if (!p.cid_status) {
         if ((p.compliance_flags as string[]).includes("cid_cleared")) {
@@ -189,7 +199,7 @@ export function toExpertProfile(
   return {
     ...e,
     network_prices,
-    shortlisted: false,
+    screening_status: "pending",
     notes: "",
     cid_status: "not_checked",
     compliance_flags: [],
@@ -309,7 +319,7 @@ export const SEED_PROFILES: ExpertProfile[] = [
     screener_rd_investment: null,
     additional_info:
       "16 years in plant operations. Manages automation procurement across 12 North American facilities. Annual controls spend ~$8M. Previously at Unilever manufacturing ops.",
-    shortlisted: false,
+    screening_status: "pending",
     notes: "",
     cid_status: "approved",
     compliance_flags: [],
@@ -341,7 +351,7 @@ export const SEED_PROFILES: ExpertProfile[] = [
     screener_rd_investment: null,
     additional_info:
       "11 years in food & beverage manufacturing. Oversees automation strategy for 4 breweries. Manages $3.5M annual controls budget.",
-    shortlisted: false,
+    screening_status: "pending",
     notes: "",
     cid_status: "approved",
     compliance_flags: [],
@@ -373,7 +383,7 @@ export const SEED_PROFILES: ExpertProfile[] = [
     screener_rd_investment: null,
     additional_info:
       "14 years in metals and heavy manufacturing. Manages automation for high-temperature and hazardous environments. Previously at Nucor Steel.",
-    shortlisted: false,
+    screening_status: "pending",
     notes: "",
     cid_status: "not_checked",
     compliance_flags: [],
@@ -405,7 +415,7 @@ export const SEED_PROFILES: ExpertProfile[] = [
     screener_rd_investment: null,
     additional_info:
       "18 years in food manufacturing. Manages global automation standards and vendor relationships across 22 plants in North America and Europe. $15M annual automation spend.",
-    shortlisted: false,
+    screening_status: "pending",
     notes: "",
     cid_status: "no_conflict",
     compliance_flags: ["ben_advisor"],
@@ -437,7 +447,7 @@ export const SEED_PROFILES: ExpertProfile[] = [
     screener_rd_investment: null,
     additional_info:
       "15 years in pulp & paper manufacturing. Responsible for automation reliability across 3 mills. Has deployed systems from Stonemill, Zephyr Controls, and ABB.",
-    shortlisted: false,
+    screening_status: "pending",
     notes: "",
     cid_status: "not_checked",
     compliance_flags: ["client_advisor"],
@@ -465,7 +475,7 @@ export const SEED_PROFILES: ExpertProfile[] = [
     screener_rd_investment: null,
     additional_info:
       "Process industries customer. Imported from CSV -- no screening responses available.",
-    shortlisted: false,
+    screening_status: "pending",
     notes: "",
     cid_status: "pending",
     compliance_flags: ["compliance_flagged"],
@@ -493,7 +503,7 @@ export const SEED_PROFILES: ExpertProfile[] = [
     screener_rd_investment: null,
     additional_info:
       "Automotive Tier 2 customer. Japan-NA operations. Imported from CSV -- no screening responses available.",
-    shortlisted: false,
+    screening_status: "pending",
     notes: "",
     cid_status: "not_checked",
     compliance_flags: [],
@@ -521,7 +531,7 @@ export const SEED_PROFILES: ExpertProfile[] = [
     screener_rd_investment: null,
     additional_info:
       "Heavy industry / harsh environment customer. Imported from CSV -- no screening responses available.",
-    shortlisted: false,
+    screening_status: "pending",
     notes: "",
     cid_status: "not_checked",
     compliance_flags: [],
@@ -555,7 +565,7 @@ export const SEED_PROFILES: ExpertProfile[] = [
       "Kestrel is all-in on XTS linear transport and TwinCAT cloud engineering. The industry is moving toward software-defined control.",
     additional_info:
       "19 years in industrial automation sales. Built Kestrel's NA business from $40M to $180M revenue. Previously at B&R Automation (now ABB) and Bosch Rexroth. Non-compete expired.",
-    shortlisted: false,
+    screening_status: "pending",
     notes: "",
     cid_status: "no_conflict",
     compliance_flags: [],
@@ -587,7 +597,7 @@ export const SEED_PROFILES: ExpertProfile[] = [
       "AI-enabled quality inspection and tighter robotics-PLC integration. We think the control layer and the robot layer merge within 5 years.",
     additional_info:
       "13 years at Trilon. Leads corporate strategy and M&A evaluation for the Americas region. Previously at McKinsey (industrials practice). Currently employed -- requires pre-screening for confidentiality.",
-    shortlisted: false,
+    screening_status: "pending",
     notes: "",
     cid_status: "declined",
     compliance_flags: [],
@@ -619,7 +629,7 @@ export const SEED_PROFILES: ExpertProfile[] = [
       "Docker-based runtime environments on our controllers, expanded MQTT/OPC-UA connectivity, and compact safety I/O. We see the edge compute layer as key.",
     additional_info:
       "10 years at WAGO. Leads BD for industrial automation products across North and South America. Previously at Phoenix Contact in product management. Currently employed -- requires pre-screening.",
-    shortlisted: false,
+    screening_status: "pending",
     notes: "",
     cid_status: "not_checked",
     compliance_flags: [],
@@ -647,7 +657,7 @@ export const SEED_PROFILES: ExpertProfile[] = [
     screener_rd_investment: "Not answered",
     additional_info:
       "PC-based control expert. European perspective. Imported from CSV -- no screening responses available.",
-    shortlisted: false,
+    screening_status: "pending",
     notes: "",
     cid_status: "not_checked",
     compliance_flags: [],
@@ -675,7 +685,7 @@ export const SEED_PROFILES: ExpertProfile[] = [
     screener_rd_investment: "Not answered",
     additional_info:
       "Sensor/IO and fieldbus/connectivity specialist. Imported from CSV -- no screening responses available.",
-    shortlisted: false,
+    screening_status: "pending",
     notes: "",
     cid_status: "not_checked",
     compliance_flags: [],
@@ -709,7 +719,7 @@ export const SEED_PROFILES: ExpertProfile[] = [
       "When I left, the roadmap priorities were Ethernet-APL I/O for process industries, a cloud-based engineering toolkit, and edge analytics modules. The R&D budget was growing about 15% YoY.",
     additional_info:
       "21 years in industrial automation. Most recently COO at Zephyr Controls overseeing manufacturing, supply chain, and field operations for 7 years. Previously at Stonemill Automation and Parker Hannifin. Left 2+ months ago, no active non-compete. Will need CID clearance given recency.",
-    shortlisted: false,
+    screening_status: "pending",
     notes: "",
     cid_status: "pending",
     compliance_flags: [],
@@ -737,7 +747,7 @@ export const SEED_PROFILES: ExpertProfile[] = [
     screener_rd_investment: "Not answered",
     additional_info:
       "Former target company insider. Product roadmap and R&D perspective. Imported from CSV -- no screening responses available. Compliance pending.",
-    shortlisted: false,
+    screening_status: "pending",
     notes: "",
     cid_status: "declined",
     compliance_flags: [],

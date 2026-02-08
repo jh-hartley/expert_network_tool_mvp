@@ -179,20 +179,13 @@ export default function ReviewPage() {
         const key = expertKey(current)
         const next = { ...reviewMap, [key]: status }
 
-        // Also update shortlisted on the ExpertProfile itself
-        if (status === "shortlisted") {
-          const updated = profiles.map((p) =>
-            expertKey(p) === key ? { ...p, shortlisted: true } : p
-          )
-          setProfiles(updated)
-          saveExpertProfiles(updated)
-        } else if (status === "discarded") {
-          const updated = profiles.map((p) =>
-            expertKey(p) === key ? { ...p, shortlisted: false } : p
-          )
-          setProfiles(updated)
-          saveExpertProfiles(updated)
-        }
+        // Also update screening_status on the ExpertProfile itself
+        const newScreening = status === "shortlisted" ? "shortlisted" as const : status === "discarded" ? "discarded" as const : "pending" as const
+        const updated = profiles.map((p) =>
+          expertKey(p) === key ? { ...p, screening_status: newScreening } : p
+        )
+        setProfiles(updated)
+        saveExpertProfiles(updated)
 
         setReviewMap(next)
         saveReviewMap(next)
@@ -207,8 +200,8 @@ export default function ReviewPage() {
     setReviewMap({})
     saveReviewMap({})
     setExpandedSection(null)
-    // Reset shortlisted flag on all profiles
-    const updated = profiles.map((p) => ({ ...p, shortlisted: false }))
+    // Reset screening_status on all profiles
+    const updated = profiles.map((p) => ({ ...p, screening_status: "pending" as const }))
     setProfiles(updated)
     saveExpertProfiles(updated)
   }, [profiles])

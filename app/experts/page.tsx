@@ -97,9 +97,16 @@ export default function ExpertsPage() {
       },
       { key: "network", header: "Network" },
       {
-        key: "shortlisted",
-        header: "Shortlisted",
-        transform: (v) => (v ? "Yes" : "No"),
+        key: "screening_status",
+        header: "Screening Status",
+        transform: (v) => {
+          const labels: Record<string, string> = {
+            pending: "Pending",
+            shortlisted: "Shortlisted",
+            discarded: "Discarded",
+          }
+          return labels[String(v)] ?? String(v)
+        },
       },
       {
         key: "cid_status",
@@ -259,7 +266,7 @@ export default function ExpertsPage() {
     <div className="mx-auto max-w-[1600px] px-6 py-10">
       <PageHeader
         title="Experts"
-        description="Browse expert profiles by type, review screening responses, and build your shortlist. Use the lens tabs to switch between customer, competitor, and target views with type-specific screening columns. Data is persisted in your browser -- shortlists, notes, and new experts from the Upload page are saved automatically."
+        description="Browse expert profiles by type, review screening responses, and triage your pool. Use the lens tabs to switch between customer, competitor, and target views with type-specific screening columns. Filter by shortlisted, pending, or discarded status. Data is persisted in your browser."
         actions={
           <>
             <button

@@ -636,9 +636,9 @@ export default function DashboardPage() {
           sub={Object.entries(expertsByType).map(([k, v]) => `${v} ${TYPE_LABELS[k] ?? k}`).join(", ")}
         />
         <MetricBox
-          label="Shortlisted"
-          value={experts.filter((e) => e.shortlisted).length}
-          sub={`${Math.round((experts.filter((e) => e.shortlisted).length / Math.max(experts.length, 1)) * 100)}% of pool`}
+          label="Screening"
+          value={experts.filter((e) => (e.screening_status ?? "pending") === "shortlisted").length}
+          sub={`${experts.filter((e) => (e.screening_status ?? "pending") === "shortlisted").length} shortlisted, ${experts.filter((e) => (e.screening_status ?? "pending") === "discarded").length} discarded, ${experts.filter((e) => (e.screening_status ?? "pending") === "pending").length} pending`}
         />
         <MetricBox
           label="Total Calls"

@@ -50,10 +50,10 @@ const pipeline: {
     stage: 2,
     title: "Review Experts",
     subtitle:
-      "A focused, card-based review flow that presents expert profiles one at a time. Swipe through candidates to shortlist, discard, or defer -- giving every profile proper attention without the noise of a full spreadsheet. Unreviewed experts surface first (FIFO), so nothing slips through the cracks.",
+      "A focused, card-based review flow that presents expert profiles one at a time. Triage candidates as shortlisted, discarded, or deferred -- giving every profile proper attention without the noise of a full spreadsheet. Unreviewed experts surface first (FIFO), so nothing slips through the cracks.",
     icon: Heart,
     capabilities: [
-      "Tinder-style card interface: shortlist, discard, or review later with one click or keyboard shortcut",
+      "Tinder-style card interface: shortlist, discard, or defer with one click or keyboard shortcut",
       "Full profile detail on each card -- background, screener answers, compliance flags, network pricing",
       "FIFO ordering ensures newly ingested experts are reviewed first",
       "Deferred experts cycle back only after all new profiles have been seen",
@@ -132,7 +132,7 @@ const pipeline: {
     stage: 8,
     title: "Search & Discovery",
     subtitle:
-      "Two types of search in one interface. Expert search combines classic database filters (company, departure date, customer vs. competitor, etc.) with natural language to build shortlists faster. Transcript search lets you filter to a subset of calls -- e.g. only a certain competitor, or only customer transcripts -- then ask for supporting quotes, rather than uploading everything into a separate ChatGPT session each time.",
+      "Two types of search in one interface. Expert search combines classic database filters (company, departure date, customer vs. competitor, etc.) with natural language to triage candidates faster. Transcript search lets you filter to a subset of calls -- e.g. only a certain competitor, or only customer transcripts -- then ask for supporting quotes, rather than uploading everything into a separate ChatGPT session each time.",
     icon: SearchIcon,
     capabilities: [
       "Expert search: database filters + natural-language queries to surface the right profiles",
@@ -222,7 +222,7 @@ export default function OverviewPage() {
           <p className="mt-0.5 text-xs leading-relaxed text-amber-700">
             Browser-only demo with synthetic seed data. Data is persisted in
             your browser via localStorage -- a server-side database is not
-            permitted by company policy. Changes (shortlists, notes, new
+            permitted by company policy. Changes (screening decisions, notes, new
             uploads) survive page reloads but will be lost if you clear
             site data.
           </p>
@@ -304,7 +304,7 @@ export default function OverviewPage() {
             <ul className="mt-2 flex flex-col gap-1.5">
               <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
                 <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-                Review and shortlist more experts in the same time window
+                Review and triage more experts in the same time window
               </li>
               <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
                 <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />

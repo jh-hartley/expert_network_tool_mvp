@@ -360,7 +360,7 @@ export default function ExpertLensTable({
   const [sortKey, setSortKey] = useState<string | null>(null)
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc")
   const [search, setSearch] = useState("")
-  const [showShortlistedOnly, setShowShortlistedOnly] = useState(false)
+  const [screeningFilter, setScreeningFilter] = useState<"all" | "shortlisted" | "discarded" | "pending">("all")
 
   // CID modal state
   const [cidModalOpen, setCidModalOpen] = useState(false)
@@ -408,10 +408,14 @@ export default function ExpertLensTable({
     return map
   }, [experts])
 
-  const shortlistedCount = useMemo(
-    () => experts.filter((e) => e.shortlisted).length,
-    [experts],
-  )
+  const screeningCounts = useMemo(() => {
+    const c = { shortlisted: 0, discarded: 0, pending: 0 }
+    for (const e of experts) {
+      const s = e.screening_status ?? "pending"
+      if (s in c) c[s as keyof typeof c]++
+    }
+    return c
+  }, [experts])
 
   // Filter
   const filtered = useMemo(() => {
@@ -419,7 +423,7 @@ export default function ExpertLensTable({
       lens === "all"
         ? experts
         : experts.filter((e) => e.expert_type === lens)
-    if (showShortlistedOnly) list = list.filter((e) => e.shortlisted)
+    if (screeningFilter !== "all") list = list.filter((e) => (e.screening_status ?? "pending") === screeningFilter)
     if (search) {
       const q = search.toLowerCase()
       list = list.filter(
@@ -432,7 +436,7 @@ export default function ExpertLensTable({
       )
     }
     return list
-  }, [experts, lens, search, showShortlistedOnly])
+  }, [experts, lens, search, screeningFilter])
 
   // Sort
   const sorted = useMemo(() => {
@@ -475,12 +479,23 @@ export default function ExpertLensTable({
     [experts],
   )
 
-  const toggleShortlist = useCallback(
-    (expert: ExpertProfile) => {
-      const idx = findOriginalIndex(expert)
-      if (idx >= 0) onUpdateExpert(idx, { shortlisted: !expert.shortlisted })
-    },
-    [findOriginalIndex, onUpdateExpert],
+  const cycleScreeningStatus = useCallback(
+  (expert: ExpertProfile) => {
+  const idx = findOriginalIndex(expert)
+  if (idx < 0) return
+  const current = expert.screening_status ?? "pending"
+  const next = current === "pending" ? "shortlisted" : current === "shortlisted" ? "discarded" : "pending"
+  onUpdateExpert(idx, { screening_status: next })
+  },
+  [findOriginalIndex, onUpdateExpert],
+  )
+
+  const setScreeningStatus = useCallback(
+  (expert: ExpertProfile, status: "shortlisted" | "discarded" | "pending") => {
+  const idx = findOriginalIndex(expert)
+  if (idx >= 0) onUpdateExpert(idx, { screening_status: status })
+  },
+  [findOriginalIndex, onUpdateExpert],
   )
 
   const openCidModal = useCallback((expert: ExpertProfile) => {
@@ -598,38 +613,36 @@ export default function ExpertLensTable({
             })}
           </div>
 
-          {/* Right side: shortlist toggle + search */}
+          {/* Right side: screening filter + search */}
           <div className="flex items-center gap-3">
-            {/* Shortlist toggle */}
-            <label className="inline-flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
-              <button
-                type="button"
-                role="switch"
-                aria-checked={showShortlistedOnly}
-                  onClick={() => {
-                    setShowShortlistedOnly((v) => !v)
-                  }}
-                className={[
-                  "relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors",
-                  showShortlistedOnly ? "bg-primary" : "bg-muted",
-                ].join(" ")}
-              >
-                <span
-                  className={[
-                    "inline-block h-3.5 w-3.5 rounded-full bg-card shadow-sm transition-transform",
-                    showShortlistedOnly ? "translate-x-[18px]" : "translate-x-[3px]",
-                  ].join(" ")}
-                />
-              </button>
-              <span>
-                Shortlisted only
-                {shortlistedCount > 0 && (
-                  <span className="ml-1 text-[10px] font-semibold text-primary">
-                    ({shortlistedCount})
-                  </span>
-                )}
-              </span>
-            </label>
+            {/* Screening filter pills */}
+            <div className="flex items-center gap-1 rounded-lg border border-border bg-muted/40 p-0.5">
+              {([
+                { key: "all",         label: "All",         color: "" },
+                { key: "shortlisted", label: "Shortlisted", color: "text-emerald-700" },
+                { key: "pending",     label: "Pending",     color: "text-amber-700" },
+                { key: "discarded",   label: "Discarded",   color: "text-rose-700" },
+              ] as const).map(({ key: fKey, label, color }) => {
+                const isActive = screeningFilter === fKey
+                const count = fKey === "all" ? experts.length : screeningCounts[fKey as keyof typeof screeningCounts] ?? 0
+                return (
+                  <button
+                    key={fKey}
+                    type="button"
+                    onClick={() => setScreeningFilter(fKey)}
+                    className={[
+                      "inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium transition-colors",
+                      isActive
+                        ? "bg-card text-foreground shadow-sm"
+                        : `bg-transparent ${color || "text-muted-foreground"} hover:text-foreground`,
+                    ].join(" ")}
+                  >
+                    {label}
+                    <span className="text-[9px] font-semibold opacity-60">{count}</span>
+                  </button>
+                )
+              })}
+            </div>
 
             {/* Search */}
             <div className="relative">
@@ -709,9 +722,9 @@ export default function ExpertLensTable({
                     colSpan={columns.length + 2}
                     className="px-4 py-10 text-center text-sm text-muted-foreground"
                   >
-                    {showShortlistedOnly
-                      ? "No shortlisted experts in this view."
-                      : search
+                  {screeningFilter !== "all"
+                    ? `No ${screeningFilter} experts in this view.`
+                    : search
                         ? "No experts match your search."
                         : "No experts in this category."}
                   </td>
@@ -725,38 +738,57 @@ export default function ExpertLensTable({
                       key={`${expert.name}-${expert.company}`}
                       className={[
                         "transition-colors hover:bg-muted/30",
-                        expert.shortlisted ? "bg-primary/[0.03]" : "",
+                        (expert.screening_status ?? "pending") === "shortlisted"
+                          ? "bg-emerald-50/40"
+                          : (expert.screening_status ?? "pending") === "discarded"
+                            ? "bg-rose-50/30"
+                            : "",
                       ].join(" ")}
                     >
                       {/* ---- Actions cell ---- */}
                       <td className="sticky left-0 z-10 bg-card px-3 py-2">
                         <div className="flex items-center gap-1.5">
-                          {/* Shortlist button */}
-                          <button
-                            type="button"
-                            onClick={() => toggleShortlist(expert)}
-                            title={
-                              expert.shortlisted
-                                ? "Remove from shortlist"
-                                : "Add to shortlist"
-                            }
-                            className={[
-                              "inline-flex h-7 items-center gap-1 rounded-md border px-2 text-[11px] font-medium transition-colors",
-                              expert.shortlisted
-                                ? "border-primary/30 bg-primary/10 text-primary"
-                                : "border-border bg-card text-muted-foreground hover:bg-accent hover:text-foreground",
-                            ].join(" ")}
-                          >
-                            <Star
-                              className={[
-                                "h-3 w-3",
-                                expert.shortlisted ? "fill-primary" : "",
-                              ].join(" ")}
-                            />
-                            <span className="sr-only sm:not-sr-only">
-                              {expert.shortlisted ? "Listed" : "Shortlist"}
-                            </span>
-                          </button>
+                          {/* Screening status: shortlist / discard / reset */}
+                          {(() => {
+                            const ss = expert.screening_status ?? "pending"
+                            return (
+                              <div className="inline-flex items-center overflow-hidden rounded-md border border-border">
+                                <button
+                                  type="button"
+                                  onClick={() => setScreeningStatus(expert, ss === "shortlisted" ? "pending" : "shortlisted")}
+                                  title={ss === "shortlisted" ? "Remove from shortlist" : "Shortlist"}
+                                  className={[
+                                    "inline-flex h-7 items-center gap-1 px-2 text-[11px] font-medium transition-colors",
+                                    ss === "shortlisted"
+                                      ? "bg-emerald-100 text-emerald-700"
+                                      : "bg-card text-muted-foreground hover:bg-emerald-50 hover:text-emerald-700",
+                                  ].join(" ")}
+                                >
+                                  <Star className={`h-3 w-3 ${ss === "shortlisted" ? "fill-emerald-600" : ""}`} />
+                                  <span className="sr-only sm:not-sr-only">
+                                    {ss === "shortlisted" ? "Listed" : "List"}
+                                  </span>
+                                </button>
+                                <span className="w-px self-stretch bg-border" />
+                                <button
+                                  type="button"
+                                  onClick={() => setScreeningStatus(expert, ss === "discarded" ? "pending" : "discarded")}
+                                  title={ss === "discarded" ? "Restore to pending" : "Discard"}
+                                  className={[
+                                    "inline-flex h-7 items-center gap-1 px-2 text-[11px] font-medium transition-colors",
+                                    ss === "discarded"
+                                      ? "bg-rose-100 text-rose-700"
+                                      : "bg-card text-muted-foreground hover:bg-rose-50 hover:text-rose-700",
+                                  ].join(" ")}
+                                >
+                                  <X className={`h-3 w-3 ${ss === "discarded" ? "text-rose-600" : ""}`} />
+                                  <span className="sr-only sm:not-sr-only">
+                                    {ss === "discarded" ? "Nope" : "Drop"}
+                                  </span>
+                                </button>
+                              </div>
+                            )
+                          })()}
 
                           {/* CID status button */}
                           {(() => {
@@ -1160,14 +1192,24 @@ function CellRenderer({
     )
   }
 
-  // Shortlisted name highlight
-  if (colKey === "name" && expert.shortlisted) {
-    return (
-      <span className="flex items-center gap-1.5 font-medium">
-        <Star className="h-3 w-3 fill-primary text-primary" />
-        {String(value)}
-      </span>
-    )
+  // Screening status name highlight
+  if (colKey === "name") {
+    const ss = expert.screening_status ?? "pending"
+    if (ss === "shortlisted") {
+      return (
+        <span className="flex items-center gap-1.5 font-medium text-emerald-700">
+          <Star className="h-3 w-3 fill-emerald-600 text-emerald-600" />
+          {String(value)}
+        </span>
+      )
+    }
+    if (ss === "discarded") {
+      return (
+        <span className="flex items-center gap-1.5 text-muted-foreground line-through decoration-rose-400/50">
+          {String(value)}
+        </span>
+      )
+    }
   }
 
   return <span>{String(value)}</span>
