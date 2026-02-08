@@ -20,6 +20,7 @@ import {
   CheckCircle2,
   XCircle,
   RotateCcw,
+  Filter,
 } from "lucide-react"
 import {
   getExpertProfiles,
@@ -103,6 +104,16 @@ const AVATAR_GRADIENT: Record<string, string> = {
 
 type SwipeDir = "left" | "right" | "down" | null
 
+type TypeFilter = "all" | "customer" | "competitor" | "target" | "competitor_customer"
+
+const TYPE_FILTER_OPTIONS: { value: TypeFilter; label: string }[] = [
+  { value: "all",                 label: "All Experts" },
+  { value: "customer",            label: "Customer" },
+  { value: "competitor",          label: "Competitor" },
+  { value: "target",              label: "Target" },
+  { value: "competitor_customer", label: "Comp. Customer" },
+]
+
 /* ------------------------------------------------------------------ */
 /*  Page                                                               */
 /* ------------------------------------------------------------------ */
@@ -114,6 +125,7 @@ export default function ReviewPage() {
   const [swipe, setSwipe] = useState<SwipeDir>(null)
   const [expandedSection, setExpandedSection] = useState<string | null>(null)
   const [showStats, setShowStats] = useState(false)
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>("all")
 
   /* Load data */
   useEffect(() => {
@@ -122,20 +134,35 @@ export default function ReviewPage() {
     setLoaded(true)
   }, [])
 
+  /* Apply type filter */
+  const filtered = typeFilter === "all"
+    ? profiles
+    : profiles.filter((p) => p.expert_type === typeFilter)
+
   /* Build ordered queue: unreviewed first (FIFO), then "later" pile */
-  const queue = profiles.filter((p) => !reviewMap[expertKey(p)])
-  const laterPile = profiles.filter((p) => reviewMap[expertKey(p)] === "later")
+  const queue = filtered.filter((p) => !reviewMap[expertKey(p)])
+  const laterPile = filtered.filter((p) => reviewMap[expertKey(p)] === "later")
   const orderedQueue = [...queue, ...laterPile]
 
   const current = orderedQueue[0] ?? null
   const remaining = orderedQueue.length
 
-  /* Counters */
-  const total = profiles.length
-  const shortlistedCount = Object.values(reviewMap).filter((s) => s === "shortlisted").length
-  const discardedCount = Object.values(reviewMap).filter((s) => s === "discarded").length
+  /* Counters -- scoped to current filter */
+  const total = filtered.length
+  const shortlistedCount = filtered.filter((p) => reviewMap[expertKey(p)] === "shortlisted").length
+  const discardedCount = filtered.filter((p) => reviewMap[expertKey(p)] === "discarded").length
   const laterCount = laterPile.length
   const unreviewedCount = queue.length
+
+  /* Counts per type (for toggle badges) */
+  const typeCounts: Record<string, { total: number; unreviewed: number }> = {}
+  for (const opt of TYPE_FILTER_OPTIONS) {
+    const subset = opt.value === "all" ? profiles : profiles.filter((p) => p.expert_type === opt.value)
+    typeCounts[opt.value] = {
+      total: subset.length,
+      unreviewed: subset.filter((p) => !reviewMap[expertKey(p)]).length,
+    }
+  }
 
   /* Action handler */
   const handleAction = useCallback(
@@ -278,6 +305,42 @@ export default function ReviewPage() {
             </button>
           )}
         </div>
+      </div>
+
+      {/* Type filter toggle */}
+      <div className="mb-6 flex items-center gap-2 overflow-x-auto pb-1">
+        <Filter className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+        {TYPE_FILTER_OPTIONS.map((opt) => {
+          const active = typeFilter === opt.value
+          const count = typeCounts[opt.value]
+          /* Skip types with 0 experts */
+          if (count.total === 0 && opt.value !== "all") return null
+          return (
+            <button
+              key={opt.value}
+              onClick={() => {
+                setTypeFilter(opt.value)
+                setExpandedSection(null)
+              }}
+              className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                active
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "bg-muted text-muted-foreground hover:bg-accent hover:text-foreground"
+              }`}
+            >
+              {opt.label}
+              <span
+                className={`inline-flex min-w-[18px] items-center justify-center rounded-full px-1 py-0.5 text-[10px] font-bold leading-none ${
+                  active
+                    ? "bg-primary-foreground/20 text-primary-foreground"
+                    : "bg-background text-muted-foreground"
+                }`}
+              >
+                {count.unreviewed > 0 ? count.unreviewed : count.total}
+              </span>
+            </button>
+          )
+        })}
       </div>
 
       {/* Stats panel */}
