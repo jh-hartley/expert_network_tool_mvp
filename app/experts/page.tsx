@@ -97,14 +97,30 @@ export default function ExpertsPage() {
       },
       { key: "network", header: "Network" },
       {
-        key: "shortlisted",
-        header: "Shortlisted",
-        transform: (v) => (v ? "Yes" : "No"),
+        key: "screening_status",
+        header: "Screening Status",
+        transform: (v) => {
+          const labels: Record<string, string> = {
+            pending: "Pending",
+            shortlisted: "Shortlisted",
+            discarded: "Discarded",
+          }
+          return labels[String(v)] ?? String(v)
+        },
       },
       {
-        key: "cid_clearance_requested",
-        header: "CID Requested",
-        transform: (v) => (v ? "Yes" : "No"),
+        key: "cid_status",
+        header: "CID Status",
+        transform: (v) => {
+          const labels: Record<string, string> = {
+            not_checked: "Not Checked",
+            no_conflict: "No Conflict",
+            pending: "Pending",
+            approved: "Approved",
+            declined: "Declined",
+          }
+          return labels[String(v)] ?? String(v)
+        },
       },
       {
         key: "compliance_flags",
@@ -156,7 +172,7 @@ export default function ExpertsPage() {
       },
     }))
     exportToExcel({
-      fileName: "Helmsman_Experts",
+      fileName: "Consensus_Experts",
       rows: experts as unknown as Record<string, unknown>[],
       columns: [...EXPERT_COLUMNS, ...networkCols],
     })
@@ -250,7 +266,7 @@ export default function ExpertsPage() {
     <div className="mx-auto max-w-[1600px] px-6 py-10">
       <PageHeader
         title="Experts"
-        description="Browse expert profiles by type, review screening responses, and build your shortlist. Use the lens tabs to switch between customer, competitor, and target views with type-specific screening columns. Data is persisted in your browser -- shortlists, notes, and new experts from the Upload page are saved automatically."
+        description="Browse expert profiles by type, review screening responses, and triage your pool. Use the lens tabs to switch between customer, competitor, and target views with type-specific screening columns. Filter by shortlisted, pending, or discarded status. Data is persisted in your browser."
         actions={
           <>
             <button
@@ -325,7 +341,7 @@ export default function ExpertsPage() {
                 }`}
               >
                 <Building2 className="h-3 w-3" />
-                Bain Expert Network
+                Bain Advisor Network
               </button>
             </div>
           </div>
@@ -337,10 +353,10 @@ export default function ExpertsPage() {
                 <Info className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
                 <div>
                   <p className="text-sm font-medium text-amber-900">
-                    Bain Expert Network Integration
+                    Bain Advisor Network Integration
                   </p>
                   <p className="mt-1 text-xs leading-relaxed text-amber-800">
-                    A full implementation of Bain Expert Network advisor search
+                    A full implementation of Bain Advisor Network advisor search
                     requires connection through an internal API that provides
                     access to the firm&apos;s advisor database. This would enable
                     searching across Bain&apos;s network of vetted industry advisors
@@ -401,7 +417,7 @@ export default function ExpertsPage() {
                       "Who has the most experience with vendor evaluations?",
                       "I need a competitor insider who understands pricing strategy",
                       "Find experts with harsh environment / heavy industry experience",
-                      "Who would be best for understanding Meridian's product roadmap?",
+                      "Who would be best for understanding Zephyr's product roadmap?",
                     ].map((q) => (
                       <button
                         key={q}

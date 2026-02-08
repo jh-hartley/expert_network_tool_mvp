@@ -1,12 +1,14 @@
 "use client"
 
 import Link from "next/link"
+import { ScrollReveal } from "./components/scroll-reveal"
 import {
   TriangleAlert,
   ArrowRight,
   Upload,
   Sparkles,
   Building2,
+  Heart,
   Users,
   Phone,
   ShieldCheck,
@@ -46,25 +48,38 @@ const pipeline: {
   },
   {
     stage: 2,
-    title: "Track & Shortlist",
+    title: "Review Experts",
     subtitle:
-      "Replace the shared Excel tracker with a single live view. Teammates can tag experts into shortlist groups -- customer, competitor, target, AI survey recipient, and more -- with all profile data already filled in from ingestion.",
-    icon: Users,
-
+      "A focused, card-based review flow that presents expert profiles one at a time. Triage candidates as shortlisted, discarded, or deferred -- giving every profile proper attention without the noise of a full spreadsheet. Unreviewed experts surface first (FIFO), so nothing slips through the cracks.",
+    icon: Heart,
     capabilities: [
-      "Lifecycle tracking: Recommended \u2192 Shortlisted \u2192 Scheduled \u2192 Completed",
-      "Group-based shortlisting (e.g. customer, competitor, target, AI survey)",
-      "All expert details auto-populated -- no re-typing from emails or other tabs",
-      "Supervisor-ready sharing without copy-paste across Excel, email, or slides",
+      "Tinder-style card interface: shortlist, discard, or defer with one click or keyboard shortcut",
+      "Full profile detail on each card -- background, screener answers, compliance flags, network pricing",
+      "FIFO ordering ensures newly ingested experts are reviewed first",
+      "Deferred experts cycle back only after all new profiles have been seen",
+      "Review decisions sync back to the main expert database and carry through to the Experts table",
     ],
   },
   {
     stage: 3,
+    title: "Track & Shortlist",
+    subtitle:
+      "The unified expert table -- your single source of truth across the project. All profiles land here after ingestion, with review decisions already applied. Lens-based views let you slice by customer, competitor, or target, and natural-language search surfaces the best matches from your database.",
+    icon: Users,
+    capabilities: [
+      "Lens-based views (Customer / Competitor / Target) with sortable columns",
+      "Natural-language expert search with LLM-powered ranking and streaming results",
+      "Toggle between external experts and Bain Advisor Network (BAN) advisors",
+      "Inline CID clearance requests for target-company experts",
+      "Supervisor-ready sharing without copy-paste across Excel, email, or slides",
+    ],
+  },
+  {
+    stage: 4,
     title: "Calls & Spend",
     subtitle:
       "A call tracker that manages itself. Enter the scheduled time and the rest is handled: budget roll-ups (scheduled vs. completed vs. cancelled), forecast spend, and auto-populated fields that consultants currently maintain by hand in spreadsheets.",
     icon: Phone,
-
     capabilities: [
       "Auto-populated call details from the central expert database",
       "Dynamic spend tracking: scheduled, completed, cancelled, and forecast",
@@ -73,7 +88,7 @@ const pipeline: {
     ],
   },
   {
-    stage: 4,
+    stage: 5,
     title: "Enrich & Classify",
     subtitle:
       "Augment profiles with data you would otherwise look up manually. GenAI anonymises expert titles for safe sharing, and business intelligence integrations (e.g. Helix) pull in company industry, FTE headcount, and descriptions. The system also flags current vs. former employees and checks departure dates to confirm experts can be contacted.",
@@ -86,13 +101,13 @@ const pipeline: {
     ],
   },
   {
-    stage: 5,
+    stage: 6,
     title: "Compliance & Clearance",
     subtitle:
       "Cross-check every profile against internal databases and client advisor lists you upload to flag or block experts that calls should not be booked with. CID clearance lets you mark whole companies or individuals as cleared -- and in a full implementation, auto-populates the CID request forms (project lead, contact name and role, rationale) that are currently filled out by hand, repeatedly, through a separate tool.",
     icon: ShieldCheck,
     capabilities: [
-      "Cross-check against client advisors, BEN advisors, and do-not-contact lists",
+      "Cross-check against client advisors, BAN advisors, and do-not-contact lists",
       "Flag or block profiles that should not be booked through networks",
       "CID clearance: mark whole companies or individual experts as cleared",
       "Auto-populate CID request forms (project lead, contact details, rationale) -- defined once, reused for every request",
@@ -100,12 +115,11 @@ const pipeline: {
     ],
   },
   {
-    stage: 6,
+    stage: 7,
     title: "Transcripts & KPI Extraction",
     subtitle:
       "Upload call transcripts so they are stored, accessible, and queryable in one place. AI handles the administrative processing -- not insight extraction, which requires human judgement -- acting as a first pass that must be verified before sharing.",
     icon: Brain,
-
     capabilities: [
       "Auto-generated summaries so users can quickly identify which transcript(s) they need",
       "KPI extraction into the call tracker (e.g. NPS scores for customer calls) -- populated automatically where applicable",
@@ -115,12 +129,11 @@ const pipeline: {
     ],
   },
   {
-    stage: 7,
+    stage: 8,
     title: "Search & Discovery",
     subtitle:
-      "Two types of search in one interface. Expert search combines classic database filters (company, departure date, customer vs. competitor, etc.) with natural language to build shortlists faster. Transcript search lets you filter to a subset of calls -- e.g. only a certain competitor, or only customer transcripts -- then ask for supporting quotes, rather than uploading everything into a separate ChatGPT session each time.",
+      "Two types of search in one interface. Expert search combines classic database filters (company, departure date, customer vs. competitor, etc.) with natural language to triage candidates faster. Transcript search lets you filter to a subset of calls -- e.g. only a certain competitor, or only customer transcripts -- then ask for supporting quotes, rather than uploading everything into a separate ChatGPT session each time.",
     icon: SearchIcon,
-
     capabilities: [
       "Expert search: database filters + natural-language queries to surface the right profiles",
       "Transcript search: filter by expert type, company, or call group, then query for quotes to support slide arguments",
@@ -129,7 +142,7 @@ const pipeline: {
     ],
   },
   {
-    stage: 8,
+    stage: 9,
     title: "Reconciliation & Reporting",
     subtitle: "Clean close-out and network settlement",
     icon: FileBarChart,
@@ -176,7 +189,7 @@ const dataInputBuckets: {
     description:
       "Sourced from within Bain; needs integration or one-time upload.",
     items: [
-      "BEN advisor details and advisors flagged for fraud by Compliance",
+      "BAN advisor details and advisors flagged for fraud by Compliance",
       "CID connection for auto-filing clearance forms and marking companies / experts as safe to contact",
     ],
   },
@@ -199,23 +212,6 @@ const dataInputBuckets: {
 export default function OverviewPage() {
   return (
     <div className="mx-auto max-w-5xl px-6 py-10">
-      {/* Status banner */}
-      <div className="mb-8 flex items-start gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3">
-        <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
-        <div>
-          <p className="text-sm font-medium text-emerald-900">
-            All 8 stages are live
-          </p>
-          <p className="mt-0.5 text-xs leading-relaxed text-emerald-700">
-            Upload and parse expert data, track and shortlist experts, manage
-            calls and spend, enrich profiles, run compliance checks, upload
-            transcripts with AI summarisation, search experts and transcripts
-            with natural language, and view dashboard reporting with live NPS
-            scores. All data persists in your browser via localStorage.
-          </p>
-        </div>
-      </div>
-
       {/* Hackathon banner */}
       <div className="mb-8 flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
         <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
@@ -226,10 +222,36 @@ export default function OverviewPage() {
           <p className="mt-0.5 text-xs leading-relaxed text-amber-700">
             Browser-only demo with synthetic seed data. Data is persisted in
             your browser via localStorage -- a server-side database is not
-            permitted by company policy. Changes (shortlists, notes, new
+            permitted by company policy. Changes (screening decisions, notes, new
             uploads) survive page reloads but will be lost if you clear
             site data.
           </p>
+        </div>
+      </div>
+
+      {/* ============================================================ */}
+      {/*  TRY IT NOW -- prominent CTA                                   */}
+      {/* ============================================================ */}
+      <div className="mb-10 rounded-xl border-2 border-primary/20 bg-primary/[0.03] px-6 py-6">
+        <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left">
+          <div className="flex-1">
+            <h2 className="text-lg font-semibold tracking-tight text-foreground">
+              Try it now
+            </h2>
+            <p className="mt-1 max-w-xl text-sm leading-relaxed text-muted-foreground">
+              Walk through a realistic DD scenario end-to-end -- from uploading
+              unstructured expert data through to anonymised sources slides and
+              budget reconciliation. Pre-loaded seed data means you can start
+              clicking immediately.
+            </p>
+          </div>
+          <Link
+            href="/demo"
+            className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
+          >
+            Launch Interactive Demo
+            <ArrowRight className="h-4 w-4" />
+          </Link>
         </div>
       </div>
 
@@ -238,7 +260,7 @@ export default function OverviewPage() {
       {/* ============================================================ */}
       <section className="mb-16">
         <h1 className="text-2xl font-semibold tracking-tight text-foreground text-balance">
-          Helmsman
+          Consensus
         </h1>
         <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted-foreground">
           The end-to-end operating system for expert network workstreams --
@@ -282,7 +304,7 @@ export default function OverviewPage() {
             <ul className="mt-2 flex flex-col gap-1.5">
               <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
                 <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-                Review and shortlist more experts in the same time window
+                Review and triage more experts in the same time window
               </li>
               <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
                 <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
@@ -378,44 +400,51 @@ export default function OverviewPage() {
           </div>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          {pipeline.map((step) => {
+        {/* Timeline */}
+        <div className="relative flex flex-col">
+          {/* Vertical line */}
+          <div className="absolute left-[15px] top-0 bottom-0 w-px bg-border" />
+
+          {pipeline.map((step, i) => {
             const Icon = step.icon
             return (
-              <div
-                key={step.stage}
-                className="group flex flex-col rounded-lg border border-border bg-card transition-colors hover:border-primary/20"
-              >
-                {/* Card header */}
-                <div className="flex items-center gap-3 border-b border-border px-5 py-3.5">
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
-                    {step.stage}
-                  </span>
-                  <Icon className="h-4 w-4 shrink-0 text-primary/60" />
-                  <h3 className="text-sm font-semibold text-foreground">
-                    {step.title}
-                  </h3>
+              <ScrollReveal key={step.stage} delay={i * 60}>
+                <div className="relative flex gap-5 pb-10 last:pb-0">
+                  {/* Timeline node */}
+                  <div className="relative z-10 flex shrink-0 flex-col items-center">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold shadow-sm">
+                      {step.stage}
+                    </span>
+                  </div>
 
-                </div>
+                  {/* Content card */}
+                  <div className="group flex-1 rounded-lg border border-border bg-card transition-colors hover:border-primary/20 hover:bg-primary/[0.02]">
+                    <div className="flex items-center gap-2.5 px-5 py-3.5">
+                      <Icon className="h-4 w-4 shrink-0 text-primary/60" />
+                      <h3 className="text-sm font-semibold text-foreground">
+                        {step.title}
+                      </h3>
+                    </div>
 
-                {/* Card body */}
-                <div className="flex flex-1 flex-col px-5 py-4">
-                  <p className="text-xs leading-relaxed text-muted-foreground">
-                    {step.subtitle}
-                  </p>
-                  <ul className="mt-3 flex flex-1 flex-col gap-1.5">
-                    {step.capabilities.map((cap, j) => (
-                      <li
-                        key={j}
-                        className="flex items-start gap-2 text-xs leading-relaxed text-foreground/80"
-                      >
-                        <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-                        {cap}
-                      </li>
-                    ))}
-                  </ul>
+                    <div className="border-t border-border px-5 py-4">
+                      <p className="text-xs leading-relaxed text-muted-foreground">
+                        {step.subtitle}
+                      </p>
+                      <ul className="mt-3 flex flex-col gap-1.5">
+                        {step.capabilities.map((cap, j) => (
+                          <li
+                            key={j}
+                            className="flex items-start gap-2 text-xs leading-relaxed text-foreground/80"
+                          >
+                            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+                            {cap}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              </ScrollReveal>
             )
           })}
         </div>
@@ -437,7 +466,7 @@ export default function OverviewPage() {
           Required Input Data
         </h2>
         <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-          For full end-state functionality, Helmsman requires the following data
+          For full end-state functionality, Consensus requires the following data
           sources -- grouped by availability and implementation effort.
         </p>
 

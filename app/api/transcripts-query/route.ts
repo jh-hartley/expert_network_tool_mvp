@@ -49,7 +49,7 @@ const SYSTEM_PROMPT = `You are an expert network research analyst assisting a pr
 
 Your job is to answer the user's question based ONLY on the information contained in these transcripts. Follow these rules:
 
-1. ALWAYS cite which expert said what. Use their name, company, and expert type when referencing insights (e.g. "Raj Patel (Customer, Solaris Packaging) noted that...").
+1. ALWAYS cite which expert said what. Use their name, company, and expert type when referencing insights (e.g. "Raj Patel (Customer, Orion Packaging) noted that...").
 2. When quoting, use the expert's exact words in quotation marks and attribute the quote.
 3. If multiple transcripts discuss the same topic, synthesise across them and note where experts agree or disagree.
 4. If the transcripts do not contain information relevant to the question, say so clearly rather than speculating.

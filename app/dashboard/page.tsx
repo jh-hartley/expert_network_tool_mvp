@@ -13,6 +13,8 @@ import {
   BarChart3,
   AlertTriangle,
   Info,
+  Copy,
+  Check,
 } from "lucide-react"
 import PageHeader from "../components/page-header"
 import { getExpertProfiles, type ExpertProfile } from "@/lib/expert-profiles"
@@ -76,7 +78,7 @@ function isUpcoming(date: string): boolean {
 /*  NPS target product                                                 */
 /* ------------------------------------------------------------------ */
 
-const TARGET_PRODUCT = "Meridian Controls"
+const TARGET_PRODUCT = "Zephyr Controls"
 
 /* ------------------------------------------------------------------ */
 /*  Mini components                                                    */
@@ -128,6 +130,130 @@ function StatusBar({ counts }: { counts: Record<EngagementStatus, number> }) {
 }
 
 /* ------------------------------------------------------------------ */
+/*  Schedule card with copy-to-clipboard                               */
+/* ------------------------------------------------------------------ */
+
+function formatCallTime(startTime: string, durationMin: number): string {
+  if (!startTime) return ""
+  const [h, m] = startTime.split(":").map(Number)
+  const startDate = new Date(2000, 0, 1, h, m)
+  const endDate = new Date(startDate.getTime() + (durationMin || 60) * 60_000)
+  const fmt = (d: Date) =>
+    d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false })
+  return `${fmt(startDate)} - ${fmt(endDate)}`
+}
+
+function ScheduleCard({
+  icon: Icon,
+  title,
+  items,
+  showTime = false,
+}: {
+  icon: typeof Phone
+  title: string
+  items: EngagementRecord[]
+  showTime?: boolean
+}) {
+  const [copied, setCopied] = useState(false)
+
+  function buildClipboardText() {
+    if (items.length === 0) return ""
+    const lines = items.map((r) => {
+      const date = formatDate(r.date)
+      const time = showTime && r.call_time
+        ? ` ${formatCallTime(r.call_time, r.duration_minutes)}`
+        : ""
+      return `- ${date}${time} | ${r.expert_name}, ${r.expert_role} @ ${r.expert_company} (${r.network}, ${STATUS_LABELS[r.status]})`
+    })
+    return `${title} (${items.length})\n${lines.join("\n")}`
+  }
+
+  async function handleCopy() {
+    const text = buildClipboardText()
+    if (!text) return
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      /* fallback */
+    }
+  }
+
+  return (
+    <div className="rounded-lg border border-border bg-card">
+      <div className="flex items-center gap-2 border-b border-border px-4 py-3">
+        <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+        <h3 className="text-xs font-semibold text-foreground">
+          {title}
+          <span className="ml-1.5 text-muted-foreground font-normal">({items.length})</span>
+        </h3>
+        {items.length > 0 && (
+          <button
+            type="button"
+            onClick={handleCopy}
+            className="ml-auto inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            title="Copy schedule to clipboard as a bullet-point list"
+          >
+            {copied ? (
+              <>
+                <Check className="h-3 w-3 text-emerald-500" />
+                Copied
+              </>
+            ) : (
+              <>
+                <Copy className="h-3 w-3" />
+                Copy list
+              </>
+            )}
+          </button>
+        )}
+      </div>
+      {items.length === 0 ? (
+        <p className="px-4 py-6 text-center text-xs text-muted-foreground">
+          No {title.toLowerCase()}
+        </p>
+      ) : (
+        <div className="divide-y divide-border">
+          {items.map((r) => (
+            <div key={r.id} className="flex items-start gap-3 px-4 py-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border bg-muted/30 text-center">
+                <div>
+                  <p className="text-[10px] font-semibold leading-none text-foreground">
+                    {new Date(r.date + "T00:00:00").getDate()}
+                  </p>
+                  <p className="text-[9px] uppercase text-muted-foreground">
+                    {new Date(r.date + "T00:00:00").toLocaleDateString("en-GB", { month: "short" })}
+                  </p>
+                </div>
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-medium text-foreground">{r.expert_name}</p>
+                <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground">
+                  {r.expert_role}
+                </p>
+                <p className="mt-0.5 text-[11px] text-muted-foreground/70">
+                  {r.expert_company} &middot; {r.network}
+                </p>
+                {showTime && r.call_time && (
+                  <p className="mt-1 inline-flex items-center gap-1 rounded bg-muted/50 px-1.5 py-0.5 text-[10px] font-medium text-foreground">
+                    <Clock className="h-2.5 w-2.5 text-muted-foreground" />
+                    {formatCallTime(r.call_time, r.duration_minutes)}
+                  </p>
+                )}
+              </div>
+              <span className={`mt-0.5 shrink-0 inline-flex h-5 items-center rounded-full px-2 text-[10px] font-medium ${r.status === "scheduled" ? "border border-sky-200 bg-sky-50 text-sky-700" : "border border-amber-200 bg-amber-50 text-amber-700"}`}>
+                {STATUS_LABELS[r.status]}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
 /*  Page                                                               */
 /* ------------------------------------------------------------------ */
 
@@ -158,18 +284,26 @@ export default function DashboardPage() {
 
   /* upcoming events (calls: scheduled/invited; surveys: scheduled/invited) */
   const upcomingCalls = useMemo(
-    () =>
-      calls
-        .filter((c) => (c.status === "scheduled" || c.status === "invited") && isUpcoming(c.date))
-        .sort((a, b) => a.date.localeCompare(b.date)),
-    [calls],
+  () =>
+  calls
+  .filter((c) => (c.status === "scheduled" || c.status === "invited") && isUpcoming(c.date))
+  .sort((a, b) => {
+    const da = `${a.date}T${a.call_time ?? "00:00"}`
+    const db = `${b.date}T${b.call_time ?? "00:00"}`
+    return da.localeCompare(db)
+  }),
+  [calls],
   )
   const upcomingSurveys = useMemo(
-    () =>
-      surveys
-        .filter((s) => (s.status === "scheduled" || s.status === "invited") && isUpcoming(s.date))
-        .sort((a, b) => a.date.localeCompare(b.date)),
-    [surveys],
+  () =>
+  surveys
+  .filter((s) => (s.status === "scheduled" || s.status === "invited") && isUpcoming(s.date))
+  .sort((a, b) => {
+    const da = `${a.date}T${a.call_time ?? "00:00"}`
+    const db = `${b.date}T${b.call_time ?? "00:00"}`
+    return da.localeCompare(db)
+  }),
+  [surveys],
   )
 
   /* cancelled counts for the reminder */
@@ -354,7 +488,7 @@ export default function DashboardPage() {
       XLSX.utils.book_append_sheet(wb, ws, name)
     }
 
-    XLSX.writeFile(wb, "Helmsman_Dashboard_Summary.xlsx")
+    XLSX.writeFile(wb, "Consensus_Dashboard_Summary.xlsx")
   }, [calls, surveys])
 
   if (!loaded) {
@@ -391,80 +525,19 @@ export default function DashboardPage() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Upcoming calls */}
-        <div className="rounded-lg border border-border bg-card">
-          <div className="flex items-center gap-2 border-b border-border px-4 py-3">
-            <Phone className="h-3.5 w-3.5 text-muted-foreground" />
-            <h3 className="text-xs font-semibold text-foreground">
-              Upcoming Calls
-              <span className="ml-1.5 text-muted-foreground font-normal">({upcomingCalls.length})</span>
-            </h3>
-          </div>
-          {upcomingCalls.length === 0 ? (
-            <p className="px-4 py-6 text-center text-xs text-muted-foreground">No upcoming calls</p>
-          ) : (
-            <div className="divide-y divide-border">
-              {upcomingCalls.map((c) => (
-                <div key={c.id} className="flex items-center gap-3 px-4 py-2.5">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border bg-muted/30 text-center">
-                    <div>
-                      <p className="text-[10px] font-semibold leading-none text-foreground">
-                        {new Date(c.date + "T00:00:00").getDate()}
-                      </p>
-                      <p className="text-[9px] uppercase text-muted-foreground">
-                        {new Date(c.date + "T00:00:00").toLocaleDateString("en-GB", { month: "short" })}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-xs font-medium text-foreground">{c.expert_name}</p>
-                    <p className="truncate text-[11px] text-muted-foreground">{c.expert_company} &middot; {c.network}</p>
-                  </div>
-                  <span className={`shrink-0 inline-flex h-5 items-center rounded-full px-2 text-[10px] font-medium ${c.status === "scheduled" ? "border border-sky-200 bg-sky-50 text-sky-700" : "border border-amber-200 bg-amber-50 text-amber-700"}`}>
-                    {STATUS_LABELS[c.status]}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        <ScheduleCard
+          icon={Phone}
+          title="Upcoming Calls"
+          items={upcomingCalls}
+          showTime
+        />
 
         {/* Upcoming / pending surveys */}
-        <div className="rounded-lg border border-border bg-card">
-          <div className="flex items-center gap-2 border-b border-border px-4 py-3">
-            <ClipboardList className="h-3.5 w-3.5 text-muted-foreground" />
-            <h3 className="text-xs font-semibold text-foreground">
-              Pending Surveys
-              <span className="ml-1.5 text-muted-foreground font-normal">({upcomingSurveys.length})</span>
-            </h3>
-          </div>
-          {upcomingSurveys.length === 0 ? (
-            <p className="px-4 py-6 text-center text-xs text-muted-foreground">No pending surveys</p>
-          ) : (
-            <div className="divide-y divide-border">
-              {upcomingSurveys.map((s) => (
-                <div key={s.id} className="flex items-center gap-3 px-4 py-2.5">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border bg-muted/30 text-center">
-                    <div>
-                      <p className="text-[10px] font-semibold leading-none text-foreground">
-                        {new Date(s.date + "T00:00:00").getDate()}
-                      </p>
-                      <p className="text-[9px] uppercase text-muted-foreground">
-                        {new Date(s.date + "T00:00:00").toLocaleDateString("en-GB", { month: "short" })}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-xs font-medium text-foreground">{s.expert_name}</p>
-                    <p className="truncate text-[11px] text-muted-foreground">{s.expert_company} &middot; {s.network}</p>
-                  </div>
-                  <span className={`shrink-0 inline-flex h-5 items-center rounded-full px-2 text-[10px] font-medium ${s.status === "scheduled" ? "border border-sky-200 bg-sky-50 text-sky-700" : "border border-amber-200 bg-amber-50 text-amber-700"}`}>
-                    {STATUS_LABELS[s.status]}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        <ScheduleCard
+          icon={ClipboardList}
+          title="Pending Surveys"
+          items={upcomingSurveys}
+        />
       </div>
 
       {/* Cancelled reminders */}
@@ -562,9 +635,9 @@ export default function DashboardPage() {
           sub={Object.entries(expertsByType).map(([k, v]) => `${v} ${TYPE_LABELS[k] ?? k}`).join(", ")}
         />
         <MetricBox
-          label="Shortlisted"
-          value={experts.filter((e) => e.shortlisted).length}
-          sub={`${Math.round((experts.filter((e) => e.shortlisted).length / Math.max(experts.length, 1)) * 100)}% of pool`}
+          label="Screening"
+          value={experts.filter((e) => (e.screening_status ?? "pending") === "shortlisted").length}
+          sub={`${experts.filter((e) => (e.screening_status ?? "pending") === "shortlisted").length} shortlisted, ${experts.filter((e) => (e.screening_status ?? "pending") === "discarded").length} discarded, ${experts.filter((e) => (e.screening_status ?? "pending") === "pending").length} pending`}
         />
         <MetricBox
           label="Total Calls"

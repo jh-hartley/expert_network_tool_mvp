@@ -13,34 +13,34 @@ const now = new Date().toISOString()
 export const seedExperts: Expert[] = [
   {
     id: "exp-001", name: "Dr. Sarah Chen", title: "VP of R&D", company: "BioGen Corp",
-    industry: "Healthcare", network: "GLG", compliance: "cleared", tags: ["mRNA", "regulatory"],
+    industry: "Healthcare", network: "GLS", compliance: "cleared", tags: ["mRNA", "regulatory"],
     callCount: 4, createdAt: "2026-01-15T10:00:00Z", updatedAt: now,
   },
   {
     id: "exp-002", name: "James Rivera", title: "Former CTO", company: "DataStream Inc",
-    industry: "Technology", network: "AlphaSights", compliance: "cleared", tags: ["SaaS", "data infrastructure"],
+    industry: "Technology", network: "AlphaView", compliance: "cleared", tags: ["SaaS", "data infrastructure"],
     callCount: 2, createdAt: "2026-01-18T09:00:00Z", updatedAt: now,
   },
   {
     id: "exp-003", name: "Mark Thompson", title: "Director of Strategy", company: "EnergyX",
-    industry: "Energy", network: "Third Bridge", compliance: "blocked",
+    industry: "Energy", network: "FifthBridge", compliance: "blocked",
     complianceNote: "Pending legal review -- potential conflict with target company",
     tags: ["renewables", "grid storage"], callCount: 0,
     createdAt: "2026-01-20T14:00:00Z", updatedAt: now,
   },
   {
     id: "exp-004", name: "Priya Sharma", title: "Head of Product", company: "FinTech Solutions",
-    industry: "Finance", network: "GLG", compliance: "pending", tags: ["payments", "B2B SaaS"],
+    industry: "Finance", network: "GLS", compliance: "pending", tags: ["payments", "B2B SaaS"],
     callCount: 1, createdAt: "2026-01-22T11:00:00Z", updatedAt: now,
   },
   {
     id: "exp-005", name: "Alex Nguyen", title: "SVP Operations", company: "ConsumerCo",
-    industry: "Consumer", network: "Guidepoint", compliance: "cleared", tags: ["supply chain", "DTC"],
+    industry: "Consumer", network: "GuidePost", compliance: "cleared", tags: ["supply chain", "DTC"],
     callCount: 3, createdAt: "2026-01-25T08:30:00Z", updatedAt: now,
   },
   {
     id: "exp-006", name: "Dr. Lisa Park", title: "Chief Medical Officer", company: "MedTech Innovations",
-    industry: "Healthcare", network: "AlphaSights", compliance: "cleared", tags: ["diagnostics", "AI in healthcare"],
+    industry: "Healthcare", network: "AlphaView", compliance: "cleared", tags: ["diagnostics", "AI in healthcare"],
     callCount: 5, createdAt: "2026-01-10T07:00:00Z", updatedAt: now,
   },
   {
@@ -50,29 +50,29 @@ export const seedExperts: Expert[] = [
   },
   {
     id: "exp-008", name: "Maria Gonzalez", title: "Partner", company: "Energy Capital Partners",
-    industry: "Energy", network: "GLG", compliance: "pending", tags: ["PE", "energy transition"],
+    industry: "Energy", network: "GLS", compliance: "pending", tags: ["PE", "energy transition"],
     callCount: 0, createdAt: "2026-02-01T09:00:00Z", updatedAt: now,
   },
   {
     id: "exp-009", name: "David Chen", title: "Head of Strategy", company: "RetailMax",
-    industry: "Consumer", network: "Third Bridge", compliance: "cleared", tags: ["e-commerce", "private label"],
+    industry: "Consumer", network: "FifthBridge", compliance: "cleared", tags: ["e-commerce", "private label"],
     callCount: 2, createdAt: "2026-02-02T10:00:00Z", updatedAt: now,
   },
   {
     id: "exp-010", name: "Jennifer Walsh", title: "Managing Director", company: "HealthBridge Capital",
-    industry: "Finance", network: "Guidepoint", compliance: "cleared",
+    industry: "Finance", network: "GuidePost", compliance: "cleared",
     tags: ["healthcare investing", "biotech"], callCount: 1,
     createdAt: "2026-02-03T08:00:00Z", updatedAt: now,
   },
   {
     id: "exp-011", name: "Tom Hartley", title: "CTO", company: "BatteryWorks",
-    industry: "Energy", network: "AlphaSights", compliance: "cleared",
+    industry: "Energy", network: "AlphaView", compliance: "cleared",
     tags: ["battery tech", "cathode materials", "EV"], callCount: 6,
-    createdAt: "2025-12-15T10:00:00Z", updatedAt: now,
+    createdAt: "2026-01-15T10:00:00Z", updatedAt: now,
   },
   {
     id: "exp-012", name: "Anika Patel", title: "VP Product", company: "InsurTech Global",
-    industry: "Finance", network: "GLG", compliance: "cleared",
+    industry: "Finance", network: "GLS", compliance: "cleared",
     tags: ["insurance", "underwriting AI"], callCount: 2,
     createdAt: "2026-01-05T12:00:00Z", updatedAt: now,
   },

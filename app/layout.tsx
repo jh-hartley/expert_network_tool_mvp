@@ -12,9 +12,9 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: "Helmsman -- Expert Network Tool",
+  title: "Consensus -- Expert Network Tool (Prototype)",
   description:
-    "Manage expert networks, schedule calls, run AI surveys, and maintain compliance with a Bain-grade professional interface.",
+    "Hackathon prototype: manage expert networks, schedule calls, run AI surveys, and maintain compliance. All data is fictional.",
 }
 
 export const viewport: Viewport = {

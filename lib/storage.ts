@@ -1,13 +1,13 @@
 /* ------------------------------------------------------------------ */
-/*  Helmsman – localStorage CRUD layer                                */
+/*  Consensus – localStorage CRUD layer                               */
 /*  Single source of truth: every page reads/writes through here.     */
 /* ------------------------------------------------------------------ */
 
 import type { EntityType, EntityMap } from "./types"
 import { seedExperts } from "./seed"
 
-const STORAGE_PREFIX = "helmsman_"
-const SEEDED_KEY = "helmsman_seeded"
+const STORAGE_PREFIX = "consensus_"
+const SEEDED_KEY = "consensus_seeded"
 
 /* ---------- helpers ------------------------------------------------ */
 
@@ -86,6 +86,17 @@ export function resetAll(): void {
   types.forEach((t) => localStorage.removeItem(key(t)))
   localStorage.removeItem(SEEDED_KEY)
   ensureSeeded()
+}
+
+/** Wipe every consensus_* key from localStorage and re-seed from scratch. */
+export function hardResetAll(): void {
+  if (typeof window === "undefined") return
+  const keysToRemove: string[] = []
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i)
+    if (k && k.startsWith("consensus_")) keysToRemove.push(k)
+  }
+  keysToRemove.forEach((k) => localStorage.removeItem(k))
 }
 
 export function exportJSON(): string {

@@ -41,8 +41,8 @@ const FLAG_META: Record<
   { label: string; description: string; severity: "warning" | "danger"; Icon: typeof AlertTriangle }
 > = {
   ben_advisor: {
-    label: "BEN Advisor",
-    description: "This expert is registered as a BEN (Business Ethics Network) advisor. Additional compliance review may be required before engagement.",
+    label: "BAN Advisor",
+    description: "This expert is registered as a BAN (Bain Advisor Network) advisor. Additional compliance review may be required before engagement.",
     severity: "warning",
     Icon: AlertTriangle,
   },
@@ -121,6 +121,22 @@ function formatDate(iso: string) {
 function formatSurveyCost(r: EngagementRecord): string {
   const price = r.network_prices?.[r.network] ?? 0
   return price > 0 ? `\u20AC${price.toLocaleString()}` : "--"
+}
+
+/* ------------------------------------------------------------------ */
+/*  Cheapest network helper                                            */
+/* ------------------------------------------------------------------ */
+
+function getCheapestNetwork(prices: Record<string, number | null>): string | null {
+  let cheapest: string | null = null
+  let lowestPrice = Infinity
+  for (const [net, price] of Object.entries(prices)) {
+    if (price != null && price < lowestPrice) {
+      lowestPrice = price
+      cheapest = net
+    }
+  }
+  return cheapest
 }
 
 /* ------------------------------------------------------------------ */
@@ -391,14 +407,12 @@ export default function EngagementTable({
   }
 
   function handleDraftSelectExpert(draft: DraftRow, expert: ExpertProfile) {
-    // Pick the first available network for this expert
-    const availableNets = Object.entries(expert.network_prices ?? {})
-      .filter(([, v]) => v != null)
-      .map(([k]) => k)
+    // Pick the cheapest available network for this expert
+    const cheapest = getCheapestNetwork(expert.network_prices ?? {})
     updateDraft(draft.id, {
       nameQuery: expert.name,
       expert,
-      network: availableNets[0] ?? "",
+      network: cheapest ?? "",
     })
     setAcOpenId(null)
   }
@@ -636,8 +650,14 @@ export default function EngagementTable({
                                       <span className="font-medium text-foreground">{exp.name}</span>
                                       <span className="truncate text-muted-foreground">{exp.company}</span>
                                       {hasWarnings && <AlertTriangle className="h-3 w-3 shrink-0 text-amber-500" title="Compliance warning" />}
-                                      {(exp.compliance_flags ?? []).includes("cid_cleared") && (
-                                        <span className="shrink-0 text-[9px] font-semibold text-emerald-600" title="CID Cleared">CID</span>
+                                      {(exp.cid_status === "approved" || exp.cid_status === "no_conflict") && (
+                                        <span className="shrink-0 text-[9px] font-semibold text-emerald-600" title={exp.cid_status === "approved" ? "CID Approved" : "No CID Conflict"}>CID</span>
+                                      )}
+                                      {exp.cid_status === "declined" && (
+                                        <span className="shrink-0 text-[9px] font-semibold text-red-600" title="CID Declined">CID</span>
+                                      )}
+                                      {exp.cid_status === "pending" && (
+                                        <span className="shrink-0 text-[9px] font-semibold text-sky-600" title="CID Pending">CID</span>
                                       )}
                                       <span className={`ml-auto shrink-0 inline-flex items-center rounded-full border px-1.5 py-0.5 text-[10px] font-medium ${TYPE_COLORS[exp.expert_type] ?? ""}`}>
                                         {TYPE_LABELS[exp.expert_type] ?? exp.expert_type}
@@ -659,16 +679,28 @@ export default function EngagementTable({
 
                     /* Network selector */
                     if (col.key === "network") {
+                      const cheapestNet = expert ? getCheapestNetwork(expert.network_prices ?? {}) : null
                       return (
                         <td key={col.key} className="px-3 py-2">
                           {expert && availableNets.length > 0 ? (
-                            <select
-                              value={draft.network}
-                              onChange={(e) => updateDraft(draft.id, { network: e.target.value })}
-                              className="h-7 rounded-md border border-border bg-card px-2 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-                            >
-                              {availableNets.map((n) => <option key={n} value={n}>{n}</option>)}
-                            </select>
+                            <div className="flex items-center gap-1.5">
+                              <select
+                                value={draft.network}
+                                onChange={(e) => updateDraft(draft.id, { network: e.target.value })}
+                                className="h-7 rounded-md border border-border bg-card px-2 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                              >
+                                {availableNets.map((n) => (
+                                  <option key={n} value={n}>
+                                    {n}{n === cheapestNet && availableNets.length > 1 ? " (cheapest)" : ""}
+                                  </option>
+                                ))}
+                              </select>
+                              {draft.network === cheapestNet && availableNets.length > 1 && (
+                                <span className="shrink-0 inline-flex items-center rounded-full bg-emerald-50 px-1.5 py-0.5 text-[9px] font-bold text-emerald-700 ring-1 ring-emerald-200" title="Cheapest available network">
+                                  Best price
+                                </span>
+                              )}
+                            </div>
                           ) : (
                             <span className="text-muted-foreground/40">--</span>
                           )}
@@ -809,16 +841,33 @@ export default function EngagementTable({
                     {COLUMNS.map((col) => {
                       /* Network selector */
                       if (col.key === "network") {
+                        const cheapestNet = getCheapestNetwork(r.network_prices ?? {})
                         return (
                           <td key={col.key} className="px-3 py-2">
                             {availableNets.length > 1 ? (
-                              <select
-                                value={r.network}
-                                onChange={(e) => handleNetworkChange(r, e.target.value)}
-                                className="h-7 rounded-md border border-border bg-card px-2 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-                              >
-                                {availableNets.map((n) => <option key={n} value={n}>{n}</option>)}
-                              </select>
+                              <div className="flex items-center gap-1.5">
+                                <select
+                                  value={r.network}
+                                  onChange={(e) => handleNetworkChange(r, e.target.value)}
+                                  className="h-7 rounded-md border border-border bg-card px-2 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                                >
+                                  {availableNets.map((n) => (
+                                    <option key={n} value={n}>
+                                      {n}{n === cheapestNet ? " (cheapest)" : ""}
+                                    </option>
+                                  ))}
+                                </select>
+                                {r.network === cheapestNet && (
+                                  <span className="shrink-0 inline-flex items-center rounded-full bg-emerald-50 px-1.5 py-0.5 text-[9px] font-bold text-emerald-700 ring-1 ring-emerald-200" title="Cheapest available network">
+                                    Best price
+                                  </span>
+                                )}
+                                {r.network !== cheapestNet && cheapestNet && (
+                                  <span className="shrink-0 inline-flex items-center rounded-full bg-amber-50 px-1.5 py-0.5 text-[9px] font-bold text-amber-700 ring-1 ring-amber-200" title={`${cheapestNet} is cheaper`}>
+                                    Not cheapest
+                                  </span>
+                                )}
+                              </div>
                             ) : (
                               <span className="text-xs">{r.network || "--"}</span>
                             )}

@@ -9,13 +9,19 @@ import {
   Star,
   ShieldCheck,
   ShieldAlert,
+  ShieldX,
   StickyNote,
   Check,
   X,
   AlertTriangle,
   Briefcase,
+  Loader2,
+  Clock,
+  Ban,
+  CircleCheck,
+  Send,
 } from "lucide-react"
-import type { ExpertProfile, ExpertLens, ComplianceFlag } from "@/lib/expert-profiles"
+import type { ExpertProfile, ExpertLens, ComplianceFlag, CidStatus } from "@/lib/expert-profiles"
 import { getNetworks, PROJECT_CONTEXT } from "@/lib/expert-profiles"
 import Modal from "./modal"
 
@@ -220,17 +226,16 @@ const TYPE_LABELS: Record<string, string> = {
 
 const COMPLIANCE_FLAG_CONFIG: Record<
   ComplianceFlag,
-  { label: string; description: string; color: string; Icon: typeof AlertTriangle }
+  {
+    label: string
+    description: string
+    color: string
+    Icon: typeof AlertTriangle
+  }
 > = {
-  cid_cleared: {
-    label: "CID Cleared",
-    description: "CID clearance has been granted for this expert.",
-    color: "border-emerald-300 bg-emerald-50 text-emerald-700",
-    Icon: ShieldCheck,
-  },
   ben_advisor: {
-    label: "BEN Advisor",
-    description: "This expert is registered as a BEN (Business Ethics Network) advisor. Additional compliance review may be required before engagement.",
+    label: "BAN Advisor",
+    description: "This expert is registered as a BAN (Bain Advisor Network) advisor. Additional compliance review may be required before engagement.",
     color: "border-amber-300 bg-amber-50 text-amber-700",
     Icon: AlertTriangle,
   },
@@ -246,6 +251,41 @@ const COMPLIANCE_FLAG_CONFIG: Record<
     color: "border-orange-300 bg-orange-50 text-orange-700",
     Icon: Briefcase,
   },
+}
+
+/* ------------------------------------------------------------------ */
+/*  CID status helpers                                                  */
+/* ------------------------------------------------------------------ */
+
+const CID_STATUS_CONFIG: Record<CidStatus, { label: string; color: string; Icon: typeof ShieldCheck }> = {
+  not_checked:  { label: "Run CID",       color: "border-border bg-card text-muted-foreground hover:bg-accent hover:text-foreground", Icon: ShieldCheck },
+  no_conflict:  { label: "No Conflict",   color: "border-emerald-300 bg-emerald-50 text-emerald-700",                                Icon: CircleCheck },
+  pending:      { label: "CID Pending",   color: "border-sky-300 bg-sky-50 text-sky-700",                                            Icon: Clock },
+  approved:     { label: "CID Approved",  color: "border-emerald-300 bg-emerald-50 text-emerald-700",                                Icon: ShieldCheck },
+  declined:     { label: "CID Declined",  color: "border-red-300 bg-red-50 text-red-700",                                            Icon: ShieldX },
+}
+
+/* ------------------------------------------------------------------ */
+/*  Mock CID conflict database                                         */
+/* ------------------------------------------------------------------ */
+
+interface CidConflictMatch {
+  company: string
+  relationship: string
+}
+
+/** Maps expert company names (lowercased) to potential conflict matches */
+const CID_CONFLICT_DB: Record<string, CidConflictMatch[]> = {
+  "orion packaging":              [{ company: "Orion Packaging Inc.", relationship: "Prospective client" }],
+  "brambleway foods":             [{ company: "Brambleway Foods Group", relationship: "Active client" }, { company: "Brambleway Holdings LLC", relationship: "Former client (2023)" }],
+  "kestrel automation":           [{ company: "Kestrel Automation GmbH", relationship: "Prospective client" }, { company: "Kestrel North America", relationship: "Active engagement" }],
+  "trilon industrial":            [{ company: "Trilon Corporation", relationship: "Active client" }],
+  "zephyr controls":              [{ company: "Zephyr Controls Inc.", relationship: "Target company (Project Atlas)" }, { company: "Zephyr Industrial Group", relationship: "Former client (2022)" }],
+  "cedarpoint chemicals":         [{ company: "Cedarpoint Chemical Corp", relationship: "Prospective client" }],
+}
+
+function findCidConflicts(company: string): CidConflictMatch[] {
+  return CID_CONFLICT_DB[company.toLowerCase()] ?? []
 }
 
 /* ------------------------------------------------------------------ */
@@ -320,15 +360,27 @@ export default function ExpertLensTable({
   const [sortKey, setSortKey] = useState<string | null>(null)
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc")
   const [search, setSearch] = useState("")
-  const [showShortlistedOnly, setShowShortlistedOnly] = useState(false)
+  const [screeningFilter, setScreeningFilter] = useState<"all" | "shortlisted" | "discarded" | "pending">("all")
 
   // CID modal state
   const [cidModalOpen, setCidModalOpen] = useState(false)
   const [cidExpert, setCidExpert] = useState<ExpertProfile | null>(null)
-  const cidJustification = useMemo(
-    () => (cidExpert ? generateCidJustification(cidExpert) : ""),
-    [cidExpert],
-  )
+  const [cidStep, setCidStep] = useState<"searching" | "results" | "form" | "sent">("searching")
+  const [cidConflicts, setCidConflicts] = useState<CidConflictMatch[]>([])
+  const [cidFormData, setCidFormData] = useState({
+    caseBackground: "",
+    casePartners: "",
+    caseManagers: "",
+    cc: "",
+    expertInfo: "",
+    caseDescription: "",
+    reasonForOutreach: "",
+  })
+
+  // Shortlist warning modal state
+  const [warningModalOpen, setWarningModalOpen] = useState(false)
+  const [warningExpert, setWarningExpert] = useState<ExpertProfile | null>(null)
+  const [warningReasons, setWarningReasons] = useState<string[]>([])
 
   // Notes editing state
   const [editingNotesIdx, setEditingNotesIdx] = useState<number | null>(null)
@@ -361,10 +413,14 @@ export default function ExpertLensTable({
     return map
   }, [experts])
 
-  const shortlistedCount = useMemo(
-    () => experts.filter((e) => e.shortlisted).length,
-    [experts],
-  )
+  const screeningCounts = useMemo(() => {
+    const c = { shortlisted: 0, discarded: 0, pending: 0 }
+    for (const e of experts) {
+      const s = e.screening_status ?? "pending"
+      if (s in c) c[s as keyof typeof c]++
+    }
+    return c
+  }, [experts])
 
   // Filter
   const filtered = useMemo(() => {
@@ -372,7 +428,7 @@ export default function ExpertLensTable({
       lens === "all"
         ? experts
         : experts.filter((e) => e.expert_type === lens)
-    if (showShortlistedOnly) list = list.filter((e) => e.shortlisted)
+    if (screeningFilter !== "all") list = list.filter((e) => (e.screening_status ?? "pending") === screeningFilter)
     if (search) {
       const q = search.toLowerCase()
       list = list.filter(
@@ -385,7 +441,7 @@ export default function ExpertLensTable({
       )
     }
     return list
-  }, [experts, lens, search, showShortlistedOnly])
+  }, [experts, lens, search, screeningFilter])
 
   // Sort
   const sorted = useMemo(() => {
@@ -428,26 +484,111 @@ export default function ExpertLensTable({
     [experts],
   )
 
-  const toggleShortlist = useCallback(
-    (expert: ExpertProfile) => {
-      const idx = findOriginalIndex(expert)
-      if (idx >= 0) onUpdateExpert(idx, { shortlisted: !expert.shortlisted })
-    },
-    [findOriginalIndex, onUpdateExpert],
+  /** Collect any risk reasons that should warn before shortlisting */
+  const getShortlistWarnings = useCallback((expert: ExpertProfile): string[] => {
+    const reasons: string[] = []
+    // Compliance flags
+    for (const f of (expert.compliance_flags ?? [])) {
+      const cfg = COMPLIANCE_FLAG_CONFIG[f]
+      if (cfg) reasons.push(`${cfg.label}: ${cfg.description}`)
+    }
+    // CID declined
+    if (expert.cid_status === "declined") {
+      reasons.push("CID Declined: The account head has declined CID clearance for this expert. Do not proceed with engagement.")
+    }
+    return reasons
+  }, [])
+
+  const setScreeningStatus = useCallback(
+  (expert: ExpertProfile, status: "shortlisted" | "discarded" | "pending") => {
+  // If shortlisting, check for warnings first
+  if (status === "shortlisted") {
+    const warnings = getShortlistWarnings(expert)
+    if (warnings.length > 0) {
+      setWarningExpert(expert)
+      setWarningReasons(warnings)
+      setWarningModalOpen(true)
+      return
+    }
+  }
+  const idx = findOriginalIndex(expert)
+  if (idx >= 0) onUpdateExpert(idx, { screening_status: status })
+  },
+  [findOriginalIndex, onUpdateExpert, getShortlistWarnings],
   )
+
+  const cycleScreeningStatus = useCallback(
+  (expert: ExpertProfile) => {
+  const current = expert.screening_status ?? "pending"
+  const next = current === "pending" ? "shortlisted" : current === "shortlisted" ? "discarded" : "pending"
+  setScreeningStatus(expert, next)
+  },
+  [setScreeningStatus],
+  )
+
+  /** Called when user confirms shortlist despite warnings */
+  const confirmShortlistOverride = useCallback(() => {
+    if (!warningExpert) return
+    const idx = findOriginalIndex(warningExpert)
+    if (idx >= 0) onUpdateExpert(idx, { screening_status: "shortlisted" })
+    setWarningModalOpen(false)
+    setWarningExpert(null)
+    setWarningReasons([])
+  }, [warningExpert, findOriginalIndex, onUpdateExpert])
+
+  const cancelShortlistWarning = useCallback(() => {
+    setWarningModalOpen(false)
+    setWarningExpert(null)
+    setWarningReasons([])
+  }, [])
 
   const openCidModal = useCallback((expert: ExpertProfile) => {
     setCidExpert(expert)
+    setCidStep("searching")
     setCidModalOpen(true)
+    setCidConflicts([])
+    // Fake search: wait 3 seconds then show results
+    setTimeout(() => {
+      const matches = findCidConflicts(expert.company)
+      setCidConflicts(matches)
+      setCidStep("results")
+    }, 3000)
   }, [])
 
-  const confirmCid = useCallback(() => {
+  const handleNoConflict = useCallback(() => {
     if (!cidExpert) return
     const idx = findOriginalIndex(cidExpert)
-    if (idx >= 0) onUpdateExpert(idx, { cid_clearance_requested: true })
+    if (idx >= 0) onUpdateExpert(idx, { cid_status: "no_conflict" as CidStatus })
     setCidModalOpen(false)
     setCidExpert(null)
   }, [cidExpert, findOriginalIndex, onUpdateExpert])
+
+  const openApprovalForm = useCallback(() => {
+    if (!cidExpert) return
+    const ctx = PROJECT_CONTEXT
+    setCidFormData({
+      caseBackground: `Commercial due diligence on ${ctx.targetCompany}. Evaluating growth trajectory, competitive positioning, customer retention, and margin sustainability ahead of a potential acquisition.`,
+      casePartners: ctx.caseLeader,
+      caseManagers: ctx.seniorManager,
+      cc: "",
+      expertInfo: `${cidExpert.name}, ${cidExpert.original_role} at ${cidExpert.company}`,
+      caseDescription: ctx.projectDescription,
+      reasonForOutreach: generateCidJustification(cidExpert).split("JUSTIFICATION FOR SPEAKING\n")[1] ?? "Expert consultation for commercial due diligence workstream.",
+    })
+    setCidStep("form")
+  }, [cidExpert])
+
+  const submitCidRequest = useCallback(() => {
+    if (!cidExpert) return
+    const idx = findOriginalIndex(cidExpert)
+    if (idx >= 0) onUpdateExpert(idx, { cid_status: "pending" as CidStatus })
+    setCidStep("sent")
+  }, [cidExpert, findOriginalIndex, onUpdateExpert])
+
+  const closeCidModal = useCallback(() => {
+    setCidModalOpen(false)
+    setCidExpert(null)
+  }, [])
 
   const startEditingNotes = useCallback(
     (expert: ExpertProfile) => {
@@ -516,38 +657,36 @@ export default function ExpertLensTable({
             })}
           </div>
 
-          {/* Right side: shortlist toggle + search */}
+          {/* Right side: screening filter + search */}
           <div className="flex items-center gap-3">
-            {/* Shortlist toggle */}
-            <label className="inline-flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
-              <button
-                type="button"
-                role="switch"
-                aria-checked={showShortlistedOnly}
-                  onClick={() => {
-                    setShowShortlistedOnly((v) => !v)
-                  }}
-                className={[
-                  "relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors",
-                  showShortlistedOnly ? "bg-primary" : "bg-muted",
-                ].join(" ")}
-              >
-                <span
-                  className={[
-                    "inline-block h-3.5 w-3.5 rounded-full bg-card shadow-sm transition-transform",
-                    showShortlistedOnly ? "translate-x-[18px]" : "translate-x-[3px]",
-                  ].join(" ")}
-                />
-              </button>
-              <span>
-                Shortlisted only
-                {shortlistedCount > 0 && (
-                  <span className="ml-1 text-[10px] font-semibold text-primary">
-                    ({shortlistedCount})
-                  </span>
-                )}
-              </span>
-            </label>
+            {/* Screening filter pills */}
+            <div className="flex items-center gap-1 rounded-lg border border-border bg-muted/40 p-0.5">
+              {([
+                { key: "all",         label: "All",         color: "" },
+                { key: "shortlisted", label: "Shortlisted", color: "text-emerald-700" },
+                { key: "pending",     label: "Pending",     color: "text-amber-700" },
+                { key: "discarded",   label: "Discarded",   color: "text-rose-700" },
+              ] as const).map(({ key: fKey, label, color }) => {
+                const isActive = screeningFilter === fKey
+                const count = fKey === "all" ? experts.length : screeningCounts[fKey as keyof typeof screeningCounts] ?? 0
+                return (
+                  <button
+                    key={fKey}
+                    type="button"
+                    onClick={() => setScreeningFilter(fKey)}
+                    className={[
+                      "inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium transition-colors",
+                      isActive
+                        ? "bg-card text-foreground shadow-sm"
+                        : `bg-transparent ${color || "text-muted-foreground"} hover:text-foreground`,
+                    ].join(" ")}
+                  >
+                    {label}
+                    <span className="text-[9px] font-semibold opacity-60">{count}</span>
+                  </button>
+                )
+              })}
+            </div>
 
             {/* Search */}
             <div className="relative">
@@ -573,9 +712,17 @@ export default function ExpertLensTable({
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/40">
-                {/* Actions header */}
-                <th className="sticky left-0 z-10 bg-muted/40 px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground" style={{ minWidth: "130px" }}>
-                  Actions
+                {/* Screening header */}
+                <th className="sticky left-0 z-20 bg-muted/40 px-2 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground" style={{ minWidth: "100px", width: "100px" }}>
+                  Screen
+                </th>
+                {/* CID header */}
+                <th className="sticky z-20 bg-muted/40 px-2 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground" style={{ left: "100px", minWidth: "110px", width: "110px" }}>
+                  CID
+                </th>
+                {/* Flags header */}
+                <th className="sticky z-20 bg-muted/40 px-2 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground" style={{ left: "210px", minWidth: "130px" }}>
+                  Flags
                 </th>
                 {/* Notes header */}
                 <th className="px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground" style={{ minWidth: "160px" }}>
@@ -624,12 +771,12 @@ export default function ExpertLensTable({
               {sorted.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={columns.length + 2}
+                    colSpan={columns.length + 4}
                     className="px-4 py-10 text-center text-sm text-muted-foreground"
                   >
-                    {showShortlistedOnly
-                      ? "No shortlisted experts in this view."
-                      : search
+                  {screeningFilter !== "all"
+                    ? `No ${screeningFilter} experts in this view.`
+                    : search
                         ? "No experts match your search."
                         : "No experts in this category."}
                   </td>
@@ -643,75 +790,115 @@ export default function ExpertLensTable({
                       key={`${expert.name}-${expert.company}`}
                       className={[
                         "transition-colors hover:bg-muted/30",
-                        expert.shortlisted ? "bg-primary/[0.03]" : "",
+                        (expert.screening_status ?? "pending") === "shortlisted"
+                          ? "bg-emerald-50/40"
+                          : (expert.screening_status ?? "pending") === "discarded"
+                            ? "bg-rose-50/30"
+                            : "",
                       ].join(" ")}
                     >
-                      {/* ---- Actions cell ---- */}
-                      <td className="sticky left-0 z-10 bg-card px-3 py-2">
-                        <div className="flex items-center gap-1.5">
-                          {/* Shortlist button */}
-                          <button
-                            type="button"
-                            onClick={() => toggleShortlist(expert)}
-                            title={
-                              expert.shortlisted
-                                ? "Remove from shortlist"
-                                : "Add to shortlist"
-                            }
-                            className={[
-                              "inline-flex h-7 items-center gap-1 rounded-md border px-2 text-[11px] font-medium transition-colors",
-                              expert.shortlisted
-                                ? "border-primary/30 bg-primary/10 text-primary"
-                                : "border-border bg-card text-muted-foreground hover:bg-accent hover:text-foreground",
-                            ].join(" ")}
-                          >
-                            <Star
-                              className={[
-                                "h-3 w-3",
-                                expert.shortlisted ? "fill-primary" : "",
-                              ].join(" ")}
-                            />
-                            <span className="sr-only sm:not-sr-only">
-                              {expert.shortlisted ? "Listed" : "Shortlist"}
-                            </span>
-                          </button>
+                      {/* ---- Screening cell (frozen col 1) ---- */}
+                      <td
+                        className={[
+                          "sticky left-0 z-10 px-2 py-2",
+                          (expert.screening_status ?? "pending") === "shortlisted"
+                            ? "bg-emerald-50"
+                            : (expert.screening_status ?? "pending") === "discarded"
+                              ? "bg-rose-50"
+                              : "bg-card",
+                        ].join(" ")}
+                        style={{ minWidth: "100px", width: "100px" }}
+                      >
+                        {(() => {
+                          const ss = expert.screening_status ?? "pending"
+                          return (
+                            <div className="inline-flex items-center overflow-hidden rounded-md border border-border">
+                              <button
+                                type="button"
+                                onClick={() => setScreeningStatus(expert, ss === "shortlisted" ? "pending" : "shortlisted")}
+                                title={ss === "shortlisted" ? "Remove from shortlist" : "Shortlist"}
+                                className={[
+                                  "inline-flex h-7 items-center gap-1 whitespace-nowrap px-2 text-[11px] font-medium transition-colors",
+                                  ss === "shortlisted"
+                                    ? "bg-emerald-100 text-emerald-700"
+                                    : "bg-card text-muted-foreground hover:bg-emerald-50 hover:text-emerald-700",
+                                ].join(" ")}
+                              >
+                                <Star className={`h-3 w-3 shrink-0 ${ss === "shortlisted" ? "fill-emerald-600" : ""}`} />
+                                <span className="sr-only sm:not-sr-only">
+                                  {ss === "shortlisted" ? "Listed" : "List"}
+                                </span>
+                              </button>
+                              <span className="w-px self-stretch bg-border" />
+                              <button
+                                type="button"
+                                onClick={() => setScreeningStatus(expert, ss === "discarded" ? "pending" : "discarded")}
+                                title={ss === "discarded" ? "Restore to pending" : "Discard"}
+                                className={[
+                                  "inline-flex h-7 items-center gap-1 whitespace-nowrap px-2 text-[11px] font-medium transition-colors",
+                                  ss === "discarded"
+                                    ? "bg-rose-100 text-rose-700"
+                                    : "bg-card text-muted-foreground hover:bg-rose-50 hover:text-rose-700",
+                                ].join(" ")}
+                              >
+                                <X className={`h-3 w-3 shrink-0 ${ss === "discarded" ? "text-rose-600" : ""}`} />
+                                <span className="sr-only sm:not-sr-only">
+                                  {ss === "discarded" ? "Nope" : "Drop"}
+                                </span>
+                              </button>
+                            </div>
+                          )
+                        })()}
+                      </td>
 
-                          {/* CID clearance button */}
-                          {expert.compliance_flags?.includes("cid_cleared") ? (
-                            <span
-                              className="inline-flex h-7 items-center gap-1 rounded-md border border-emerald-300 bg-emerald-50 px-2 text-[11px] font-medium text-emerald-700"
-                              title="CID clearance granted"
+                      {/* ---- CID cell (frozen col 2) ---- */}
+                      <td
+                        className={[
+                          "sticky z-10 px-2 py-2",
+                          (expert.screening_status ?? "pending") === "shortlisted"
+                            ? "bg-emerald-50"
+                            : (expert.screening_status ?? "pending") === "discarded"
+                              ? "bg-rose-50"
+                              : "bg-card",
+                        ].join(" ")}
+                        style={{ left: "100px", minWidth: "110px", width: "110px" }}
+                      >
+                        {(() => {
+                          const status = expert.cid_status ?? "not_checked"
+                          const cfg = CID_STATUS_CONFIG[status]
+                          const CidIcon = cfg.Icon
+                          const isClickable = status === "not_checked"
+                          const Tag = isClickable ? "button" : "span"
+                          return (
+                            <Tag
+                              {...(isClickable ? { type: "button" as const, onClick: () => openCidModal(expert) } : {})}
+                              title={cfg.label}
+                              className={`inline-flex h-7 items-center gap-1 whitespace-nowrap rounded-md border px-2 text-[11px] font-medium transition-colors ${cfg.color}`}
                             >
-                              <ShieldCheck className="h-3 w-3" />
-                              <span className="sr-only sm:not-sr-only">Cleared</span>
-                            </span>
+                              <CidIcon className="h-3 w-3 shrink-0" />
+                              <span className="sr-only sm:not-sr-only">{cfg.label}</span>
+                            </Tag>
+                          )
+                        })()}
+                      </td>
+
+                      {/* ---- Flags cell (frozen col 3) ---- */}
+                      <td
+                        className={[
+                          "sticky z-10 px-2 py-2",
+                          (expert.screening_status ?? "pending") === "shortlisted"
+                            ? "bg-emerald-50"
+                            : (expert.screening_status ?? "pending") === "discarded"
+                              ? "bg-rose-50"
+                              : "bg-card",
+                        ].join(" ")}
+                        style={{ left: "210px", minWidth: "130px" }}
+                      >
+                        <div className="flex flex-nowrap items-center gap-1">
+                          {(expert.compliance_flags ?? []).length === 0 ? (
+                            <span className="text-[10px] text-muted-foreground/50">&mdash;</span>
                           ) : (
-                            <button
-                              type="button"
-                              onClick={() => openCidModal(expert)}
-                              title={
-                                expert.cid_clearance_requested
-                                  ? "CID clearance requested (pending)"
-                                  : "Request CID clearance"
-                              }
-                              className={[
-                                "inline-flex h-7 items-center gap-1 rounded-md border px-2 text-[11px] font-medium transition-colors",
-                                expert.cid_clearance_requested
-                                  ? "border-sky-300 bg-sky-50 text-sky-700"
-                                  : "border-border bg-card text-muted-foreground hover:bg-accent hover:text-foreground",
-                              ].join(" ")}
-                            >
-                              <ShieldCheck className="h-3 w-3" />
-                              <span className="sr-only sm:not-sr-only">
-                                {expert.cid_clearance_requested ? "Pending" : "CID"}
-                              </span>
-                            </button>
-                          )}
-
-                          {/* Compliance warning badges */}
-                          {(expert.compliance_flags ?? [])
-                            .filter((f) => f !== "cid_cleared")
-                            .map((flag) => {
+                            (expert.compliance_flags ?? []).map((flag) => {
                               const cfg = COMPLIANCE_FLAG_CONFIG[flag]
                               if (!cfg) return null
                               const IconComp = cfg.Icon
@@ -725,7 +912,8 @@ export default function ExpertLensTable({
                                   <span className="sr-only sm:not-sr-only">{cfg.label}</span>
                                 </span>
                               )
-                            })}
+                            })
+                          )}
                         </div>
                       </td>
 
@@ -830,55 +1018,250 @@ export default function ExpertLensTable({
       {/* ---- CID Clearance Modal ---- */}
       <Modal
         open={cidModalOpen}
-        onClose={() => {
-          setCidModalOpen(false)
-          setCidExpert(null)
-        }}
-        title="Request CID Clearance"
+        onClose={closeCidModal}
+        title={
+          cidStep === "searching" ? "Running CID Check..."
+          : cidStep === "results" ? "CID Check Results"
+          : cidStep === "form" ? "Request CID Approval"
+          : "Request Submitted"
+        }
         description={
           cidExpert
             ? `${cidExpert.name} -- ${cidExpert.original_role} at ${cidExpert.company}`
             : undefined
         }
-        maxWidth="max-w-lg"
+        maxWidth={cidStep === "form" ? "max-w-2xl" : "max-w-lg"}
       >
-        {cidExpert && (
-          <div className="flex flex-col gap-4">
-            <pre className="max-h-[50vh] overflow-auto whitespace-pre-wrap rounded-md border border-border bg-muted/30 p-4 text-xs leading-relaxed text-foreground">
-              {cidJustification}
-            </pre>
-
-            {cidExpert.cid_clearance_requested && (
-              <div className="flex items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
-                <ShieldCheck className="h-3.5 w-3.5" />
-                CID clearance has already been requested for this expert.
-              </div>
-            )}
-
-            <div className="flex items-center justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setCidModalOpen(false)
-                  setCidExpert(null)
-                }}
-                className="h-8 rounded-md border border-border bg-card px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-              >
-                Cancel
-              </button>
-              {!cidExpert.cid_clearance_requested && (
-                <button
-                  type="button"
-                  onClick={confirmCid}
-                  className="h-8 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-                >
-                  Confirm CID Request
-                </button>
-              )}
+        {cidExpert && cidStep === "searching" && (
+          <div className="flex flex-col items-center gap-4 py-8">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <div className="text-center">
+              <p className="text-sm font-medium text-foreground">
+                Searching conflict database...
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Checking {cidExpert.company} against active and prospective client lists
+              </p>
+            </div>
+            <div className="mt-2 h-1.5 w-48 overflow-hidden rounded-full bg-muted">
+              <div className="h-full animate-pulse rounded-full bg-primary/60" style={{ width: "65%", animation: "pulse 1.5s ease-in-out infinite" }} />
             </div>
           </div>
         )}
+
+        {cidExpert && cidStep === "results" && (
+          <div className="flex flex-col gap-4">
+            {cidConflicts.length === 0 ? (
+              <>
+                <div className="flex items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3">
+                  <CircleCheck className="h-5 w-5 shrink-0 text-emerald-600" />
+                  <div>
+                    <p className="text-sm font-medium text-emerald-800">No conflicts found</p>
+                    <p className="mt-0.5 text-xs text-emerald-700">
+                      {cidExpert.company} did not match any companies in the conflict database.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2">
+                  <button type="button" onClick={closeCidModal} className="h-8 rounded-md border border-border bg-card px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+                    Cancel
+                  </button>
+                  <button type="button" onClick={handleNoConflict} className="h-8 rounded-md bg-emerald-600 px-3 text-xs font-medium text-white transition-colors hover:bg-emerald-700">
+                    Confirm No Conflict
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+                  <AlertTriangle className="h-5 w-5 shrink-0 text-amber-600" />
+                  <div>
+                    <p className="text-sm font-medium text-amber-800">Potential conflicts detected</p>
+                    <p className="mt-0.5 text-xs text-amber-700">
+                      {cidConflicts.length} matching {cidConflicts.length === 1 ? "entity" : "entities"} found in the conflict database. Review below and request approval if needed.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="overflow-hidden rounded-lg border border-border">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="border-b border-border bg-muted/50">
+                        <th className="px-3 py-2 text-left font-semibold text-foreground">Company Name</th>
+                        <th className="px-3 py-2 text-left font-semibold text-foreground">Relationship</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border">
+                      {cidConflicts.map((match, i) => (
+                        <tr key={i} className="bg-card">
+                          <td className="px-3 py-2 font-medium text-foreground">{match.company}</td>
+                          <td className="px-3 py-2 text-muted-foreground">{match.relationship}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="flex justify-end gap-2">
+                  <button type="button" onClick={closeCidModal} className="h-8 rounded-md border border-border bg-card px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+                    Cancel
+                  </button>
+                  <button type="button" onClick={openApprovalForm} className="inline-flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90">
+                    <Send className="h-3 w-3" />
+                    Send for Approval
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {cidExpert && cidStep === "form" && (
+          <div className="flex flex-col gap-4">
+            <p className="text-xs text-muted-foreground">
+              Complete the fields below. Auto-generated text has been filled in but you can edit any field before sending.
+            </p>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <CidFormField label="Case Background" value={cidFormData.caseBackground} onChange={(v) => setCidFormData((p) => ({ ...p, caseBackground: v }))} multiline />
+              <CidFormField label="Case Operating Partner(s)" value={cidFormData.casePartners} onChange={(v) => setCidFormData((p) => ({ ...p, casePartners: v }))} />
+              <CidFormField label="Case Operating Manager(s)" value={cidFormData.caseManagers} onChange={(v) => setCidFormData((p) => ({ ...p, caseManagers: v }))} />
+              <CidFormField label="Cc" value={cidFormData.cc} onChange={(v) => setCidFormData((p) => ({ ...p, cc: v }))} placeholder="email@example.com" />
+              <CidFormField label="Expert Name, Title & Company" value={cidFormData.expertInfo} onChange={(v) => setCidFormData((p) => ({ ...p, expertInfo: v }))} />
+              <CidFormField label="Case Description" value={cidFormData.caseDescription} onChange={(v) => setCidFormData((p) => ({ ...p, caseDescription: v }))} multiline />
+            </div>
+            <CidFormField label="Reason for Outreach / Additional Comments" value={cidFormData.reasonForOutreach} onChange={(v) => setCidFormData((p) => ({ ...p, reasonForOutreach: v }))} multiline fullWidth />
+
+            <div className="flex justify-end gap-2 pt-1">
+              <button type="button" onClick={() => setCidStep("results")} className="h-8 rounded-md border border-border bg-card px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+                Back
+              </button>
+              <button type="button" onClick={submitCidRequest} className="inline-flex h-8 items-center gap-1.5 rounded-md bg-primary px-4 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90">
+                <Send className="h-3 w-3" />
+                Submit Request
+              </button>
+            </div>
+          </div>
+        )}
+
+        {cidExpert && cidStep === "sent" && (
+          <div className="flex flex-col items-center gap-4 py-6">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-sky-100">
+              <Clock className="h-6 w-6 text-sky-600" />
+            </div>
+            <div className="text-center">
+              <p className="text-sm font-medium text-foreground">CID Approval Request Sent</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                The request for {cidExpert.name} has been submitted to the account head. Status has been updated to CID Pending.
+              </p>
+            </div>
+            <button type="button" onClick={closeCidModal} className="mt-2 h-8 rounded-md bg-primary px-4 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90">
+              Done
+            </button>
+          </div>
+        )}
       </Modal>
+
+      {/* ---- Shortlist Warning Modal ---- */}
+      <Modal
+        open={warningModalOpen}
+        onClose={cancelShortlistWarning}
+        title="Shortlist Warning"
+        description={
+          warningExpert
+            ? `${warningExpert.name} -- ${warningExpert.original_role} at ${warningExpert.company}`
+            : ""
+        }
+      >
+        <div className="flex flex-col gap-4">
+          <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3">
+            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+            <div className="text-sm text-amber-900">
+              <p className="font-medium">
+                This expert has {warningReasons.length === 1 ? "an issue" : `${warningReasons.length} issues`} that may prevent engagement:
+              </p>
+            </div>
+          </div>
+
+          <ul className="flex flex-col gap-2">
+            {warningReasons.map((reason, i) => {
+              const [title, ...rest] = reason.split(": ")
+              return (
+                <li key={i} className="rounded-md border border-border bg-muted/30 px-3 py-2">
+                  <p className="text-xs font-semibold text-foreground">{title}</p>
+                  {rest.length > 0 && (
+                    <p className="mt-0.5 text-[11px] leading-relaxed text-muted-foreground">
+                      {rest.join(": ")}
+                    </p>
+                  )}
+                </li>
+              )
+            })}
+          </ul>
+
+          <div className="flex items-center justify-end gap-2 border-t border-border pt-3">
+            <button
+              type="button"
+              onClick={cancelShortlistWarning}
+              className="h-8 rounded-md border border-border bg-card px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={confirmShortlistOverride}
+              className="h-8 rounded-md border border-amber-300 bg-amber-100 px-3 text-xs font-medium text-amber-800 transition-colors hover:bg-amber-200"
+            >
+              Shortlist Anyway
+            </button>
+          </div>
+        </div>
+      </Modal>
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/*  CID form field                                                     */
+/* ------------------------------------------------------------------ */
+
+function CidFormField({
+  label,
+  value,
+  onChange,
+  multiline,
+  placeholder,
+  fullWidth,
+}: {
+  label: string
+  value: string
+  onChange: (v: string) => void
+  multiline?: boolean
+  placeholder?: string
+  fullWidth?: boolean
+}) {
+  return (
+    <div className={fullWidth ? "sm:col-span-2" : ""}>
+      <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+        {label}
+      </label>
+      {multiline ? (
+        <textarea
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          rows={3}
+          placeholder={placeholder}
+          className="w-full resize-none rounded-md border border-border bg-background px-3 py-2 text-xs leading-relaxed text-foreground outline-none transition-colors focus:border-ring focus:ring-1 focus:ring-ring"
+        />
+      ) : (
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          className="h-8 w-full rounded-md border border-border bg-background px-3 text-xs text-foreground outline-none transition-colors focus:border-ring focus:ring-1 focus:ring-ring"
+        />
+      )}
     </div>
   )
 }
@@ -953,14 +1336,24 @@ function CellRenderer({
     )
   }
 
-  // Shortlisted name highlight
-  if (colKey === "name" && expert.shortlisted) {
-    return (
-      <span className="flex items-center gap-1.5 font-medium">
-        <Star className="h-3 w-3 fill-primary text-primary" />
-        {String(value)}
-      </span>
-    )
+  // Screening status name highlight
+  if (colKey === "name") {
+    const ss = expert.screening_status ?? "pending"
+    if (ss === "shortlisted") {
+      return (
+        <span className="flex items-center gap-1.5 font-medium text-emerald-700">
+          <Star className="h-3 w-3 fill-emerald-600 text-emerald-600" />
+          {String(value)}
+        </span>
+      )
+    }
+    if (ss === "discarded") {
+      return (
+        <span className="flex items-center gap-1.5 text-muted-foreground line-through decoration-rose-400/50">
+          {String(value)}
+        </span>
+      )
+    }
   }
 
   return <span>{String(value)}</span>
