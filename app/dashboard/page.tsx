@@ -130,6 +130,103 @@ function StatusBar({ counts }: { counts: Record<EngagementStatus, number> }) {
 }
 
 /* ------------------------------------------------------------------ */
+/*  Cross-tab table (expert type x status)                             */
+/* ------------------------------------------------------------------ */
+
+function CrossTabTable({
+  title,
+  subtitle,
+  data,
+  expertTypes,
+}: {
+  title: string
+  subtitle: string
+  data: Record<string, Record<EngagementStatus, number>>
+  expertTypes: readonly string[]
+}) {
+  const totals: Record<EngagementStatus, number> = { completed: 0, scheduled: 0, invited: 0, cancelled: 0 }
+  let grandTotal = 0
+  for (const et of expertTypes) {
+    for (const s of STATUS_ORDER) {
+      totals[s] += data[et]?.[s] ?? 0
+      grandTotal += data[et]?.[s] ?? 0
+    }
+  }
+
+  // Only show rows that have at least one non-zero value
+  const activeTypes = expertTypes.filter((et) =>
+    STATUS_ORDER.some((s) => (data[et]?.[s] ?? 0) > 0),
+  )
+
+  return (
+    <div className="rounded-lg border border-border bg-card">
+      <div className="border-b border-border px-4 py-3">
+        <h3 className="text-xs font-semibold text-foreground">{title}</h3>
+        <p className="mt-0.5 text-[10px] text-muted-foreground">{subtitle}</p>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-xs">
+          <thead>
+            <tr className="border-b border-border">
+              <th className="px-3 py-2 text-left text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                Type
+              </th>
+              {STATUS_ORDER.map((s) => (
+                <th key={s} className="px-2 py-2 text-center text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                  <div className="flex items-center justify-center gap-1">
+                    <span className={`inline-block h-1.5 w-1.5 rounded-full ${STATUS_COLORS[s]}`} />
+                    {STATUS_LABELS[s]}
+                  </div>
+                </th>
+              ))}
+              <th className="px-2 py-2 text-center text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                Total
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {activeTypes.map((et) => {
+              const rowTotal = STATUS_ORDER.reduce((a, s) => a + (data[et]?.[s] ?? 0), 0)
+              return (
+                <tr key={et} className="border-b border-border/50">
+                  <td className="px-3 py-2 font-medium text-foreground">
+                    {TYPE_LABELS[et] ?? et}
+                  </td>
+                  {STATUS_ORDER.map((s) => {
+                    const v = data[et]?.[s] ?? 0
+                    return (
+                      <td key={s} className="px-2 py-2 text-center tabular-nums text-muted-foreground">
+                        {v > 0 ? v : <span className="text-muted-foreground/30">--</span>}
+                      </td>
+                    )
+                  })}
+                  <td className="px-2 py-2 text-center font-semibold tabular-nums text-foreground">
+                    {rowTotal}
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+          <tfoot>
+            <tr className="border-t border-border bg-muted/30">
+              <td className="px-3 py-2 font-semibold text-foreground">Total</td>
+              {STATUS_ORDER.map((s) => (
+                <td key={s} className="px-2 py-2 text-center font-semibold tabular-nums text-foreground">
+                  {totals[s] > 0 ? totals[s] : <span className="text-muted-foreground/30">--</span>}
+                </td>
+              ))}
+              <td className="px-2 py-2 text-center font-bold tabular-nums text-primary">
+                {grandTotal}
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
 /*  Schedule card with copy-to-clipboard                               */
 /* ------------------------------------------------------------------ */
 
@@ -339,6 +436,46 @@ export default function DashboardPage() {
     for (const e of experts) m[e.expert_type] = (m[e.expert_type] ?? 0) + 1
     return m
   }, [experts])
+
+  /* ---- Cross-tab: engagements by expert type x status ---- */
+  const EXPERT_TYPES = ["customer", "competitor", "target", "competitor_customer"] as const
+
+  /** Count of calls by expert_type x status */
+  const callCrossTab = useMemo(() => {
+    const m: Record<string, Record<EngagementStatus, number>> = {}
+    for (const et of EXPERT_TYPES) m[et] = { completed: 0, scheduled: 0, invited: 0, cancelled: 0 }
+    for (const c of calls) {
+      if (m[c.expert_type]) m[c.expert_type][c.status]++
+    }
+    return m
+  }, [calls])
+
+  /** Count of surveys by expert_type x status */
+  const surveyCrossTab = useMemo(() => {
+    const m: Record<string, Record<EngagementStatus, number>> = {}
+    for (const et of EXPERT_TYPES) m[et] = { completed: 0, scheduled: 0, invited: 0, cancelled: 0 }
+    for (const s of surveys) {
+      if (m[s.expert_type]) m[s.expert_type][s.status]++
+    }
+    return m
+  }, [surveys])
+
+  /** Unique experts (calls + surveys combined) by expert_type x status */
+  const uniqueExpertCrossTab = useMemo(() => {
+    const allRecords = [...calls, ...surveys]
+    const m: Record<string, Record<EngagementStatus, number>> = {}
+    for (const et of EXPERT_TYPES) m[et] = { completed: 0, scheduled: 0, invited: 0, cancelled: 0 }
+    for (const et of EXPERT_TYPES) {
+      for (const s of STATUS_ORDER) {
+        const seen = new Set<string>()
+        for (const r of allRecords) {
+          if (r.expert_type === et && r.status === s) seen.add(`${r.expert_name}|||${r.expert_company}`)
+        }
+        m[et][s] = seen.size
+      }
+    }
+    return m
+  }, [calls, surveys])
 
   /* NPS computed from transcript data (populated via useEffect above) */
   const targetNPS = npsResults.find((r) => r.product === TARGET_PRODUCT) ?? null
@@ -562,73 +699,12 @@ export default function DashboardPage() {
       )}
 
       {/* ================================================================ */}
-      {/*  2. STATUS OVERVIEW                                              */}
+      {/*  2. ENGAGEMENT BREAKDOWN                                         */}
       {/* ================================================================ */}
-      <SectionHeader icon={BarChart3} title="Status Overview" />
+      <SectionHeader icon={BarChart3} title="Engagement Breakdown" />
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        {/* Calls overview */}
-        <div className="rounded-lg border border-border bg-card p-5">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs font-semibold text-foreground">Calls</h3>
-            <span className="text-[11px] text-muted-foreground">{callStats.uniqueExperts} expert{callStats.uniqueExperts !== 1 ? "s" : ""} contacted</span>
-          </div>
-          <StatusBar counts={callStats.byStatus} />
-          <div className="mt-3 grid grid-cols-4 gap-2">
-            {STATUS_ORDER.map((s) => (
-              <div key={s} className="text-center">
-                <p className="text-lg font-semibold text-foreground">{callStats.byStatus[s]}</p>
-                <p className="text-[10px] text-muted-foreground">{STATUS_LABELS[s]}</p>
-              </div>
-            ))}
-          </div>
-          <div className="mt-4 flex items-center gap-3 rounded-md bg-muted/30 px-3 py-2">
-            <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-            <div className="text-xs">
-              <span className="font-semibold text-foreground">
-                {Math.floor(completedMinutes / 60)}h {completedMinutes % 60}m
-              </span>
-              <span className="text-muted-foreground"> of calls completed</span>
-            </div>
-          </div>
-          {/* Type breakdown */}
-          <div className="mt-3 flex flex-wrap gap-2">
-            {Object.entries(callStats.uniqueByType).map(([type, count]) => (
-              <span key={type} className="inline-flex items-center rounded-full border border-border px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-                {count} {TYPE_LABELS[type] ?? type}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        {/* Surveys overview */}
-        <div className="rounded-lg border border-border bg-card p-5">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs font-semibold text-foreground">AI Surveys</h3>
-            <span className="text-[11px] text-muted-foreground">{surveyStats.uniqueExperts} expert{surveyStats.uniqueExperts !== 1 ? "s" : ""} contacted</span>
-          </div>
-          <StatusBar counts={surveyStats.byStatus} />
-          <div className="mt-3 grid grid-cols-4 gap-2">
-            {STATUS_ORDER.map((s) => (
-              <div key={s} className="text-center">
-                <p className="text-lg font-semibold text-foreground">{surveyStats.byStatus[s]}</p>
-                <p className="text-[10px] text-muted-foreground">{STATUS_LABELS[s]}</p>
-              </div>
-            ))}
-          </div>
-          {/* Type breakdown */}
-          <div className="mt-4 flex flex-wrap gap-2">
-            {Object.entries(surveyStats.uniqueByType).map(([type, count]) => (
-              <span key={type} className="inline-flex items-center rounded-full border border-border px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-                {count} {TYPE_LABELS[type] ?? type}
-              </span>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Expert pool summary */}
-      <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      {/* Summary metrics row */}
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <MetricBox
           label="Expert Pool"
           value={experts.length}
@@ -640,14 +716,42 @@ export default function DashboardPage() {
           sub={`${experts.filter((e) => (e.screening_status ?? "pending") === "shortlisted").length} shortlisted, ${experts.filter((e) => (e.screening_status ?? "pending") === "discarded").length} discarded, ${experts.filter((e) => (e.screening_status ?? "pending") === "pending").length} pending`}
         />
         <MetricBox
-          label="Total Calls"
-          value={calls.filter((c) => c.status !== "cancelled").length}
-          sub={`${cancelledCalls.length} cancelled`}
+          label="Call Hours"
+          value={`${Math.floor(completedMinutes / 60)}h ${completedMinutes % 60}m`}
+          sub="completed calls only"
         />
         <MetricBox
-          label="Total Surveys"
-          value={surveys.filter((s) => s.status !== "cancelled").length}
-          sub={`${cancelledSurveys.length} cancelled`}
+          label="Active Engagements"
+          value={calls.filter((c) => c.status !== "cancelled").length + surveys.filter((s) => s.status !== "cancelled").length}
+          sub={`${calls.filter((c) => c.status !== "cancelled").length} calls + ${surveys.filter((s) => s.status !== "cancelled").length} surveys`}
+          accent
+        />
+      </div>
+
+      {/* Cross-tab tables */}
+      <div className="mt-4 grid gap-4 lg:grid-cols-3">
+        {/* Calls by type x status */}
+        <CrossTabTable
+          title="Calls"
+          subtitle={`${callStats.uniqueExperts} unique expert${callStats.uniqueExperts !== 1 ? "s" : ""}`}
+          data={callCrossTab}
+          expertTypes={EXPERT_TYPES}
+        />
+
+        {/* Surveys by type x status */}
+        <CrossTabTable
+          title="AI Surveys"
+          subtitle={`${surveyStats.uniqueExperts} unique expert${surveyStats.uniqueExperts !== 1 ? "s" : ""}`}
+          data={surveyCrossTab}
+          expertTypes={EXPERT_TYPES}
+        />
+
+        {/* Unique experts by type x status */}
+        <CrossTabTable
+          title="Unique Experts"
+          subtitle="Calls + surveys combined (no double-counting)"
+          data={uniqueExpertCrossTab}
+          expertTypes={EXPERT_TYPES}
         />
       </div>
 
