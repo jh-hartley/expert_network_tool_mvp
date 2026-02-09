@@ -276,58 +276,37 @@ export default function OverviewPage() {
         </div>
 
         {/* Problem bullets */}
-        <div className="rounded-lg border border-border bg-card p-5">
-          <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 ring-1 ring-amber-500/20">
-              <Clock className="h-5 w-5 text-amber-600" />
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-foreground">Today</h3>
-              <ul className="mt-2 flex flex-col gap-1.5">
-                <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-                  <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-amber-500/50" />
-                  Multiple networks, each reporting in a different format -- all re-keyed by hand into trackers
-                </li>
-                <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-                  <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-amber-500/50" />
-                  Compliance checks, CID requests, and do-not-contact lists managed manually across tools
-                </li>
-                <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-                  <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-amber-500/50" />
-                  On tight-timeline cases, admin directly competes with the analytical work that drives insight
-                </li>
-                <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-                  <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-amber-500/50" />
-                  Every manual step is a point of failure: missed checks, duplicated experts, stale trackers
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
+        <ul className="mt-3 flex flex-col gap-1.5 rounded-lg border border-border bg-card p-5">
+          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-muted-foreground/40" />
+            Multiple networks, each reporting in a different format -- all re-keyed by hand into trackers
+          </li>
+          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-muted-foreground/40" />
+            Compliance checks, CID requests, and do-not-contact lists managed manually across tools
+          </li>
+          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-muted-foreground/40" />
+            On tight-timeline cases, admin directly competes with the analytical work that drives insight
+          </li>
+          <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+            <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-muted-foreground/40" />
+            Every manual step is a point of failure: missed checks, duplicated experts, stale trackers
+          </li>
+        </ul>
 
-        {/* Solution sub-header */}
-        <h3 className="mt-8 text-base font-semibold tracking-tight text-foreground">
+        {/* Solution sub-header -- same style as "What it solves" */}
+        <h2 className="mt-8 text-xl font-semibold tracking-tight text-foreground">
           The Solution
-        </h3>
-
-        <div className="mt-3 rounded-lg border border-primary/20 bg-primary/[0.03] p-5">
-          <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/8 ring-1 ring-primary/15">
-              <Sparkles className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-foreground">With Consensus</h3>
-              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                An end-to-end unified process that cuts out the busywork. GenAI
-                parses messy, non-uniform network data into a single schema, and
-                every downstream step auto-populates from it.
-              </p>
-            </div>
-          </div>
-        </div>
+        </h2>
+        <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+          An end-to-end unified process that cuts out the busywork. GenAI parses
+          messy, non-uniform network data into a single schema, and every
+          downstream step auto-populates from it.
+        </p>
 
         {/* Four solution boxes */}
-        <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {/* 1 -- AI Ingestion */}
           <div className="group relative overflow-hidden rounded-lg border border-border bg-card p-5 transition-colors hover:border-primary/20 hover:bg-primary/[0.02]">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/8 ring-1 ring-primary/15">
