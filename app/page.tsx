@@ -305,8 +305,12 @@ export default function OverviewPage() {
           </div>
         </div>
 
-        {/* Segue */}
-        <div className="mt-4 rounded-lg border border-primary/20 bg-primary/[0.03] p-5">
+        {/* Solution sub-header */}
+        <h3 className="mt-8 text-base font-semibold tracking-tight text-foreground">
+          The Solution
+        </h3>
+
+        <div className="mt-3 rounded-lg border border-primary/20 bg-primary/[0.03] p-5">
           <div className="flex items-start gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/8 ring-1 ring-primary/15">
               <Sparkles className="h-5 w-5 text-primary" />
