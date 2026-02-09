@@ -256,17 +256,26 @@ export default function OverviewPage() {
         <h1 className="text-2xl font-semibold tracking-tight text-foreground text-balance">
           Consensus
         </h1>
+        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+          One platform replacing the spreadsheets, email chains, and manual
+          processes that slow down expert network workstreams.
+        </p>
+
+        {/* Section heading */}
+        <h2 className="mt-10 text-lg font-semibold tracking-tight text-foreground">
+          Why It Matters
+        </h2>
 
         {/* Problem statement */}
-        <div className="mt-4 rounded-lg border border-border bg-card p-5">
+        <div className="mt-3 rounded-lg border border-border bg-card p-5">
           <div className="flex items-start gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 ring-1 ring-amber-500/20">
               <Clock className="h-5 w-5 text-amber-600" />
             </div>
             <div>
-              <h2 className="text-sm font-semibold text-foreground">
+              <h3 className="text-sm font-semibold text-foreground">
                 The Problem
-              </h2>
+              </h3>
               <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                 Expert network workstreams are critical to PE due diligence -- but the
                 day-to-day execution is dominated by low-value admin. Junior consultants
@@ -284,8 +293,13 @@ export default function OverviewPage() {
           </div>
         </div>
 
-        {/* Four benefit boxes */}
-        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {/* Segue */}
+        <p className="mt-4 text-sm font-medium text-foreground">
+          Consensus addresses this across four areas:
+        </p>
+
+        {/* Four solution boxes */}
+        <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {/* 1 -- AI Ingestion */}
           <div className="group relative overflow-hidden rounded-lg border border-border bg-card p-5 transition-colors hover:border-primary/20 hover:bg-primary/[0.02]">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/8 ring-1 ring-primary/15">
