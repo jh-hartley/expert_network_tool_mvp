@@ -270,13 +270,15 @@ export default function OverviewPage() {
               <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                 Expert network workstreams are critical to PE due diligence -- but the
                 day-to-day execution is dominated by low-value admin. Junior consultants
-                spend hours re-keying profiles from 7+ networks into trackers, manually
-                cross-checking compliance lists, copy-pasting between tools, and
-                reformatting outputs for supervisors. On short-timeline cases this
-                busywork directly competes with the analytical work that actually drives
-                insight. Every manual step is also a point of failure: a missed CID check,
-                a duplicated expert, or a stale tracker creates real compliance and
-                quality risk.
+                spend hours re-keying profiles from several networks -- each reporting in
+                a different format -- into trackers, manually cross-checking compliance
+                lists, copy-pasting between tools, and reformatting outputs for
+                supervisors. On short-timeline cases this busywork directly competes with
+                the analytical work that actually drives insight. GenAI on rails is
+                uniquely suited to parsing messy, non-uniform data and reformatting it
+                into a unified schema for easy comparison -- and every manual step it
+                replaces is a point of failure removed: a missed CID check, a duplicated
+                expert, or a stale tracker.
               </p>
             </div>
           </div>
@@ -306,7 +308,7 @@ export default function OverviewPage() {
               </li>
               <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
                 <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-                Unified schema across 7+ networks -- no more re-keying into trackers
+                Unified schema across every network -- no more re-keying into trackers
               </li>
             </ul>
           </div>
