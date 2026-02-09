@@ -34,125 +34,118 @@ const pipeline: {
     stage: 1,
     title: "Ingest & Standardise",
     subtitle:
-      "The single biggest time sink today: re-keying unstructured expert data from network emails into trackers. AI handles parsing, deduplication, and field standardisation across networks -- populating a central database that auto-fills every downstream step.",
+      "Replace manual re-keying of network emails with AI-driven parsing into a single database.",
     icon: Upload,
     accent: "text-primary",
     capabilities: [
-      "Bulk upload from any expert network (CSV, email paste, or direct integration)",
-      "AI-driven parsing of unstructured profiles and screening responses",
-      "Cross-network field standardisation and deduplication",
-      "Central database populated once -- every subsequent step auto-fills from it",
-      "Profiles can be updated manually or enriched through subsequent network uploads (existing records are matched and merged)",
-      "Auto-removal of target-company mentions in PEG contexts",
+      "Bulk upload via CSV, email paste, or direct network integration",
+      "AI parses unstructured profiles and screening responses automatically",
+      "Deduplication and field standardisation across networks",
+      "Central database auto-fills every downstream step",
     ],
   },
   {
     stage: 2,
     title: "Review Experts",
     subtitle:
-      "A focused, card-based review flow that presents expert profiles one at a time. Triage candidates as shortlisted, discarded, or deferred -- giving every profile proper attention without the noise of a full spreadsheet. Unreviewed experts surface first (FIFO), so nothing slips through the cracks.",
+      "Card-based triage flow -- shortlist, discard, or defer one expert at a time.",
     icon: Heart,
     capabilities: [
-      "Tinder-style card interface: shortlist, discard, or defer with one click or keyboard shortcut",
-      "Full profile detail on each card -- background, screener answers, compliance flags, network pricing",
-      "FIFO ordering ensures newly ingested experts are reviewed first",
-      "Deferred experts cycle back only after all new profiles have been seen",
-      "Review decisions sync back to the main expert database and carry through to the Experts table",
+      "One-click or keyboard shortcut decisions on each profile",
+      "Full detail per card: background, screener answers, compliance flags, pricing",
+      "FIFO ordering so new uploads are reviewed first",
+      "Decisions sync to the expert database and carry downstream",
     ],
   },
   {
     stage: 3,
     title: "Track & Shortlist",
     subtitle:
-      "The unified expert table -- your single source of truth across the project. All profiles land here after ingestion, with review decisions already applied. Lens-based views let you slice by customer, competitor, or target, and natural-language search surfaces the best matches from your database.",
+      "Unified expert table -- the single source of truth for the project.",
     icon: Users,
     capabilities: [
-      "Lens-based views (Customer / Competitor / Target) with sortable columns",
-      "Natural-language expert search with LLM-powered ranking and streaming results",
-      "Toggle between external experts and Bain Advisor Network (BAN) advisors",
-      "Inline CID clearance requests for target-company experts",
-      "Supervisor-ready sharing without copy-paste across Excel, email, or slides",
+      "Lens-based views: Customer / Competitor / Target",
+      "Natural-language search with LLM-powered ranking",
+      "Toggle between external experts and BAN advisors",
+      "Inline CID clearance requests and compliance flag visibility",
     ],
   },
   {
     stage: 4,
     title: "Calls & Spend",
     subtitle:
-      "A call tracker that manages itself. Enter the scheduled time and the rest is handled: budget roll-ups (scheduled vs. completed vs. cancelled), forecast spend, and auto-populated fields that consultants currently maintain by hand in spreadsheets.",
+      "Self-managing call tracker with live budget roll-ups and forecast spend.",
     icon: Phone,
     capabilities: [
       "Auto-populated call details from the central expert database",
-      "Dynamic spend tracking: scheduled, completed, cancelled, and forecast",
+      "Live spend tracking: scheduled, completed, cancelled, forecast",
       "End-of-day summaries and upcoming-call email digests",
-      "Avoided-cost reporting and status updates triggered by outcomes",
+      "Avoided-cost reporting by outcome",
     ],
   },
   {
     stage: 5,
     title: "Enrich & Classify",
     subtitle:
-      "Augment profiles with data you would otherwise look up manually. GenAI anonymises expert titles for safe sharing, and business intelligence integrations (e.g. Helix) pull in company industry, FTE headcount, and descriptions. The system also flags current vs. former employees and checks departure dates to confirm experts can be contacted.",
+      "Auto-enrich profiles with data you would otherwise look up manually.",
     icon: Building2,
     capabilities: [
-      "Anonymised titles generated by GenAI for client-safe sharing",
-      "Company industry, FTE headcount, and descriptions from BI tools (e.g. Helix)",
+      "GenAI-generated anonymised titles for client-safe sharing",
+      "Company industry, FTE counts, and descriptions from BI tools",
       "Current vs. former employee classification with departure-date checks",
-      "Normalised roles, companies, and seniority levels across networks",
+      "Normalised roles, companies, and seniority levels",
     ],
   },
   {
     stage: 6,
     title: "Compliance & Clearance",
     subtitle:
-      "Cross-check every profile against internal databases and client advisor lists you upload to flag or block experts that calls should not be booked with. CID clearance lets you mark whole companies or individuals as cleared -- and in a full implementation, auto-populates the CID request forms (project lead, contact name and role, rationale) that are currently filled out by hand, repeatedly, through a separate tool.",
+      "Automated cross-checks and CID clearance to prevent compliance errors.",
     icon: ShieldCheck,
     capabilities: [
       "Cross-check against client advisors, BAN advisors, and do-not-contact lists",
-      "Flag or block profiles that should not be booked through networks",
-      "CID clearance: mark whole companies or individual experts as cleared",
-      "Auto-populate CID request forms (project lead, contact details, rationale) -- defined once, reused for every request",
-      "In-app button-based approval with full audit trail -- no more losing clearance decisions in email threads, reducing the risk of calls booked by mistake",
+      "Flag or block profiles before calls are booked",
+      "CID clearance at company or individual level with audit trail",
+      "Auto-populate CID request forms -- defined once, reused per request",
     ],
   },
   {
     stage: 7,
     title: "Transcripts & KPI Extraction",
     subtitle:
-      "Upload call transcripts so they are stored, accessible, and queryable in one place. AI handles the administrative processing -- not insight extraction, which requires human judgement -- acting as a first pass that must be verified before sharing.",
+      "Centralised transcript storage with AI-generated summaries and KPI extraction.",
     icon: Brain,
     capabilities: [
-      "Auto-generated summaries so users can quickly identify which transcript(s) they need",
-      "KPI extraction into the call tracker (e.g. NPS scores for customer calls) -- populated automatically where applicable",
-      "Flag references in the text that may need anonymising before client sharing (first-pass only; requires manual review)",
-      "Rename and standardise transcript files for consistent storage",
-      "Separate workspace for AI interview billing and tracking",
+      "Auto-generated summaries to quickly locate relevant transcripts",
+      "KPI extraction into the call tracker (e.g. NPS scores)",
+      "Flag text that may need anonymising before client sharing",
+      "Standardised file naming and separate AI-interview billing",
     ],
   },
   {
     stage: 8,
     title: "Search & Discovery",
     subtitle:
-      "Two types of search in one interface. Expert search combines classic database filters (company, departure date, customer vs. competitor, etc.) with natural language to triage candidates faster. Transcript search lets you filter to a subset of calls -- e.g. only a certain competitor, or only customer transcripts -- then ask for supporting quotes, rather than uploading everything into a separate ChatGPT session each time.",
+      "Query your expert database and transcripts in natural language.",
     icon: SearchIcon,
     capabilities: [
-      "Expert search: database filters + natural-language queries to surface the right profiles",
-      "Transcript search: filter by expert type, company, or call group, then query for quotes to support slide arguments",
-      "Eliminates re-uploading subsets of transcripts into ChatGPT for each new question",
-      "Future: link quotes back to their source location in the transcript for easy cross-checking against hallucinations",
+      "Expert search: filters + natural-language queries for fast triage",
+      "Transcript search: filter by type/company, then query for supporting quotes",
+      "Eliminates re-uploading transcripts into ChatGPT per question",
+      "Future: link quotes back to source locations for cross-checking",
     ],
   },
   {
     stage: 9,
     title: "Reconciliation & Reporting",
-    subtitle: "Clean close-out and network settlement",
+    subtitle:
+      "Clean close-out with structured exports and network settlement.",
     icon: FileBarChart,
     capabilities: [
       "Structured summary tables for network reconciliation",
-      "Cost verification with clear audit trail",
-      "Expert-usage reporting to reduce end-of-project back-and-forth",
-      "Team end-of-day email summaries -- formatted and ready to send",
-      "All tables exportable in pre-formatted layouts ready to copy-paste into emails or slides",
-      "Project data can be cleared automatically at close-out in line with company data retention policies and project timelines",
+      "Cost verification with audit trail",
+      "End-of-day email summaries -- formatted and ready to send",
+      "All tables exportable in layouts ready for email or slides",
     ],
   },
 ]
@@ -263,9 +256,8 @@ export default function OverviewPage() {
           Consensus
         </h1>
         <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted-foreground">
-          The end-to-end operating system for expert network workstreams --
-          replacing fragmented spreadsheets, email chains, and manual processes
-          with a single, intelligent platform.
+          One platform replacing the spreadsheets, email chains, and manual
+          processes that slow down expert network workstreams.
         </p>
 
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -394,8 +386,7 @@ export default function OverviewPage() {
               </Link>
             </div>
             <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-              Eight stages replacing spreadsheets, emails, and manual lookups
-              with a single automated flow.
+              Nine stages from raw network data to project close-out.
             </p>
           </div>
         </div>
@@ -466,8 +457,7 @@ export default function OverviewPage() {
           Required Input Data
         </h2>
         <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-          For full end-state functionality, Consensus requires the following data
-          sources -- grouped by availability and implementation effort.
+          Data sources grouped by availability and implementation effort.
         </p>
 
         <div className="mt-8 grid gap-5 sm:grid-cols-3">
