@@ -253,7 +253,7 @@ export default function OverviewPage() {
       {/*  SECTION 1 -- Hero + Value Propositions                        */}
       {/* ============================================================ */}
       <section className="mb-16">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground text-balance">
+        <h1 className="text-3xl font-bold tracking-tight text-primary text-balance">
           Consensus
         </h1>
         <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted-foreground">
@@ -261,26 +261,29 @@ export default function OverviewPage() {
           processes that slow down expert network workstreams.
         </p>
 
-        <div className="mt-10">
+        {/* Section header -- matches Pipeline pattern */}
+        <div className="mt-10 mb-6">
           <p className="text-[11px] font-semibold uppercase tracking-widest text-primary">
             Overview
           </p>
           <h2 className="mt-1 text-xl font-semibold tracking-tight text-foreground">
-            The problem it solves
+            What it solves
           </h2>
           <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-            Expert networks are essential, but the admin around them is not.
+            Expert networks are essential to PE due diligence, but the execution
+            is dominated by busywork.
           </p>
         </div>
 
         {/* Problem bullets */}
-        <div className="mt-4 rounded-lg border border-border bg-card p-5">
+        <div className="rounded-lg border border-border bg-card p-5">
           <div className="flex items-start gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 ring-1 ring-amber-500/20">
               <Clock className="h-5 w-5 text-amber-600" />
             </div>
             <div>
-              <ul className="flex flex-col gap-1.5">
+              <h3 className="text-sm font-semibold text-foreground">Today</h3>
+              <ul className="mt-2 flex flex-col gap-1.5">
                 <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
                   <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-amber-500/50" />
                   Multiple networks, each reporting in a different format -- all re-keyed by hand into trackers
@@ -303,11 +306,21 @@ export default function OverviewPage() {
         </div>
 
         {/* Segue */}
-        <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-          Consensus cuts out the busywork with an end-to-end unified process --
-          GenAI parses messy, non-uniform network data into a single schema, and
-          every downstream step auto-populates from it:
-        </p>
+        <div className="mt-4 rounded-lg border border-primary/20 bg-primary/[0.03] p-5">
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/8 ring-1 ring-primary/15">
+              <Sparkles className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-foreground">With Consensus</h3>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                An end-to-end unified process that cuts out the busywork. GenAI
+                parses messy, non-uniform network data into a single schema, and
+                every downstream step auto-populates from it.
+              </p>
+            </div>
+          </div>
+        </div>
 
         {/* Four solution boxes */}
         <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
