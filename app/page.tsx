@@ -276,26 +276,36 @@ export default function OverviewPage() {
               <h3 className="text-sm font-semibold text-foreground">
                 The Problem
               </h3>
-              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                Expert network workstreams are critical to PE due diligence -- but the
-                day-to-day execution is dominated by low-value admin. Junior consultants
-                spend hours re-keying profiles from several networks -- each reporting in
-                a different format -- into trackers, manually cross-checking compliance
-                lists, copy-pasting between tools, and reformatting outputs for
-                supervisors. On short-timeline cases this busywork directly competes with
-                the analytical work that actually drives insight. GenAI on rails is
-                uniquely suited to parsing messy, non-uniform data and reformatting it
-                into a unified schema for easy comparison -- and every manual step it
-                replaces is a point of failure removed: a missed CID check, a duplicated
-                expert, or a stale tracker.
+              <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+                Expert networks are critical to PE due diligence -- but the execution is dominated by busywork.
               </p>
+              <ul className="mt-2 flex flex-col gap-1.5">
+                <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+                  <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-amber-500/50" />
+                  Multiple networks, each reporting in a different format -- all re-keyed by hand into trackers
+                </li>
+                <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+                  <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-amber-500/50" />
+                  Compliance checks, CID requests, and do-not-contact lists managed manually across tools
+                </li>
+                <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+                  <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-amber-500/50" />
+                  On tight-timeline cases, admin directly competes with the analytical work that drives insight
+                </li>
+                <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+                  <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-amber-500/50" />
+                  Every manual step is a point of failure: missed checks, duplicated experts, stale trackers
+                </li>
+              </ul>
             </div>
           </div>
         </div>
 
         {/* Segue */}
-        <p className="mt-4 text-sm font-medium text-foreground">
-          Consensus addresses this across four areas:
+        <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+          Consensus cuts out the busywork with an end-to-end unified process --
+          GenAI parses messy, non-uniform network data into a single schema, and
+          every downstream step auto-populates from it:
         </p>
 
         {/* Four solution boxes */}
