@@ -16,6 +16,7 @@ import {
   FileBarChart,
   Search as SearchIcon,
   Database,
+  Clock,
 } from "lucide-react"
 
 /* ------------------------------------------------------------------ */
@@ -255,61 +256,116 @@ export default function OverviewPage() {
         <h1 className="text-2xl font-semibold tracking-tight text-foreground text-balance">
           Consensus
         </h1>
-        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted-foreground">
-          One platform replacing the spreadsheets, email chains, and manual
-          processes that slow down expert network workstreams.
-        </p>
 
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {/* 1 -- Reduced Admin */}
+        {/* Problem statement */}
+        <div className="mt-4 rounded-lg border border-border bg-card p-5">
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 ring-1 ring-amber-500/20">
+              <Clock className="h-5 w-5 text-amber-600" />
+            </div>
+            <div>
+              <h2 className="text-sm font-semibold text-foreground">
+                The Problem
+              </h2>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                Expert network workstreams are critical to PE due diligence -- but the
+                day-to-day execution is dominated by low-value admin. Junior consultants
+                spend hours re-keying profiles from 7+ networks into trackers, manually
+                cross-checking compliance lists, copy-pasting between tools, and
+                reformatting outputs for supervisors. On short-timeline cases this
+                busywork directly competes with the analytical work that actually drives
+                insight. Every manual step is also a point of failure: a missed CID check,
+                a duplicated expert, or a stale tracker creates real compliance and
+                quality risk.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Four benefit boxes */}
+        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {/* 1 -- AI Ingestion */}
           <div className="group relative overflow-hidden rounded-lg border border-border bg-card p-5 transition-colors hover:border-primary/20 hover:bg-primary/[0.02]">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/8 ring-1 ring-primary/15">
               <Sparkles className="h-5 w-5 text-primary" />
             </div>
             <h3 className="mt-4 text-sm font-semibold text-foreground">
-              Reduced Typing & Admin
+              AI-Powered Ingestion
             </h3>
+            <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+              GenAI extracts structured data from messy, non-uniform network formats.
+            </p>
             <ul className="mt-2 flex flex-col gap-1.5">
               <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
                 <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-                Eliminate manual data entry, copy-paste, and tracker maintenance
+                Copy-paste emails, page grabs, or CSVs from any network into the upload portal
               </li>
               <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
                 <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-                AI-driven parsing and auto-populated fields
+                All structuring, deduplication, and collation is handled automatically
               </li>
               <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
                 <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-                Focus on expert selection, not spreadsheet wrangling
+                Unified schema across 7+ networks -- no more re-keying into trackers
               </li>
             </ul>
           </div>
 
-          {/* 2 -- Increased Coverage */}
+          {/* 2 -- More Coverage, Less Time */}
           <div className="group relative overflow-hidden rounded-lg border border-border bg-card p-5 transition-colors hover:border-primary/20 hover:bg-primary/[0.02]">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/8 ring-1 ring-primary/15">
               <Users className="h-5 w-5 text-primary" />
             </div>
             <h3 className="mt-4 text-sm font-semibold text-foreground">
-              Increased Expert Coverage
+              More Coverage, Less Time
             </h3>
+            <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+              Free up hours spent on admin so you can review more experts and synthesise better insights.
+            </p>
             <ul className="mt-2 flex flex-col gap-1.5">
               <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
                 <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-                Review and triage more experts in the same time window
+                Triage more candidates in the same time window
               </li>
               <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
                 <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-                Standardised profiles and smart filtering
+                Standardised profiles and smart filtering across all networks
               </li>
               <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
                 <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-                Broader coverage without compromising quality
+                Time back goes to profile review and insight synthesis, not data entry
               </li>
             </ul>
           </div>
 
-          {/* 3 -- Automated Outputs */}
+          {/* 3 -- Compliance Safety Net */}
+          <div className="group relative overflow-hidden rounded-lg border border-border bg-card p-5 transition-colors hover:border-primary/20 hover:bg-primary/[0.02]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/8 ring-1 ring-primary/15">
+              <ShieldCheck className="h-5 w-5 text-primary" />
+            </div>
+            <h3 className="mt-4 text-sm font-semibold text-foreground">
+              Built-In Compliance Checks
+            </h3>
+            <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+              A system of checks that reduces the risk of compliance mistakes.
+            </p>
+            <ul className="mt-2 flex flex-col gap-1.5">
+              <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+                <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+                CID warnings surface in the call tracker if an expert is not cleared
+              </li>
+              <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+                <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+                Automatic cross-checks against do-not-contact and client advisor lists
+              </li>
+              <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+                <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+                Audit trail for every clearance decision -- nothing lost in email threads
+              </li>
+            </ul>
+          </div>
+
+          {/* 4 -- Automated Outputs */}
           <div className="group relative overflow-hidden rounded-lg border border-border bg-card p-5 transition-colors hover:border-primary/20 hover:bg-primary/[0.02]">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/8 ring-1 ring-primary/15">
               <FileBarChart className="h-5 w-5 text-primary" />
@@ -317,42 +373,21 @@ export default function OverviewPage() {
             <h3 className="mt-4 text-sm font-semibold text-foreground">
               Automated Reporting
             </h3>
+            <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+              Live dashboards and export-ready outputs, not manual formatting.
+            </p>
             <ul className="mt-2 flex flex-col gap-1.5">
               <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
                 <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-                Budgeting and spend tracking via a live dashboard
+                Real-time budget roll-ups, spend tracking, and forecast
               </li>
               <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
                 <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-                Export ready-to-send email digests and team updates
+                End-of-day summaries and email digests ready to send
               </li>
               <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
                 <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-                KPI extraction and auto-anonymised transcripts
-              </li>
-            </ul>
-          </div>
-
-          {/* 4 -- Unified Interface */}
-          <div className="group relative overflow-hidden rounded-lg border border-border bg-card p-5 transition-colors hover:border-primary/20 hover:bg-primary/[0.02]">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/8 ring-1 ring-primary/15">
-              <Database className="h-5 w-5 text-primary" />
-            </div>
-            <h3 className="mt-4 text-sm font-semibold text-foreground">
-              Unified Interface
-            </h3>
-            <ul className="mt-2 flex flex-col gap-1.5">
-              <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-                <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-                One platform connecting Bain{"'"}s existing tools
-              </li>
-              <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-                <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-                CID clearance, network portals, and compliance lists
-              </li>
-              <li className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-                <span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-                Firmographic data -- industry, FTE counts, company descriptions
+                All tables exportable in formats ready for slides or email
               </li>
             </ul>
           </div>
